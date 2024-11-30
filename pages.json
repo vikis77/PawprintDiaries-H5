@@ -1,0 +1,135 @@
+{
+	"easycom": {
+			"autoscan": true,
+			"custom": {
+				// uni-ui 规则如下配置
+				"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+			}
+		},
+	"pages": [
+    {
+      "path": "pages/Home",
+      "style": {
+        "navigationBarTitleText": ""
+      }
+    },
+    {
+      "path": "pages/CatClaw",
+      "style": {
+        "navigationBarTitleText": ""
+      }
+    },
+    {
+      "path": "pages/Map",
+      "style": {
+        "navigationBarTitleText": ""
+      }
+    },
+    {
+      "path": "pages/My",
+      "style": {
+        "navigationBarTitleText": ""
+      }
+    },
+	{
+	  "path": "pages/Search",
+	  "style": {
+	    "navigationBarTitleText": ""
+	  }
+	},{
+	  "path": "pages/Post",
+	  "style": {
+	    "navigationBarTitleText": ""
+	  }
+	},{
+	  "path": "pages/Card",
+	  "style": {
+	    "navigationBarTitleText": ""
+	  }
+	},{
+	  "path": "pages/ModifyCatInfo",
+	  "style": {
+	    "navigationBarTitleText": ""
+	  }
+	},{
+	  "path": "pages/SendPost",
+	  "style": {
+	    "navigationBarTitleText": ""
+	  }
+	},{
+	  "path": "pages/login",
+	  "style": {
+			"navigationBarTitleText": ""
+		}
+	},{
+	  "path": "pages/register",
+	  "style": {
+			"navigationBarTitleText": ""
+		}
+	},{
+	  "path": "pages/test",
+	  "style": {
+			"navigationBarTitleText": ""
+		}
+	},
+	{
+		"path" : "pages/SearchResultPage",
+		"style" : 
+		{
+			"navigationBarTitleText" : ""
+		}
+	},
+	{
+		"path" : "pages/CatManage",
+		"style" : 
+		{
+			"navigationBarTitleText" : ""
+		}
+	},
+	{
+		"path" : "pages/catEdit",
+		"style" : 
+		{
+			"navigationBarTitleText" : ""
+		}
+	}
+  ],
+  "globalStyle":{
+	  "navigationStyle":"custom" // 取消原生头部导航栏
+  },
+  // 配置底部 tarbar 导航栏
+  "tabBar": {
+    "backgroundColor": "#fff", // 底部导航栏颜色
+    "borderStyle": "black", // tabbar上边框的颜色
+    "list": [
+      {
+        "pagePath": "pages/Home",
+        "iconPath": "../static/home.svg", 
+        "selectedIconPath": "../static/home-active.svg", 
+        "text": ""
+      },
+      {
+        "pagePath": "pages/CatClaw",
+        "iconPath": "../static/paw.svg", 
+        "selectedIconPath": "../static/paw-active.svg",
+        "text": ""
+      },
+      {
+        "pagePath": "pages/Map",
+        "iconPath": "../static/导航.png", 
+        "selectedIconPath": "../static/导航选中.png",
+        "text": ""
+      },
+      {
+        "pagePath": "pages/My",
+        "iconPath": "../static/mine.svg", 
+        "selectedIconPath": "../static/mine-active.svg",
+        "text": ""
+      }
+    ]
+  },
+  "usingComponents": {
+      "qiun-wx-ucharts": "@qiun/wx-ucharts"
+    }
+
+}

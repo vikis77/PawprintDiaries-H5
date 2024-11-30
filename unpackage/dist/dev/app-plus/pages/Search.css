@@ -1,0 +1,425 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.uni-searchbar[data-v-a149a6be] {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  padding: 10px;
+}
+.uni-searchbar__box[data-v-a149a6be] {
+  display: flex;
+  box-sizing: border-box;
+  justify-content: left;
+  overflow: hidden;
+  position: relative;
+  flex: 1;
+  flex-direction: row;
+  align-items: center;
+  height: 36px;
+  padding: 5px 8px 5px 0px;
+}
+.uni-searchbar__box-icon-search[data-v-a149a6be] {
+  display: flex;
+  flex-direction: row;
+  padding: 0 8px;
+  justify-content: center;
+  align-items: center;
+  color: #B3B3B3;
+}
+.uni-searchbar__box-search-input[data-v-a149a6be] {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+  margin-left: 5px;
+  margin-top: 1px;
+  background-color: inherit;
+}
+.uni-searchbar__box-icon-clear[data-v-a149a6be] {
+  align-items: center;
+  line-height: 24px;
+  padding-left: 8px;
+}
+.uni-searchbar__text-placeholder[data-v-a149a6be] {
+  font-size: 14px;
+  color: #B3B3B3;
+  margin-left: 5px;
+  text-align: left;
+}
+.uni-searchbar__cancel[data-v-a149a6be] {
+  padding-left: 10px;
+  line-height: 36px;
+  font-size: 14px;
+  color: #333333;
+}
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.uni-section[data-v-17c33c2a] {
+  background-color: #fff;
+}
+.uni-section .uni-section-header[data-v-17c33c2a] {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 12px 10px;
+  font-weight: normal;
+}
+.uni-section .uni-section-header__decoration[data-v-17c33c2a] {
+  margin-right: 6px;
+  background-color: #2979ff;
+}
+.uni-section .uni-section-header__decoration.line[data-v-17c33c2a] {
+  width: 4px;
+  height: 12px;
+  border-radius: 10px;
+}
+.uni-section .uni-section-header__decoration.circle[data-v-17c33c2a] {
+  width: 8px;
+  height: 8px;
+  border-top-right-radius: 50px;
+  border-top-left-radius: 50px;
+  border-bottom-left-radius: 50px;
+  border-bottom-right-radius: 50px;
+}
+.uni-section .uni-section-header__decoration.square[data-v-17c33c2a] {
+  width: 8px;
+  height: 8px;
+}
+.uni-section .uni-section-header__content[data-v-17c33c2a] {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  color: #333;
+}
+.uni-section .uni-section-header__content .distraction[data-v-17c33c2a] {
+  flex-direction: row;
+  align-items: center;
+}
+.uni-section .uni-section-header__content-sub[data-v-17c33c2a] {
+  margin-top: 2px;
+}
+.uni-section .uni-section-header__slot-right[data-v-17c33c2a] {
+  font-size: 14px;
+}
+.uni-section .uni-section-content[data-v-17c33c2a] {
+  font-size: 14px;
+}
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.uni-list[data-v-cc89e7d4] {
+  display: flex;
+  background-color: #ffffff;
+  position: relative;
+  flex-direction: column;
+}
+.uni-list--border[data-v-cc89e7d4] {
+  position: relative;
+  z-index: -1;
+}
+.uni-list--border-top[data-v-cc89e7d4] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  transform: scaleY(0.5);
+  background-color: #e5e5e5;
+  z-index: 1;
+}
+.uni-list--border-bottom[data-v-cc89e7d4] {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  transform: scaleY(0.5);
+  background-color: #e5e5e5;
+}
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.uni-list-item[data-v-d88f6cd0] {
+  display: flex;
+  font-size: 16px;
+  position: relative;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  flex-direction: row;
+}
+.uni-list-item--disabled[data-v-d88f6cd0] {
+  opacity: 0.3;
+}
+.uni-list-item--hover[data-v-d88f6cd0] {
+  background-color: #f1f1f1;
+}
+.uni-list-item__container[data-v-d88f6cd0] {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  padding: 12px 15px;
+  padding-left: 15px;
+  flex: 1;
+  overflow: hidden;
+}
+.container--right[data-v-d88f6cd0] {
+  padding-right: 0;
+}
+.uni-list--border[data-v-d88f6cd0] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+}
+.uni-list--border[data-v-d88f6cd0]:after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  content: "";
+  transform: scaleY(0.5);
+  background-color: #e5e5e5;
+}
+.uni-list-item__content[data-v-d88f6cd0] {
+  display: flex;
+  padding-right: 8px;
+  flex: 1;
+  color: #3b4144;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+.uni-list-item__content--center[data-v-d88f6cd0] {
+  justify-content: center;
+}
+.uni-list-item__content-title[data-v-d88f6cd0] {
+  font-size: 14px;
+  color: #3b4144;
+  overflow: hidden;
+}
+.uni-list-item__content-note[data-v-d88f6cd0] {
+  margin-top: 0.1875rem;
+  color: #999;
+  font-size: 12px;
+  overflow: hidden;
+}
+.uni-list-item__extra[data-v-d88f6cd0] {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+}
+.uni-list-item__header[data-v-d88f6cd0] {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.uni-list-item__icon[data-v-d88f6cd0] {
+  margin-right: 0.5625rem;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.uni-list-item__icon-img[data-v-d88f6cd0] {
+  display: block;
+  height: 26px;
+  width: 26px;
+  margin-right: 10px;
+}
+.uni-icon-wrapper[data-v-d88f6cd0] {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+}
+.flex--direction[data-v-d88f6cd0] {
+  flex-direction: column;
+  align-items: initial;
+}
+.flex--justify[data-v-d88f6cd0] {
+  justify-content: initial;
+}
+.uni-list--lg[data-v-d88f6cd0] {
+  height: 40px;
+  width: 40px;
+}
+.uni-list--base[data-v-d88f6cd0] {
+  height: 26px;
+  width: 26px;
+}
+.uni-list--sm[data-v-d88f6cd0] {
+  height: 20px;
+  width: 20px;
+}
+.uni-list-item__extra-text[data-v-d88f6cd0] {
+  color: #999;
+  font-size: 12px;
+}
+.uni-ellipsis-1[data-v-d88f6cd0] {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.uni-ellipsis-2[data-v-d88f6cd0] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.contianer[data-v-0c890518] {
+  width: 23.4375rem;
+  /* 设置容器宽度为屏幕宽度 */
+}
+.contianer .layout[data-v-0c890518] {
+  padding-top: 1.25rem;
+  flex-wrap: wrap;
+}
+.contianer .layout .box-top[data-v-0c890518] {
+  display: flex;
+  height: 3.125rem;
+  align-items: center;
+  /* 垂直居中对齐 */
+}
+.contianer .layout .box-top .back[data-v-0c890518] {
+  width: 3.125rem;
+}
+.contianer .layout .box-top .back .btn1[data-v-0c890518] {
+  border: none;
+  /* 去除按钮默认边框 */
+  background: none;
+  /* 去除按钮背景 */
+  padding: 0;
+  /* 去除内边距 */
+}
+.contianer .layout .box-top .back .btn1 .img[data-v-0c890518] {
+  width: 0.9375rem;
+  height: 0.9375rem;
+}
+.contianer .layout .box-top .search-text[data-v-0c890518] {
+  width: 20.3125rem;
+}
+.contianer .layout .box-contenx[data-v-0c890518] {
+  margin-bottom: 0.625rem;
+  border-radius: 0.25rem;
+  background-color: #fff;
+}
+.contianer .layout .box-contenx .uni-list[data-v-0c890518] {
+  margin-top: 0.3125rem;
+}

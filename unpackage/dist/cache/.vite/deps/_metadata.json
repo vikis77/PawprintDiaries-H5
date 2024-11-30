@@ -1,0 +1,25 @@
+{
+  "hash": "13935c2e",
+  "configHash": "7a1dd224",
+  "lockfileHash": "dfccff25",
+  "browserHash": "e502af07",
+  "optimized": {
+    "axios": {
+      "src": "../../../../../node_modules/axios/index.js",
+      "file": "axios.js",
+      "fileHash": "123b7beb",
+      "needsInterop": false
+    },
+    "@amap/amap-jsapi-loader": {
+      "src": "../../../../../node_modules/@amap/amap-jsapi-loader/dist/index.js",
+      "file": "@amap_amap-jsapi-loader.js",
+      "fileHash": "dd87e3ac",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk-P2LSHJDD": {
+      "file": "chunk-P2LSHJDD.js"
+    }
+  }
+}
