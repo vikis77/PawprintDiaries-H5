@@ -296,7 +296,7 @@
 	// 点击猫猫管理
 	const handleCatManage = () => {
 		uni.navigateTo({
-			url: '/pages/CatManage'
+			url: '/pages/CatManage?from=home'
 		})
 	}
 </script>

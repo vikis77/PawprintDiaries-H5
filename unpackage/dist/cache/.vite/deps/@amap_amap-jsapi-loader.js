@@ -2,9 +2,9 @@ import {
   __commonJS
 } from "./chunk-P2LSHJDD.js";
 
-// ../../HBuilderProjects/PawPrint Diaries/node_modules/@amap/amap-jsapi-loader/dist/index.js
+// ../../../../01-Codes/HBuilderProjects/PawPrint Diaries/node_modules/@amap/amap-jsapi-loader/dist/index.js
 var require_dist = __commonJS({
-  "../../HBuilderProjects/PawPrint Diaries/node_modules/@amap/amap-jsapi-loader/dist/index.js"(exports, module) {
+  "../../../../01-Codes/HBuilderProjects/PawPrint Diaries/node_modules/@amap/amap-jsapi-loader/dist/index.js"(exports, module) {
     (function(m, p) {
       "object" === typeof exports && "undefined" !== typeof module ? module.exports = p() : "function" === typeof define && define.amd ? define(p) : (m = m || self, m.AMapLoader = p());
     })(exports, function() {

@@ -23,6 +23,7 @@
 						</view>
 						<!-- 分段器内容 -->
 						<view class="tzz876">
+							<!-- 推荐 -->
 							<view v-if="currentArea === 0">
 								<view class="t9x">
 									<!-- 卡片循环区域 -->
@@ -66,91 +67,10 @@
 									</view>
 								</view>
 							</view>
+							<!-- 全部 -->
 							<view v-if="currentArea === 1">
-								<view class="t9x">
-									<!-- 卡片循环区域 -->
-									<view class="Cardlist" >
-										<scroll-view class="ta9u0a" scroll-x="true" >
-											<view class="t42f">
-												<!-- 循环展示猫猫卡片 -->
-												<view class="t2352" v-for="cat in catList2" :key="cat.catId" @click="handleClickCard(cat.catId)"> 
-													<!-- 猫猫头像 -->
-													<view class="t7908f">
-														<image class="img32r" :src="`${pic_general_request_url}/cat_avatar/${cat.avatar}`" mode="aspectFill"></image>
-													</view>
-													<!-- 猫猫信息  -->
-													<view class="t990k">
-														<view class="t5grg3">
-															<text class="t2rdf">{{ cat.catname }} - {{ cat.age }}个月 - {{ cat.gender === 1 ? '雄性' : '雌性' }}</text>
-														</view>
-													</view>
-											
-													<!-- 分割线 -->
-													<view class="divider"/>
-													
-													<!-- 热度讨论分享 -->
-													<view class="t79h">
-														<view class="">
-															<uni-icons type="fire" size="18"></uni-icons>
-															热度
-														</view>
-														<view class="">
-															<uni-icons type="chatbubble" size="18"></uni-icons>
-															讨论
-														</view>
-														<view class="">
-															<uni-icons type="paperclip" size="18"></uni-icons>
-															分享
-														</view>
-													</view>
-												</view>
-											</view>
-										</scroll-view>
-									</view>
-								</view>
 							</view>
 							<view v-if="currentArea === 2">
-								<view class="t9x">
-									<!-- 卡片循环区域 -->
-									<view class="Cardlist" >
-										<scroll-view class="ta9u0a" scroll-x="true" >
-											<view class="t42f">
-												<!-- 循环展示猫猫卡片 -->
-												<view class="t2352" v-for="cat in catList3" :key="cat.catId" @click="handleClickCard(cat.catId)"> 
-													<!-- 猫猫头像 -->
-													<view class="t7908f">
-														<image class="img32r" :src="`${pic_general_request_url}/cat_avatar/${cat.avatar}`" mode="aspectFill"></image>
-													</view>
-													<!-- 猫猫信息  -->
-													<view class="t990k">
-														<view class="t5grg3">
-															<text class="t2rdf">{{ cat.catname }} - {{ cat.age }}个月 - {{ cat.gender === 1 ? '雄性' : '雌性' }}</text>
-														</view>
-													</view>
-											
-													<!-- 分割线 -->
-													<view class="divider"/>
-													
-													<!-- 热度讨论分享 -->
-													<view class="t79h">
-														<view class="">
-															<uni-icons type="fire" size="18"></uni-icons>
-															热度
-														</view>
-														<view class="">
-															<uni-icons type="chatbubble" size="18"></uni-icons>
-															讨论
-														</view>
-														<view class="">
-															<uni-icons type="paperclip" size="18"></uni-icons>
-															分享
-														</view>
-													</view>
-												</view>
-											</view>
-										</scroll-view>
-									</view>
-								</view>
 							</view>
 						</view>
 					</view>
@@ -389,13 +309,19 @@
 	
 	// 猫猫卡片的分段器
 	const currentArea = ref(0)
-	const AreaItems = ref(['全部','区域','搜索'])
+	const AreaItems = ref(['推荐','全部','搜索'])
 	
 	// 猫猫卡片的分段器处理点击事件
 	const onClickItemArea = (indexObj) => {
-		// console.log(indexObj.currentIndex)
+		// 当前选中的分段器索引
 		currentArea.value = indexObj.currentIndex
-		if (indexObj.currentIndex === 1 || indexObj.currentIndex === 2){
+		// 如果点击全部，跳转到CatManage页面
+		if (indexObj.currentIndex === 1) {
+			uni.navigateTo({
+				url: '/pages/CatManage?from=catclaw'
+			})
+		}
+		if (indexObj.currentIndex === 2){
 			uni.showToast({
 				title: '待开发',
 				icon: 'error'
@@ -548,6 +474,16 @@
 	
 	// 每次页面加载时
 	onShow(() => {
+		// 检查是否需要重置分段器
+		const needReset = uni.getStorageSync('resetSegmentedControl')
+		if(needReset) {
+			// 重置分段器状态
+			currentArea.value = 0
+			// 清除storage中的标记
+			uni.removeStorageSync('resetSegmentedControl')
+		}
+		
+		// 原有的onShow逻辑
 		fetchCatData(); //获取猫猫数据
 		fetchDataAnalysis(); // 获取数据分析数据
 	})

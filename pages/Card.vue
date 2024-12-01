@@ -1,22 +1,28 @@
 <!-- 猫猫信息卡片详情页
  
  -->
-<template>
+ <template>
 	<view class="container">
 		<view class="layout">
-			<!-- 头部 -->
-			<view class="t1">
-				<uni-row class="t9zdf" :width="750">
-					<uni-col class="tpk0u" :span="8">
-						<img src="../static/返回.png" alt="" @click="handleGoback" class="img"/>
+			<!-- 头部导航 -->
+			<view class="header">
+				<uni-row class="header-row" :width="750">
+					<uni-col :span="8" class="header-left">
+						<img src="../static/返回.png" @click="handleGoback" class="header-icon"/>
 					</uni-col>
-					<uni-col class="tgq89" :span="8">
-						<view class="t9gh9gh9">
-							<text>小猫卡片</text>
+					<uni-col :span="8" class="header-center">
+						<text class="header-title">小猫卡片</text>
+					</uni-col>
+					<uni-col :span="8" class="header-right">
+						<view class="more-menu">
+							<img src="../static/更多.png" @click="toggleMenu" class="header-icon"/>
+							<!-- 悬浮菜单 -->
+							<view class="floating-menu" v-if="showMenu">
+								<view class="menu-item" @click="handleEdit">
+									<text>编辑信息</text>
+								</view>
+							</view>
 						</view>
-					</uni-col>
-					<uni-col class="t56f7" :span="8">
-						<img src="../static/更多.png" alt="" />
 					</uni-col>
 				</uni-row>
 			</view>
@@ -100,20 +106,32 @@
 				</view>
 			</view>
 		</view>
+		<!-- 添加侧边弹出菜单 -->
+		<uni-popup ref="popup" type="right">
+			<view class="popup-content">
+				<view class="menu-item" @click="handleEdit">
+					<uni-icons type="compose" size="20"></uni-icons>
+					<text>编辑信息</text>
+				</view>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 
 <script setup>
-	import { ref } from 'vue';
+	import { ref, onMounted } from 'vue';
 	import uniRow from '@dcloudio/uni-ui/lib/uni-row/uni-row.vue';
 	import uniCol from '@dcloudio/uni-ui/lib/uni-col/uni-col.vue';
 	import uniSection from '@dcloudio/uni-ui/lib/uni-section/uni-section.vue';
-	import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue';
 	import uniGrid from '@dcloudio/uni-ui/lib/uni-grid/uni-grid.vue';
 	import uniGridItem from '@dcloudio/uni-ui/lib/uni-grid-item/uni-grid-item.vue';
 	
 	const API_general_request_url = ref('');
 	const pic_general_request_url = ref('');
+	const showMenu = ref(false);
+	const cat = ref(null);
+	const picUrlDatas = ref([]);
+	
 	console.log("当前 NODE_ENV:", process.env.NODE_ENV);
 	if (process.env.NODE_ENV === 'development'){
 		// 图片
@@ -127,9 +145,7 @@
 		API_general_request_url.value = "https://pawprintdiaries.luckyiur.com"
 	}
 	
-	const cat = ref(null);
-	const picUrlDatas = ref([]); // 猫猫的图片路径
-	onShow(() => {
+	onMounted(() => {
 		const options = getCurrentPages().pop().options; // 获取页面传递的参数
 		const catId = options.catId; // 获取传递过来的 catId
 		console.log(catId)
@@ -166,14 +182,25 @@
 	
 	function handleGoback() {
 		const pages = getCurrentPages();
-			if (pages.length > 1) {
-		    uni.navigateBack();
+		if (pages.length > 1) {
+			uni.navigateBack();
 		} else {
 			uni.reLaunch({
 				url:"/pages/CatClaw"
-			})
-		    console.log("没有上一页");
+			});
 		}
+	}
+	
+	function toggleMenu() {
+		showMenu.value = !showMenu.value;
+	}
+	
+	function handleEdit() {
+		showMenu.value = false;
+		const catId = cat.value.catId;
+		uni.navigateTo({
+			url: `/pages/catEdit?catId=${catId}`
+		});
 	}
 </script>
 
@@ -208,6 +235,37 @@
 			// background-position: 400rpx 200rpx , center; //* 背景图居中 */
 			// background-repeat: no-repeat; //* 背景图不重复
 			// transform: rotate(45deg); /* 旋转45度 */
+			
+			.header {
+				position: sticky;
+				top: 0;
+				z-index: 100;
+				background-color: #fff;
+				box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+				
+				&-row {
+					height: 180rpx;
+					display: flex;
+					align-items: center;
+				}
+				
+				&-icon {
+					width: 48rpx;
+					height: 48rpx;
+				}
+				
+				&-title {
+					font-size: 36rpx;
+					font-weight: 600;
+					color: #333;
+				}
+				
+				&-left, &-center, &-right {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+				}
+			}
 			
 			.t1{ //t头部
 				width: 100%;
@@ -391,6 +449,70 @@
 						
 					}
 				}
+			}
+		}
+	}
+	
+	.popup-content {
+		width: 200rpx;
+		background-color: #fff;
+		padding: 20rpx 0;
+		border-radius: 16rpx 0 0 16rpx;
+		box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+		
+		.menu-item {
+			display: flex;
+			align-items: center;
+			padding: 24rpx 32rpx;
+			gap: 16rpx;
+			
+			&:active {
+				background-color: #f5f5f5;
+			}
+			
+			text {
+				font-size: 28rpx;
+				color: #333;
+			}
+		}
+	}
+	
+	.more-menu {
+		position: relative;
+	}
+	
+	.floating-menu {
+		position: absolute;
+		top: 100%;
+		right: 0;
+		background-color: #fff;
+		border-radius: 8rpx;
+		box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+		z-index: 999;
+		margin-top: 10rpx;
+		min-width: 160rpx;
+		
+		&::before {
+			content: '';
+			position: absolute;
+			top: -16rpx;
+			right: 24rpx;
+			border: 8rpx solid transparent;
+			border-bottom-color: #fff;
+		}
+		
+		.menu-item {
+			padding: 20rpx 32rpx;
+			text-align: center;
+			
+			&:active {
+				background-color: #f5f5f5;
+			}
+			
+			text {
+				font-size: 28rpx;
+				color: #333;
+				white-space: nowrap;
 			}
 		}
 	}

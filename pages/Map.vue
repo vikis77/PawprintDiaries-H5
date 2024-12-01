@@ -1,58 +1,47 @@
 <template>
 	<view class="container">
 		<view class="layout">
-			<uni-section class="t9zhgf" title="寻猫日迹" subTitle="" titleFontSize="40rpx" type="line">
-				<view class="t9h89ho">
+			<uni-section class="header-section" title="寻猫日迹" type="line">
+				<view class="search-container">
 					<!-- 第一行 -->
-					<uni-row class="r89yu" :gutter="0" :width="730">
+					<uni-row class="search-row" :gutter="0" :width="730">
 						<uni-col :span="24">
-							<view class="t89hfws">
-								<image class="tzx8hh" src="../static/猫爪.png" mode="aspectFill"></image>
-								<text class="t7uj9">选择区域：</text>
-							</view>
-							<!-- //选择器 -->
-							<view class="t8hj0i">
-								<uni-data-select
-									placeholder="请选择区域"
-									v-model="selectedValueA"
-									:localdata="dataListArea"
-									@change="onAreaChange"
-								></uni-data-select>
-							</view>
-						</uni-col>
-						<uni-col :span="0">
-							
-						</uni-col>
-						<uni-col :span="0">
-							<view class="t98h9uh">
-								<!-- <text class="t98h9">常居地：xxx</text> -->
-								<!-- <button class="b9yh" @click="chooseImage">选择图片</button> -->
+							<view class="search-item">
+								<view class="icon-label">
+									<image class="icon" src="../static/time.png" mode="aspectFill"/>
+									<text class="label">选择日期</text>
+								</view>
+								<!-- 时间选择器 -->
+								<view class="picker-container">
+									<uni-datetime-picker 
+										type="date"
+										placeholder="请选择日期"
+										v-model="selectedDate"
+										@change="onDateChange"
+										start="2024-01-01"
+										end="2024-12-31"
+									/>
+								</view>
 							</view>
 						</uni-col>
 					</uni-row>
 					<!-- 第二行 -->
-					<uni-row class="r89yu" :gutter="0" :width="730">
+					<uni-row class="search-row" :gutter="0" :width="730">
 						<uni-col :span="24">
-							<view class="t89hfws">
-								<image class="tzx8hh" src="../static/布偶猫-稀有色.png" mode="aspectFill"></image>
-								<text class="t7uj9">选择小猫：</text>
-							</view>
-							<!-- //选择器 -->
-							<view class="t8hj0i"> 
-								<uni-data-select
-									placeholder="请选择小猫"
-									v-model="selectedValueC"
-									:localdata="dataListCat"
-									@change="onCatChange"
-								></uni-data-select>
-							</view>
-						</uni-col>
-						<uni-col :span="0">
-							
-						</uni-col>
-						<uni-col :span="0">
-							<view class="t98h9uh">
-								<!-- <text class="t98h9">常居地：xxx</text> -->
+							<view class="search-item">
+								<view class="icon-label">
+									<image class="icon" src="../static/布偶猫-稀有色.png" mode="aspectFill"/>
+									<text class="label">选择小猫</text>
+								</view>
+								<!-- 选择器 -->
+								<view class="picker-container">
+									<uni-data-select
+										placeholder="请选择小猫"
+										v-model="selectedValueC"
+										:localdata="dataListCat"
+										@change="onCatChange"
+									></uni-data-select>
+								</view>
 							</view>
 						</uni-col>
 					</uni-row>
@@ -61,9 +50,8 @@
 			
 			<!-- 地图1 -->
 			<div class="m23rhj" id="mymap"></div> 
-			<view class="t9gh9hu">
-				<image class="i69yhu9" src="../static/mapLogo.png" mode=""></image>
-			</view>
+			<!-- 地图logo -->
+			<img class="t9gh9hu" src="../static/mapLogo.png" mode="aspectFill"></img>
 			<!-- 地图2 -->
 			<div class="m23rh0" id="mymap2"></div>
 			
@@ -181,8 +169,7 @@
 			text: '更多 X',
 			active: false
 		}]
-	);
-	
+	);	
 	
 	function trigger(e) {
 		if (!token.value) {
@@ -240,99 +227,128 @@
 	const path = ref([]) //
 	const mapDrawMode = ref(''); // 'point' 表示画全部猫猫点，'line' 表示画单只猫线
 	
+	// 存储请求到的数据
 	const responseData = ref()
-	// 区域选择器
-	const dataListArea = ref([
-		{"text":"全部","value":80},
-		{"text":"北门（待开发）","value":82},
-		{"text":"岐头（待开发）","value":63},
-		{"text":"凤翔（待开发）","value":86},
-		{"text":"厚德楼（待开发）","value":65},
-		{"text":"香晖苑（待开发）","value":79},
-		{"text":"2-4栋教学楼（待开发）","value":82},
-		{"text":"朝晖苑（待开发）","value":63},
-		{"text":"体育馆（待开发）","value":86},
-		{"text":"图书馆（待开发）","value":65},
-		{"text":"实验楼（待开发）","value":79}
-	]);
-	const selectedValueA = ref(80); 
-	const onAreaChange = (e) => {
-		if (e === 80){ //全部
-			selectedValueC.value = null;
-			uni.request({
-				url: `${API_general_request_url.value}/api/cat/findCoordinate`,
-				method: "GET",
-				success: (response) => {
-					if (response.statusCode === 200 && response.data.code === "2000") {
-						responseData.value = response.data.data;
-						console.log(responseData.value);
-						mapDrawMode.value = 'point';
-						path.value = responseData.value.map(item => [
-						  parseFloat(item.longitude.toFixed(6)), // 保留经度的前6位
-						  parseFloat(item.latitude.toFixed(6)),  // 同样保留纬度的前6位
-						  item.catName
-						]);
-						console.log(path.value);
-						map1.clearMap() //清空地图旧绘画
-						map2.clearMap() 
-						mapDraw() //重新绘制地图
-					} else {
-						uni.showToast({
-						title: res.data.msg || '全部小猫最新坐标失败',
-						icon: 'none'
-						});
-					}
-				},
-				fail: () => {
-					uni.showToast({
-						title: '请求全部小猫最新坐标失败，请重试',
-						icon: 'none'
-					});
-				}
-			})
-		}
+
+	// 将时间范围相关的变量和函数改为单日
+	const selectedDate = ref('');
+
+	// 日期变化处理函数
+	const onDateChange = (date) => {
+		selectedDate.value = date;
+		filterResults();
 	};
 	
 	// 校猫选择器 列表内容
 	const dataListCat = ref(); // text显示文本(猫名)  value选中后的值   disable	是否禁用
-	const selectedValueC = ref(); // 选中的猫
+	const selectedValueC = ref('all'); // 选中的猫
 	// 点击选中某只小猫，发送请求，小猫最近10条坐标
 	const onCatChange = (e) => { // e 即选中的小猫的value 也是catId
 	  console.log('Selected value: ', e);
-	  selectedValueA.value = null;
-	  uni.request({
-	  	url: `${API_general_request_url.value}/api/cat/findCoordinateByPage?catId=${e}`,
-		method: 'GET',
-		success: (response) => {
-			if (response.statusCode === 200 && response.data.code === "2000") {
-				path.value = response.data.data.records.map(item => [
-					parseFloat(item.longitude.toFixed(6)), // 保留经度的前6位
-					parseFloat(item.latitude.toFixed(6)),  // 同样保留纬度的前6位
-					item.catName
-				])
-				// console.log(response.data.data)
-				mapDrawMode.value = 'line'
-				map1.clearMap() //清空地图旧绘画
-				map2.clearMap() 
-				mapDraw() //重新绘制地图
-				console.log(path.value)
-			} else {
-				uni.showToast({
-				title: res.data.msg || '某只小猫最新坐标失败',
-				icon: 'none'
-				});
-			}
-		},
-		fail: () => {
-			uni.showToast({
-				title: '请求某只小猫最新坐标失败，请重试',
-				icon: 'none'
-			});
-		}
-	  })
+	  selectedValueC.value = e;
+	  filterResults();
 	};
 	
+	// 联动筛选方法
+	const filterResults = () => {
+	  // 如果没有选择日期且猫咪选择的是all,显示所有猫咪最新位置
+	  if (!selectedDate.value && (selectedValueC.value === 'all' || selectedValueC.value === '')) {
+	    uni.request({
+	      url: `${API_general_request_url.value}/api/cat/findCoordinate`,
+	      method: "GET",
+	      success: (response) => {
+	        if (response.statusCode === 200 && response.data.code === "2000") {
+	          responseData.value = response.data.data;
+	          mapDrawMode.value = 'point';
+	          path.value = responseData.value.map(item => [
+	            parseFloat(item.longitude.toFixed(6)),
+	            parseFloat(item.latitude.toFixed(6)),
+	            item.catName
+	          ]);
+	          map1.clearMap();
+	          map2.clearMap();
+	          mapDraw();
+	        }
+	      }
+	    });
+	    return;
+	  }
 
+	  // 构建请求参数
+	  let url = `${API_general_request_url.value}/api/cat/`;
+	  let params = {};
+	  
+	  if (selectedDate.value && selectedValueC.value !== 'all' && selectedValueC.value !== '') {
+	    // 同时选择了日期和具体猫咪
+	    url += 'findCoordinateByDateAndCat';
+	    params = {
+	      date: selectedDate.value,
+	      catId: selectedValueC.value
+	    };
+	  } else if (selectedDate.value) {
+	    // 只选择了日期
+	    url += 'findCoordinateByDate';
+	    params = { date: selectedDate.value };
+	  } else if (selectedValueC.value !== 'all' && selectedValueC.value !== '') {
+	    // 只选择了具体猫咪
+	    url += 'findCoordinateByPage';
+	    params = { catId: selectedValueC.value };
+	  }
+
+	  uni.request({
+	    url: url,
+	    method: "GET", 
+	    data: params,
+	    success: (response) => {
+	      if (response.statusCode === 200 && response.data.code === "2000") {
+	        responseData.value = response.data.data;
+	        // 如果是查询具体猫咪的轨迹(无论是否选择日期)
+	        if (selectedValueC.value !== 'all' && selectedValueC.value !== '') {
+	          mapDrawMode.value = 'line';
+	          // 如果有日期和猫咪ID,直接使用返回数据
+	          if(selectedDate.value) {
+	            path.value = Array.isArray(responseData.value) ?
+	              responseData.value.map(item => [
+	                parseFloat(item.longitude.toFixed(6)),
+	                parseFloat(item.latitude.toFixed(6)),
+	                item.catName
+	              ]) :
+	              [[
+	                parseFloat(responseData.value.longitude.toFixed(6)),
+	                parseFloat(responseData.value.latitude.toFixed(6)), 
+	                responseData.value.catName
+	              ]];
+	          } else {
+	            // 只有猫咪ID时使用records数据
+	            path.value = response.data.data.records.map(item => [
+	              parseFloat(item.longitude.toFixed(6)),
+	              parseFloat(item.latitude.toFixed(6)),
+	              item.catName
+	            ]);
+	          }
+	        } else {
+	          // 只选择日期或全部显示时显示点
+	          mapDrawMode.value = 'point';
+	          path.value = Array.isArray(responseData.value) ?
+	            responseData.value.map(item => [
+	              parseFloat(item.longitude.toFixed(6)),
+	              parseFloat(item.latitude.toFixed(6)),
+	              item.catName
+	            ]) :
+	            [[
+	              parseFloat(responseData.value.longitude.toFixed(6)),
+	              parseFloat(responseData.value.latitude.toFixed(6)),
+	              responseData.value.catName
+	            ]];
+	        }
+	        map1.clearMap();
+	        map2.clearMap();
+	        mapDraw();
+	      }
+	    }
+	  });
+	};
+	
 	onShow(() => {
 		// 查询全部小猫信息
 		uni.request({
@@ -341,10 +357,17 @@
 		  success: (res) => {
 					console.log(res.data.data)
 					if (res.statusCode === 200 && res.data.code === '2000') {
-						dataListCat.value = res.data.data.map(item =>({ // 将API返回的数据赋值给dataListCat
-							text: item.catname, // 使用猫名作为文本
-							value: item.catId   // 使用猫的ID
-						}));
+						// 添加"全部"选项作为第一个选项
+						dataListCat.value = [{
+							text: '全部',
+							value: 'all'
+						}];
+						
+						// 将API返回的数据添加到列表中
+						dataListCat.value.push(...res.data.data.map(item =>({
+							text: item.catname,
+							value: item.catId
+						})));
 						console.log(dataListCat.value)
 						uni.setStorageSync("catList",res.data.data); // 同步存储整个猫猫列表信息
 					}
@@ -639,6 +662,88 @@
 </script>
 
 <style lang="scss" scoped>
+.header-section {
+	height: 15%;
+	background: linear-gradient(to right, #fef6f7, #ffeff6);
+	border-radius: 15px;
+	margin: 20rpx;
+	padding: 20rpx;
+	box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
+	
+	::v-deep .uni-section-header {
+		padding: 20rpx 0;
+		
+		.uni-section__header-title {
+			font-size: 36rpx;
+			font-weight: bold;
+			color: #ff6b81;
+		}
+	}
+}
+
+.search-container {
+	// height: 10%;
+	padding: 0rpx 20rpx;
+}
+
+.search-row {
+	// height: 10rpx;
+	margin-bottom: 30rpx;
+	
+	&:last-child {
+		margin-bottom: 10rpx;
+	}
+}
+
+.search-item {
+	height: 50rpx;
+	display: flex;
+	align-items: center;
+	background-color: #fff;
+	padding: 10rpx;
+	border-radius: 12rpx;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.icon-label {
+	display: flex;
+	align-items: center;
+	margin-right: 20rpx;
+	min-width: 180rpx;
+}
+
+.icon {
+	width: 40rpx;
+	height: 40rpx;
+	margin-right: 10rpx;
+}
+
+.label {
+	font-size: 28rpx;
+	color: #666;
+}
+
+.picker-container {
+	flex: 1;
+	
+	::v-deep .uni-date {
+		width: 100%;
+		
+		.uni-date-editor {
+			border: 1px solid #eee;
+			border-radius: 8rpx;
+			padding: 10rpx 20rpx;
+		}
+	}
+	
+	::v-deep .uni-data-select {
+		.uni-select {
+			border: 1px solid #eee;
+			border-radius: 8rpx;
+			padding: 10rpx 20rpx;
+		}
+	}
+}
 	// 去除地图logo
 	::v-deep .amap-logo {
 	  opacity: 0 !important;
@@ -648,7 +753,7 @@
 	}
 	.container{
 		width: 750rpx;
-		height: 91vh;
+		height: 93.5vh;
 		padding-top: 10rpx;
 		
 		.layout{
@@ -661,7 +766,7 @@
 			overflow: hidden;
 			.t9zhgf{
 				width: 100%;
-				height: 300rpx;
+				height: 20%;
 				margin-bottom: 10rpx;
 				background-color: #eef1f6;
 				// background: linear-gradient(to right, #becef8, #c7e2f6);
@@ -726,20 +831,20 @@
 			
 			.m23rhj{ //地图1
 				width: 100%;
-				height: 550rpx;
+				height: 35%;
 			}
 			.t9gh9hu{ //间隔
 				width: 100%;
-				height: 50rpx;
-				background-color: #f1f7fb;
-				.i69yhu9{
-					width: 55%;
-					height: 40rpx;
+				// height: 20rpx;
+				background-color: #f1f7fb;	
+				.i69yhu9{ // 图片
+					// width: 55%;
+					height: 0rpx;
 				}
 			}
 			.m23rh0{ //地图2
 				width: 100%;
-				height: 600rpx;
+				height: 40%;
 			}
 			::v-deep .mapLabelInfo {
 			    color: #414141; /* 字体颜色 */

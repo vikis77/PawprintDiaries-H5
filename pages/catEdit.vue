@@ -1,91 +1,161 @@
 <template>
 	<view class="container">
 		<view class="layout">
-			<!-- 头部 -->
-			<view class="t1">
-				<uni-row class="t9zdf" :width="750">
-					<uni-col class="tpk0u" :span="8">
-						<img src="../static/返回.png" alt="" @click="handleGoback" class="img"/>
+			<!-- 头部导航 -->
+			<view class="header">
+				<uni-row class="header-row" :width="750">
+					<uni-col :span="8" class="header-left">
+						<img src="../static/返回.png" @click="handleGoback" class="header-icon"/>
 					</uni-col>
-					<uni-col class="tgq89" :span="8">
-						<view class="t9gh9gh9">
-							<text>猫猫编辑</text>
-						</view>
+					<uni-col :span="8" class="header-center">
+						<text class="header-title">猫猫编辑</text>
 					</uni-col>
-					<uni-col class="t56f7" :span="8">
-						<img src="../static/更多.png" alt="" />
+					<uni-col :span="8" class="header-right">
+						<image src="../static/更多.png" class="header-icon"/>
 					</uni-col>
 				</uni-row>
 			</view>
 			
-			<view class="v43ta">
-				<!-- 基础用法，不包含校验规则 -->
-				<uni-forms ref="baseForm" :modelValue="catBaseFormData">
-					<uni-forms-item label="猫名" required>
-						<uni-easyinput v-model="catBaseFormData.catname" placeholder="请输入姓名" />
-					</uni-forms-item>
-					<!-- 上传头像 -->
-					<uni-forms-item label="头像" required class="hu00h">
-						<uni-file-picker
-							mode="image"
-							:file-mediatype="['image']"
-							limit="1"
-							:auto-upload = "false"
-							:file-list="catBaseFormData.avatar"
-							@upload-success="onUploadSuccess"
-							@upload-fail="onUploadFail"
-							@select="selectAvator"
-						>
-							<view v-if="catBaseFormData.avatar.length > 0">
-								<image :src="`${pic_general_request_url}/cat_avatar/${catBaseFormData.avatar}`" mode="aspectFill" class="avatar-preview" />
-							</view>
-							<view v-else class="upload-placeholder">点击上传头像</view>
-							<view>如上传新头像，不需要等待上传，继续填写，提交即可</view>
-						</uni-file-picker>
-					</uni-forms-item>
-					<uni-forms-item label="年龄(月)" required>
-						<uni-easyinput v-model="catBaseFormData.age" placeholder="请输入年龄" />
-					</uni-forms-item>
-					<uni-forms-item label="性别" required>
-						<uni-data-checkbox v-model="catBaseFormData.gender" :localdata="sexs" />
-					</uni-forms-item>
-					<uni-forms-item label="种类" required>
-						<uni-easyinput v-model="catBaseFormData.gender" placeholder="请输入品种" />
-					</uni-forms-item>
-					<uni-forms-item label="常住地" required>
-						<uni-easyinput v-model="catBaseFormData.area" placeholder="请输入区域" />
-					</uni-forms-item>
-					<uni-forms-item label="绝育" required>
-						<uni-data-checkbox v-model="catBaseFormData.sterilizationStatus" :localdata="sterilizationStatusList" />
-					</uni-forms-item>
-					<uni-forms-item label="疫苗" required>
-						<uni-data-checkbox v-model="catBaseFormData.vaccinationStatus" :localdata="vaccinationStatusList" />
-					</uni-forms-item>
-					<uni-forms-item label="健康状态" required>
-						<uni-data-checkbox v-model="catBaseFormData.healthStatus" :localdata="healthStatusList" />
-					</uni-forms-item>
-					<uni-forms-item label="性格" required>
-						<uni-easyinput v-model="catBaseFormData.catCharacter" placeholder="请输入猫猫性格" />
-					</uni-forms-item>
-					<uni-forms-item label="食物偏好" required>
-						<uni-easyinput v-model="catBaseFormData.food" placeholder="请输入偏好" />
-					</uni-forms-item>
-					<uni-forms-item label="忌讳" required>
-						<uni-easyinput v-model="catBaseFormData.taboo" placeholder="请输入忌讳" />
-					</uni-forms-item>
-					<uni-forms-item label="不良行为记录">
-						<uni-easyinput type="textarea" v-model="catBaseFormData.badRecord" placeholder="请输入不良行为记录" />
-					</uni-forms-item>
-					<uni-forms-item label="撸猫指南">
-						<uni-easyinput type="textarea" v-model="catBaseFormData.catGuide" placeholder="请输入撸猫指南" />
-					</uni-forms-item>
-					<uni-forms-item label="生日">
-						<uni-datetime-picker type="datetime" return-type="timestamp" v-model="catBaseFormData.brithday"/>
-					</uni-forms-item>
+			<!-- 表单区域 -->
+			<view class="form-container">
+				<uni-forms ref="baseForm" :modelValue="catBaseFormData" class="cat-form">
+					<!-- 基本信息 -->
+					<view class="form-section">
+						<view class="section-title">基本信息</view>
+						<uni-forms-item label="猫名" required>
+							<uni-easyinput 
+								v-model="catBaseFormData.catname" 
+								placeholder="请输入姓名"
+								class="custom-input"
+							/>
+						</uni-forms-item>
+						
+						<uni-forms-item label="头像" required class="avatar-item">
+							<uni-file-picker
+								mode="image"
+								:file-mediatype="['image']"
+								limit="1"
+								:auto-upload="false"
+								:file-list="catBaseFormData.avatar"
+								@upload-success="onUploadSuccess"
+								@upload-fail="onUploadFail"
+								@select="selectAvator"
+								class="avatar-picker"
+							>
+								<view v-if="catBaseFormData.avatar.length > 0" class="avatar-preview-container">
+									<image 
+										:src="`${pic_general_request_url}/cat_avatar/${catBaseFormData.avatar}`" 
+										mode="aspectFill" 
+										class="avatar-preview"
+									/>
+								</view>
+								<view v-else class="avatar-placeholder">
+									<uni-icons type="camera-filled" size="24" color="#999"/>
+									<text class="placeholder-text">点击上传头像</text>
+								</view>
+								<text class="upload-tip">如上传新头像，不需要等待上传，继续填写，提交即可</text>
+							</uni-file-picker>
+						</uni-forms-item>
+						
+						<uni-forms-item label="年龄" required>
+							<uni-easyinput 
+								v-model="catBaseFormData.age" 
+								placeholder="请输入年龄(月)"
+								class="custom-input"
+							/>
+						</uni-forms-item>
+						
+						<uni-forms-item label="性别" required>
+							<uni-data-checkbox 
+								v-model="catBaseFormData.gender" 
+								:localdata="sexs"
+								class="custom-checkbox"
+							/>
+						</uni-forms-item>
+					</view>
+					
+					<!-- 健康信息 -->
+					<view class="form-section">
+						<view class="section-title">健康信息</view>
+						<uni-forms-item label="绝育情况" required>
+							<uni-data-checkbox 
+								v-model="catBaseFormData.sterilizationStatus" 
+								:localdata="sterilizationStatusList"
+								class="custom-checkbox"
+							/>
+						</uni-forms-item>
+						
+						<uni-forms-item label="疫苗接种" required>
+							<uni-data-checkbox 
+								v-model="catBaseFormData.vaccinationStatus" 
+								:localdata="vaccinationStatusList"
+								class="custom-checkbox"
+							/>
+						</uni-forms-item>
+						
+						<uni-forms-item label="健康状态" required>
+							<uni-data-checkbox 
+								v-model="catBaseFormData.healthStatus" 
+								:localdata="healthStatusList"
+								class="custom-checkbox"
+							/>
+						</uni-forms-item>
+					</view>
+					
+					<!-- 性格与习性 -->
+					<view class="form-section">
+						<view class="section-title">性格与习性</view>
+						<uni-forms-item label="性格特征" required>
+							<uni-easyinput 
+								v-model="catBaseFormData.catCharacter" 
+								placeholder="请描述猫猫性格"
+								class="custom-input"
+							/>
+						</uni-forms-item>
+						
+						<uni-forms-item label="食物偏好" required>
+							<uni-easyinput 
+								v-model="catBaseFormData.food" 
+								placeholder="喜欢吃什么呢？"
+								class="custom-input"
+							/>
+						</uni-forms-item>
+						
+						<uni-forms-item label="禁忌" required>
+							<uni-easyinput 
+								v-model="catBaseFormData.taboo" 
+								placeholder="有什么需要注意的吗？"
+								class="custom-input"
+							/>
+						</uni-forms-item>
+					</view>
+					
+					<!-- 其他信息 -->
+					<view class="form-section">
+						<view class="section-title">其他信息</view>
+						<uni-forms-item label="不良记录">
+							<uni-easyinput 
+								type="textarea" 
+								v-model="catBaseFormData.badRecord" 
+								placeholder="记录一下不良行为..."
+								class="custom-textarea"
+							/>
+						</uni-forms-item>
+						
+						<uni-forms-item label="撸猫指南">
+							<uni-easyinput 
+								type="textarea" 
+								v-model="catBaseFormData.catGuide" 
+								placeholder="如何正确撸猫呢..."
+								class="custom-textarea"
+							/>
+						</uni-forms-item>
+					</view>
 					
 					<!-- 提交按钮 -->
 					<view class="form-buttons">
-						<button type="primary" @click="submitForm">提交</button>
+						<button class="submit-btn" @click="submitForm">保存修改</button>
+						<button class="cancel-btn" @click="handleGoback">取消</button>
 					</view>
 				</uni-forms>
 			</view>
@@ -226,195 +296,283 @@
 		console.error('上传失败:', error);
 	};
 	
-	// 提交表单
+	// 处理提交表单
 	const submitForm = async() => {
-		// catBaseFormData.value.avatar = selectedTempFiles.value.name;
-		const baseForm = catBaseFormData.value;
-		console.log(catBaseFormData.value.avatar)
 		const token = uni.getStorageSync('token');  
 		if (!token) {  
 			uni.showToast({  
-				title: '未找到有效的登录令牌',  
-				icon: 'error'  
+			title: '未找到有效的登录令牌',  
+			icon: 'error'  
 			});  
 			return;  
 		}  
-	  
+
 		try {  
-			// 只有选择新头像才进行上传
-			if (selectedTempFilePaths.value != null) {
-				// 获取上传凭证
-				const response = await uni.request({  
-					url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,  
-					method: 'GET',  
-					header: {  
-						'Authorization': `Bearer ${token}`  
-					}  
-				});  
-					  
-				if (response.statusCode !== 200 || response.data.code !== '2000') {  
-					throw new Error('获取上传凭证失败');  
+			let postData = {
+			'catId': catBaseFormData.value.catId,
+			'catname': catBaseFormData.value.catname,
+			'gender': catBaseFormData.value.gender,
+			'age': catBaseFormData.value.age,
+			'brithday': catBaseFormData.value.datetimesingle,
+			'food': catBaseFormData.value.food,
+			'taboo': catBaseFormData.value.taboo,
+			'catCharacter': catBaseFormData.value.catCharacter,
+			'healthStatus': catBaseFormData.value.healthStatus,
+			'sterilizationStatus': catBaseFormData.value.sterilizationStatus,
+			'vaccinationStatus': catBaseFormData.value.vaccinationStatus,
+			'badRecord': catBaseFormData.value.badRecord,
+			'area': catBaseFormData.value.area,
+			'catGuide': catBaseFormData.value.catGuide
+			};
+
+			// 只有在选择了新头像时才处理头像上传
+			if (selectedTempFiles.value && selectedTempFiles.value.length > 0) {
+			// 获取上传凭证
+			const response = await uni.request({  
+				url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,  
+				method: 'GET',  
+				header: {  
+				'Authorization': `Bearer ${token}`  
 				}  
-					  
-				const uploadToken = response.data.data.qiniuToken;  
-					  
-				// 上传文件到七牛云  
-				const uploadPromises = selectedTempFiles.value.map(file => {  
-					return new Promise((resolve, reject) => {  
-						uni.uploadFile({  
-							url: 'https://upload-z2.qiniup.com',  
-							filePath: file.path,  
-							name: 'file',  
-							formData: {  
-								token: uploadToken,  
-								key: `catcat/cat_avatar/${file.name}`  
-							},  
-							success: (uploadRes) => {  
-								if (uploadRes.statusCode === 200) {  
-									resolve(uploadRes);  
-								} else {  
-									reject(new Error('图片上传失败'));  
-								}  
-							},  
-							fail: (err) => {  
-								reject(err);  
-							}  
-						});  
-					});  
-				});  
-					  
-				// 等待所有文件上传完成  
-				const uploadResults = await Promise.all(uploadPromises);  
-				console.log('所有图片上传成功:', uploadResults);
+			});  
 				
-				// 猫猫信息持久化
-				const postResponse = await uni.request({  
-					url: `${API_general_request_url.value}/api/cat/update`,  
-					method: 'POST',  
-					header: {  
-						'Authorization': `Bearer ${token}`,
-						'Content-Type': 'application/json'  // 添加 Content-Type 声明
-					},  
-					data: {
-						'catId': catBaseFormData.value.catId, // 猫 ID
-						'catname': catBaseFormData.value.catname, // 猫名
-						'gender': catBaseFormData.value.gender, // 性别 (1: 雄性, 0: 雌性)
-						'age': catBaseFormData.value.age, // 年龄 (单位: 月)
-						'brithday': catBaseFormData.value.datetimesingle, // 生日 (时间戳格式)
-						'avatar': selectedTempFiles.value[0].name, // 头像名
-						'food': catBaseFormData.value.food, // 食物偏好
-						'taboo': catBaseFormData.value.taboo, // 忌讳
-						'catCharacter': catBaseFormData.value.catCharacter, // 性格
-						'healthStatus': catBaseFormData.value.healthStatus, // 健康状况
-						'sterilizationStatus': catBaseFormData.value.sterilizationStatus, // 绝育情况
-						'vaccinationStatus': catBaseFormData.value.vaccinationStatus, // 疫苗接种情况
-						'badRecord': catBaseFormData.value.badRecord, // 不良行为记录
-						'area': catBaseFormData.value.area, // 常住地
-						'catGuide': catBaseFormData.value.catGuide // 撸猫指南
-					},
+			if (response.statusCode !== 200 || response.data.code !== '2000') {  
+				throw new Error('获取上传凭证失败');  
+			}  
+				
+			const uploadToken = response.data.data.qiniuToken;  
+			
+			// 上传文件到七牛云  
+			const uploadRes = await new Promise((resolve, reject) => {  
+				uni.uploadFile({  
+				url: 'https://upload-z2.qiniup.com',  
+				filePath: selectedTempFiles.value[0].path,  
+				name: 'file',  
+				formData: {  
+					token: uploadToken,  
+					key: `catcat/cat_avatar/${selectedTempFiles.value[0].name}`  
+				},  
+				success: (res) => {  
+					if (res.statusCode === 200) {  
+					resolve(res);  
+					} else {  
+					reject(new Error('图片上传失败'));  
+					}  
+				},  
+				fail: reject
 				});  
-					  
-				if (postResponse.statusCode === 200 && postResponse.data.code === '2000') {  
-					console.log('已完成持久化猫猫', postResponse);  
-					uni.showToast({  
-						title: '提交成功',  
-						icon: 'success'  
-					});  
-					uni.navigateBack()
-				} else {  
-					console.log('无法持久化', postResponse);  
-					uni.showToast({  
-						title: '提交失败',  
-						icon: 'error'  
-					});  
+			});
+
+			// 添加头像信息到请求数据
+			postData.avatar = selectedTempFiles.value[0].name;
+			}
+
+			// 提交更新请求
+			const postResponse = await uni.request({  
+			url: `${API_general_request_url.value}/api/cat/update`,  
+			method: 'POST',  
+			header: {  
+				'Authorization': `Bearer ${token}`,
+				'Content-Type': 'application/json'
+			},  
+			data: postData
+			});  
+			
+			if (postResponse.statusCode === 200 && postResponse.data.code === '2000') {  
+			// 先显示提示
+			await new Promise((resolve) => {
+				uni.showToast({  
+				title: '提交成功',  
+				icon: 'success',
+				duration: 600,
+				success: () => {
+					setTimeout(resolve, 600); // 等待提示显示完成
 				}
+				});  
+			});
+			
+			// 提示完成后再返回
+			uni.navigateBack();
+			} else {  
+			throw new Error(postResponse.data.msg || '提交失败');
 			}
 		} catch (error) {  
 			console.error('提交过程中发生错误:', error);  
 			uni.showToast({  
-				title: '提交失败',  
-				icon: 'error'  
+			title: error.message || '提交失败',  
+			icon: 'error'  
 			});  
 		}  
-		
-		console.log('表单数据:', baseForm);
-		uni.showToast({ title: '提交成功', icon: 'success' });
-		
-		
-	};
+		};
 </script>
 
 <style lang="scss" scoped>
-	.container{
-		width: 750rpx;
-		height: 100vh;
-		.layout{
-			width: 100%;
-			height: 100%;
-			// background-color: #55ff7f;
-			.t1{ //t头部
-				width: 100%;
-				height: 200rpx;
+.container {
+	min-height: 100vh;
+	background-color: #f5f7fa;
+	
+	.header {
+		position: sticky;
+		top: 0;
+		z-index: 100;
+		background-color: #fff;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+		
+		&-row {
+			height: 180rpx;
+			display: flex;
+			align-items: center;
+		}
+		
+		&-icon {
+			width: 48rpx;
+			height: 48rpx;
+		}
+		
+		&-title {
+			font-size: 36rpx;
+			font-weight: 600;
+			color: #333;
+		}
+		
+		&-left, &-center, &-right {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+	}
+	
+	.form-container {
+		padding: 30rpx;
+		
+		.cat-form {
+			background: #fff;
+			border-radius: 16rpx;
+			padding: 40rpx 30rpx;
+			box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+		}
+		
+		.form-section {
+			margin-bottom: 48rpx;
+			
+			.section-title {
+				font-size: 32rpx;
+				font-weight: 600;
+				color: #333;
+				margin-bottom: 24rpx;
+				padding-left: 16rpx;
+				border-left: 6rpx solid #8d5da3;
+			}
+		}
+		
+		.custom-input {
+			background-color: #f8f9fa;
+			border-radius: 8rpx;
+			border: 2rpx solid #e9ecef;
+			
+			:deep(input) {
+				font-size: 28rpx;
+				color: #495057;
+			}
+		}
+		
+		.custom-textarea {
+			background-color: #f8f9fa;
+			border-radius: 8rpx;
+			border: 2rpx solid #e9ecef;
+			min-height: 180rpx;
+			
+			:deep(textarea) {
+				font-size: 28rpx;
+				color: #495057;
+			}
+		}
+		
+		.custom-checkbox {
+			:deep(.uni-data-checklist) {
 				display: flex;
-				.t9zdf{ // uni-row
-					width: 100%;
-					height: 200rpx;
-					display: flex;
-					// align-items: center;
-					.tpk0u{ //返回
-						width: 100%;
-						height: 200rpx;
-						display: flex;
-						align-items: center;
-						justify-content: center;
-						img{
-							width: 60rpx;
-							height: 60rpx;
-						}
-					}
-					.tgq89{ // 中间文字
-						width: 100%;
-						height: 200rpx;
-						display: flex;
-						align-items: center;
-						justify-content: center;
-						text{
-							font-size: 40rpx;
-							color: #333333;
-						}
-					}
-					.t56f7{ // 更多按钮
-						width: 100%;
-						height: 200rpx;
-						display: flex;
-						align-items: center;
-						justify-content: center;
-						img{
-							width: 60rpx;
-							height: 60rpx;
-						}
-					}
-				}
+				flex-wrap: wrap;
+				gap: 16rpx;
+			}
+		}
+		
+		.avatar-item {
+			.avatar-preview {
+				width: 180rpx;
+				height: 180rpx;
+				border-radius: 90rpx;
+				object-fit: cover;
 			}
 			
-			.v43ta{ // 表单区域
-				margin-left: 40rpx;
-				width: 90%;
+			.avatar-placeholder {
+				width: 180rpx;
+				height: 180rpx;
+				border-radius: 90rpx;
+				background-color: #f8f9fa;
+				border: 2rpx dashed #ced4da;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 8rpx;
+			}
+			
+			.placeholder-text {
+				font-size: 24rpx;
+				color: #6c757d;
+			}
+			
+			.upload-tip {
+				font-size: 24rpx;
+				color: #6c757d;
+				margin-top: 8rpx;
+			}
+		}
+		
+		.form-buttons {
+			margin-top: 60rpx;
+			display: flex;
+			gap: 24rpx;
+			padding: 0 40rpx;
+			
+			button {
+				flex: 1;
+				height: 88rpx;
+				border-radius: 44rpx;
+				font-size: 32rpx;
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				// background-color: #333333;
-				.avatar-preview{ // 头像图片
-					max-width: 200rpx;
-					max-height: 200rpx
-				}
-				.hu00h{ // 头像提示上传文字
-					display: flex;
-					align-items: center;
-					justify-content: center;
-				}
-				
+			}
+			
+			.submit-btn {
+				background: linear-gradient(45deg, #8d5da3, #b876d9);
+				color: #fff;
+				border: none;
+			}
+			
+			.cancel-btn {
+				background: #fff;
+				color: #666;
+				border: 2rpx solid #ddd;
 			}
 		}
 	}
+}
+
+// 添加过渡动画
+.form-section {
+	animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(20rpx);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
 </style>

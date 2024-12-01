@@ -215,58 +215,160 @@
 </script>
 
 <style lang="scss" scoped>
-	.container{
-		width: 750rpx;
-		height: 100vh;
-		.layout{
-			width: 95%;
-			height: 100%;
-			padding-left: 20rpx;
-			// background-color: #55ff7f;
-			.t1{ //t头部
+	.container {
+	  width: 750rpx;
+	  height: 100vh;
+	  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
+	  
+	  .layout {
+	    width: 95%;
+	    height: 100%;
+	    padding: 20rpx;
+	    background-color: rgba(255, 255, 255, 0.9);
+	    border-radius: 30rpx;
+	    box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.05);
+	  }
+	}
+	
+	.t1 { //t头部
+		width: 100%;
+		height: 160rpx;
+		background: linear-gradient(to right, #fff, #f8f9fa);
+		border-radius: 20rpx;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+		margin-bottom: 30rpx;
+		.t9zdf{ // uni-row
+			width: 100%;
+			height: 160rpx;
+			display: flex;
+			// align-items: center;
+			.tpk0u{ //返回
 				width: 100%;
-				height: 200rpx;
+				height: 160rpx;
 				display: flex;
-				.t9zdf{ // uni-row
-					width: 100%;
-					height: 200rpx;
-					display: flex;
-					// align-items: center;
-					.tpk0u{ //返回
-						width: 100%;
-						height: 200rpx;
-						display: flex;
-						align-items: center;
-						justify-content: center;
-						img{
-							width: 60rpx;
-							height: 60rpx;
-						}
+				align-items: center;
+				justify-content: center;
+				img{
+					width: 50rpx;
+					height: 50rpx;
+					transition: all 0.3s ease;
+					
+					&:hover {
+						transform: scale(1.1);
 					}
-					.tgq89{ // 中间文字
-						width: 100%;
-						height: 200rpx;
-						display: flex;
-						align-items: center;
-						justify-content: center;
-						text{
-							font-size: 40rpx;
-							color: #333333;
-						}
-					}
-					.t56f7{ // 更多按钮
-						width: 100%;
-						height: 200rpx;
-						display: flex;
-						align-items: center;
-						justify-content: center;
-						img{
-							width: 60rpx;
-							height: 60rpx;
-						}
+				}
+			}
+			.tgq89{ // 中间文字
+				width: 100%;
+				height: 160rpx;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				text{
+					font-size: 36rpx;
+					font-weight: 600;
+					background: linear-gradient(45deg, #2c3e50, #3498db);
+					-webkit-background-clip: text;
+					color: transparent;
+				}
+			}
+			.t56f7{ // 更多按钮
+				width: 100%;
+				height: 160rpx;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				img{
+					width: 50rpx;
+					height: 50rpx;
+					transition: all 0.3s ease;
+					
+					&:hover {
+						transform: scale(1.1);
 					}
 				}
 			}
 		}
+	}
+	
+	::v-deep .uni-section {
+	  .uni-section-header {
+	    padding: 20rpx;
+	    
+	    .uni-section-header__content {
+	      font-size: 32rpx;
+	      font-weight: 600;
+	      color: #2d3436;
+	    }
+	    
+	    .uni-section-header__decoration {
+	      background: linear-gradient(45deg, #0984e3, #74b9ff);
+	    }
+	  }
+	}
+	
+	::v-deep .uni-button {
+	  background: linear-gradient(45deg, #0984e3, #74b9ff);
+	  border: none;
+	  border-radius: 16rpx;
+	  color: #fff;
+	  font-size: 32rpx;
+	  font-weight: 500;
+	  padding: 20rpx 60rpx;
+	  box-shadow: 0 6rpx 20rpx rgba(9, 132, 227, 0.2);
+	  transition: all 0.3s ease;
+	  
+	  &:active {
+	    transform: translateY(2rpx);
+	    box-shadow: 0 4rpx 12rpx rgba(9, 132, 227, 0.15);
+	  }
+	}
+	
+	.example-body {
+	  padding: 30rpx;
+	  background: rgba(255, 255, 255, 0.8);
+	  border-radius: 20rpx;
+	  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+	  
+	  ::v-deep .uni-file-picker {
+	    .uni-file-picker__header {
+	      padding: 20rpx;
+	      background: linear-gradient(to right, #f1f3f5, #f8f9fa);
+	      border-radius: 12rpx;
+	    }
+	    
+	    .is-add {
+	      border: 2rpx dashed #74b9ff;
+	      border-radius: 12rpx;
+	      transition: all 0.3s ease;
+	      
+	      &:hover {
+	        background-color: #f1f3f5;
+	      }
+	    }
+	  }
+	}
+	
+	::v-deep .uni-easyinput {
+	  margin: 20rpx 0;
+	  
+	  .uni-easyinput__content {
+	    background-color: #f8f9fa;
+	    border-radius: 16rpx;
+	    padding: 20rpx;
+	    border: 2rpx solid #e9ecef;
+	    transition: all 0.3s ease;
+	    
+	    &:focus-within {
+	      background-color: #fff;
+	      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+	      border-color: #74b9ff;
+	    }
+	  }
+	  
+	  .uni-easyinput__placeholder-class {
+	    color: #adb5bd;
+	    font-size: 28rpx;
+	  }
 	}
 </style>
