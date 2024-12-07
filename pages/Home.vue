@@ -26,11 +26,11 @@
 					<view class="drawer-body">
 						<uni-drawer ref="showLeft" mode="left" :width="320">
 							<view class="drawer-content">
-								<button plain="ture" class="drawer1" @click="toBeDeveloped">发现好友 X</button>
-								<button plain="ture" class="drawer1" @click="toBeDeveloped">创作中心 X</button>
-								<button plain="ture" class="drawer1" @click="toBeDeveloped">我的草稿 X</button>
-								<button plain="ture" class="drawer1" @click="toBeDeveloped">我的评论 X</button>
-								<button plain="ture" class="drawer1" @click="toBeDeveloped">浏览记录 X</button>
+								<button plain="ture" class="drawer1" @click="handlePostReview">帖子审核</button>
+								<button plain="ture" class="drawer1" @click="handleUserManage">用户管理</button>
+								<!-- <button plain="ture" class="drawer1" @click="toBeDeveloped"></button>
+								<button plain="ture" class="drawer1" @click="toBeDeveloped"></button>
+								<button plain="ture" class="drawer1" @click="toBeDeveloped"></button> -->
 								<button plain="ture" class="drawer1" @click="handleSendPost">发布帖子</button>
 								<button plain="ture" class="drawer1" @click="handleCatManage">猫猫管理</button>
 								<button plain="ture" class="drawer1" @click="handleClickLogin">登录</button>
@@ -53,7 +53,18 @@
 		<uni-notice-bar show-get-more show-icon text="本应用程序为个人项目演示，展开查看声明和帮助。" @getmore="getMore" />
 		
 		<!-- 帖子区 -->
-		<scroll-view :scroll-top="scrollTop" scroll-y="true"  class="layout" show-scrollbar="false" @scroll="handleScroll">
+		<scroll-view 
+			:scroll-top="scrollTop" 
+			scroll-y="true"  
+			class="layout" 
+			show-scrollbar="false" 
+			@scroll="handleScroll"
+			refresher-enabled
+			:refresher-triggered="isTriggered"
+			@refresherpulling="onPulling"
+			@refresherrefresh="onRefresh"
+			@refresherrestore="onRestore"
+		>
 			<view class="content">
 				<view v-for="post in posts" :key="post.postId"  class="box">
 					<image class="pic" :src="`${pic_general_request_url}/post_pics/${post.coverPicture}`" mode="aspectFill" @click="handlerClickPost(post.postId)"></image>
@@ -215,9 +226,48 @@
 		}
 	};
 
+
 	// 页面加载时，获取第一页的帖子数据
 	fetchMorePosts();
 	
+	// 添加刷新相关的响应式变量
+const isTriggered = ref(false);
+
+// 下拉刷新相关方法
+const onPulling = () => {
+  console.log('下拉刷新触发');
+}
+
+const onRefresh = async () => {
+  console.log('正在刷新');
+  isTriggered.value = true;
+  
+  try {
+    // 重置页码
+    curPage.value = 0;
+    // 重新获取数据
+    await fetchMorePosts();
+    
+    uni.showToast({
+      title: '刷新成功',
+      icon: 'success'
+    });
+  } catch (error) {
+    uni.showToast({
+      title: '刷新失败',
+      icon: 'error' 
+    });
+  } finally {
+    // 结束刷新状态
+    isTriggered.value = false;
+  }
+}
+
+const onRestore = () => {
+  console.log('刷新被复位');
+  isTriggered.value = false;
+}
+
 	// 点击查看更多-查看声明帮助
 	const getMore = ()=> {
 		popup.value.open() // 打开声明弹窗
@@ -276,6 +326,21 @@
 				icon: 'error'
 			})
 		}
+
+	// 点击帖子管理
+	const handlePostReview = () => {
+		const token = uni.getStorageSync('token');
+		if (!token) {
+			uni.showToast({
+				title: '请先登录',
+				icon: 'none'
+			});
+			return;
+		}
+		uni.navigateTo({
+			url: '/pages/PostReview'
+		});
+	}
 	
 	// 点击发布帖子
 	function handleSendPost(){
@@ -299,6 +364,21 @@
 			url: '/pages/CatManage?from=home'
 		})
 	}
+
+	// 用户管理
+	const handleUserManage = () => {
+		const token = uni.getStorageSync('token');
+		if (!token) {
+			uni.showToast({
+				title: '请先登录',
+				icon: 'none'
+			});
+			return;
+		}
+		uni.navigateTo({
+			url: '/pages/UserManage'
+		});
+	};
 </script>
 
 <style lang="scss" scoped>
@@ -328,7 +408,10 @@
 					}
 					.drawer-body{
 						.drawer-content{
-							padding-top: 200rpx;
+							height: 100%;
+							display: flex;
+							flex-direction: column;
+							justify-content: center;
 							.drawer1{
 								border: none;
 								padding: 20rpx;

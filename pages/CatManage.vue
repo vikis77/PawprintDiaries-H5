@@ -10,9 +10,9 @@
 					<uni-col :span="8" class="header-center">
 						<text class="header-title">猫猫管理</text>
 					</uni-col>
-					<!-- <uni-col :span="8" class="header-right">
-						<img src="../static/更多.png" class="header-icon" />
-					</uni-col> -->
+					<uni-col :span="8" class="header-right">
+						<img src="../static/猫砂盆.png" @click="handleAdd" class="header-icon" />
+					</uni-col>
 				</uni-row>
 			</view>
 
@@ -30,8 +30,7 @@
 
 					<!-- 猫咪列表 -->
 					<view class="cat-list">
-						<view v-for="(item, index) in gridList.slice(1)" :key="index" class="cat-item"
-							@click="handleClickGrid(item.cat)">
+						<view v-for="(item, index) in gridList.slice(1)" :key="index" class="cat-item" @click="handleClickGrid(item.cat)">
 							<image :src="item.url" class="cat-avatar" mode="aspectFill" />
 							<view class="cat-info">
 								<text class="cat-name">{{ item.text }}</text>
@@ -101,15 +100,9 @@ onShow(() => {
 
 // 点击返回
 const handleGoback = () => {
-	// uni.switchTab({
-	// 	url: '/pages/Home'
-	// })
-
-	// 获取页面参数
 	const pages = getCurrentPages()
 	const currentPage = pages[pages.length - 1]
 	const from = currentPage.$page.options.from
-
 	if (from === 'catclaw') {
 		// 如果是从CatClaw页面来的,返回CatClaw
 		// 先将分段器状态存入storage
@@ -130,6 +123,13 @@ const handleClickGrid = (cat) => {
 	console.log(cat.catId)
 	uni.navigateTo({
 		url: `/pages/Card?catId=${cat.catId}`
+	})
+}
+
+// 添加猫猫
+const handleAdd = () => {
+	uni.navigateTo({
+		url: '/pages/catEdit?mode=add'
 	})
 }
 </script>

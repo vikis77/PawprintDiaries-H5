@@ -1,435 +1,453 @@
 <template>
 	<view class="container">
-		<view class="layout">
-			<!-- 顶部导航搜索返回区 -->
-			<view class="box-top">
-				<view class="back" @click="handlerGoback">
-					<button class="btn1" plain="true">
-						<img src="../static/返回.png" alt="" class="img"/>
-					</button>
-				</view>
-				<view class="search-text">
-					<uni-search-bar v-model="searchValue" placeholder="搜索帖子/猫猫名字/猫猫ID" :focus="true" maxlength="30" @input="input" @confirm="search"></uni-search-bar>
-				</view>
-			</view>
-			<!-- 主体展示区 -->
-			<scroll-view :scroll-top="scrollTop" scroll-y="true"  class="postAreaLayout" show-scrollbar="false" @scroll="handleScroll">
-				<!-- 展示卡片信息 -->
-				<view v-if='catList' class="showCardBox"> <!-- 存在猫猫信息，才进行展示-->
-					<view class="y0hj0"> 
-						<!-- 主题部分 -->
-						<view class="y89yh9"> 
-							<view class="tzz876">
-								<!-- <view v-if="currentArea === 0"> -->
-									<view class="t9x">
-										<!-- 卡片循环区域 -->
-										<view class="Cardlist" >
-											<scroll-view class="ta9u0a" scroll-x="true" >
-												<view class="t42f" >
-													<!-- 循环展示猫猫卡片 -->
-													<view class="t2352" v-for="cat in catList" :key="cat.catId" > 
-														<!-- 猫猫头像 -->
-														<view class="t7908f" @click="handleClickCard(cat.catId)">
-															<image class="img32r" :src="`${pic_general_request_url}/cat_avatar/${cat.avatar}`" mode="aspectFill"></image>
-														</view>
-														<!-- 猫猫信息  -->
-														<view class="t990k" @click="handleClickCard(cat.catId)">
-															<view class="t5grg3">
-																<text class="t2rdf">{{ cat.catname }} - {{ cat.age }}个月 - {{ cat.gender === 1 ? '雄性' : '雌性' }}</text>
-															</view>
-														</view>
-												
-														<!-- 分割线 -->
-														<view class="divider"/>
-														
-														<!-- 热度讨论分享 -->
-														<view class="t79h" @click="toBeDeveloped">
-															<view class="">
-																<uni-icons type="fire" size="18"></uni-icons>
-																热度
-															</view>
-															<view class="">
-																<uni-icons type="chatbubble" size="18"></uni-icons>
-																讨论
-															</view>
-															<view class="">
-																<uni-icons type="paperclip" size="18"></uni-icons>
-																分享
-															</view>
-														</view>
-													</view>
-												</view>
-											</scroll-view>
-										</view>
-									</view>
-								<!-- </view> -->
-							</view>
-						</view>
-					</view>
-				</view>
-				<!-- 帖子展示区 -->
-				<view v-if='posts' class="content"> <!-- 存在帖子信息，才进行展示-->
-					<view v-for="post in posts" :key="post.postId"  class="box">
-						<image class="pic" :src="`${pic_general_request_url}/post_pics/${post.coverPicture}`" mode="aspectFill" @click="handlerClickPost(post.postId)"></image>
-						<view class="text" @click="handlerClickPost(post.postId)">{{ post.title }}</view>
-						<view class="info" @click="toBeDeveloped">
-							<image class="avatar" :src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}`" mode="aspectFill"></image>
-							<text class="nickname">{{ post.authorNickname }}</text>
-							<view class="likes">
-							<image class="like-icon" src="../static/爱心.svg"></image>
-							<text class="like-count">{{ post.likeCount }}</text>
-							</view>
-						</view>
-					</view>
-				</view>
-			</scroll-view>
+	  <view class="layout">
+		<!-- 顶部导航搜索返回区 -->
+		<view class="search-header">
+		  <view class="back-btn" @click="handlerGoback">
+			<img src="../static/返回.png" class="back-icon"/>
+		  </view>
+		  <view class="search-bar">
+			<uni-search-bar
+			  v-model="searchValue"
+			  placeholder="搜索帖子/猫猫名字/猫猫ID"
+			  :focus="true"
+			  maxlength="30"
+			  @input="input"
+			  @confirm="search"
+			  radius="100"
+			  cancelButton="none"
+			  bgColor="#f5f6f7"
+			/>
+		  </view>
 		</view>
+  
+		<!-- 主体内容区 -->
+		<scroll-view 
+		  :scroll-top="scrollTop" 
+		  scroll-y="true"
+		  class="main-content"
+		  show-scrollbar="false"
+		  @scroll="handleScroll"
+		>
+		  <!-- 猫咪卡片展示区 -->
+		  <view v-if="catList && catList.length > 0" class="cat-cards-section">
+			<view class="section-title">相关猫咪</view>
+			<scroll-view 
+			  scroll-x="true"
+			  class="cards-scroll"
+			  show-scrollbar="false"
+			>
+			  <view class="cards-wrapper">
+				<view 
+				  class="cat-card"
+				  v-for="cat in catList" 
+				  :key="cat.catId"
+				  @click="handleClickCard(cat.catId)"
+				>
+				  <image 
+					class="cat-avatar"
+					:src="`${pic_general_request_url}/cat_avatar/${cat.avatar}`"
+					mode="aspectFill"
+				  />
+				  <view class="cat-info">
+					<text class="cat-name">{{ cat.catname }}</text>
+					<text class="cat-detail">{{ cat.age }}个月 · {{ cat.gender === 1 ? '公' : '母' }}</text>
+				  </view>
+				</view>
+			  </view>
+			</scroll-view>
+		  </view>
+  
+		  <!-- 帖子展示区 -->
+		  <view v-if="posts && posts.length > 0" class="posts-section">
+			<view class="section-title">相关帖子</view>
+			<view class="posts-grid">
+			  <view 
+				class="post-card"
+				v-for="post in posts" 
+				:key="post.postId"
+				@click="handlerClickPost(post.postId)"
+			  >
+				<image 
+				  class="post-cover"
+				  :src="`${pic_general_request_url}/post_pics/${post.coverPicture}`"
+				  mode="aspectFill"
+				/>
+				<view class="post-content">
+				  <text class="post-title">{{ post.title }}</text>
+				  <view class="post-footer">
+					<view class="author">
+					  <image 
+						class="author-avatar"
+						:src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}`"
+						mode="aspectFill"
+					  />
+					  <text class="author-name">{{ post.authorNickname }}</text>
+					</view>
+					<view class="likes">
+					  <uni-icons type="heart" size="12" color="#ff6b6b"/>
+					  <text class="like-count">{{ post.likeCount }}</text>
+					</view>
+				  </view>
+				</view>
+			  </view>
+			</view>
+		  </view>
+  
+		  <!-- 无搜索结果展示 -->
+		  <view v-if="(!catList || !catList.length) && (!posts || !posts.length)" class="no-result">
+			<image src="../static/无结果.png" class="no-result-icon"/>
+			<text class="no-result-text">暂无相关搜索结果</text>
+		  </view>
+		</scroll-view>
+	  </view>
 	</view>
-</template>
+  </template>
 
 <script setup>
-	import { ref, onMounted, onUnmounted } from 'vue';
-	import { onLoad } from '@dcloudio/uni-app'; // 导入 onLoad
+	import { ref, onMounted } from 'vue';
+	import { onLoad } from '@dcloudio/uni-app';
+	import uniSearchBar from '@dcloudio/uni-ui/lib/uni-search-bar/uni-search-bar.vue';
 	import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue';
 	
 	const API_general_request_url = ref('');
 	const pic_general_request_url = ref('');
 	if (process.env.NODE_ENV === 'development'){
-		// 图片
 		pic_general_request_url.value = "http://localhost:8000"
-		// 请求
 		API_general_request_url.value = "http://localhost:8080"
 	} else {
-		// 图片
 		pic_general_request_url.value = "https://cdn.luckyiur.com/catcat"
-		// 请求
 		API_general_request_url.value = "https://pawprintdiaries.luckyiur.com"
 	}
 	
 	const catList = ref([]);
 	const posts = ref([]);
 	const searchValue = ref('');
+	const scrollTop = ref(0);
 	
-	// 使用 onLoad 生命周期钩子
+	// 处理滚动事件
+	function handleScroll(e) {
+		scrollTop.value = e.detail.scrollTop;
+	}
+	
+	// 输入事件
+	function input(e) {
+		console.log('input:', e);
+	}
+	
 	onLoad((options) => {
-	    // 确保 options 存在且包含 searchWords
-	    if (options && options.searchWords) {
-	        // 获取并解码传递的参数
-	        searchValue.value = decodeURIComponent(options.searchWords); // 保留搜索词
-	        console.log("接收到的参数 searchWords:", searchValue.value);
-	    } else {
-	        console.log("未接收到搜索词参数");
-	    }
+		if (options && options.searchWords) {
+			searchValue.value = decodeURIComponent(options.searchWords);
+			console.log("接收到的参数 searchWords:", searchValue.value);
+		}
 	});
 	
 	onMounted(() => {
-		const searchResultData = uni.getStorageSync('searchResultData');
-		catList.value = searchResultData.cats;
-		posts.value = searchResultData.posts.records;
-		console.log(catList.value);
-		console.log(posts.value);
+		try {
+			const searchResultData = uni.getStorageSync('searchResultData');
+			if (searchResultData) {
+				// 先处理猫猫数据
+				if (searchResultData.cats && searchResultData.cats.length > 0) {
+					catList.value = searchResultData.cats;
+				}
+				// 再处理帖子数据
+				if (searchResultData.posts && searchResultData.posts.records) {
+					posts.value = searchResultData.posts.records;
+				}
+			}
+		} catch (error) {
+			console.error('获取搜索结果失败:', error);
+		}
 	});
-
 	
-	// 返回
-	function handlerGoback(){
-		uni.navigateTo({
-			url: `/pages/Search?searchValue=${encodeURIComponent(searchValue.value)}`
+	// 返回搜索页
+	function handlerGoback() {
+		uni.redirectTo({
+			url: '/pages/Search'
 		});
 	}
 	
-	// 点击卡片时跳转，传递catId给卡片页面
+	// 点击猫咪卡片
 	function handleClickCard(catId) {
 		uni.navigateTo({
-			url:`/pages/Card?catId=${catId}` //// 传递小猫的id
-		})
+			url: `/pages/Card?catId=${catId}`
+		});
 	}
 	
-	// 点击某个帖子
-	function handlerClickPost(postId){
+	// 点击帖子
+	function handlerClickPost(postId) {
 		uni.navigateTo({
-			url:`/pages/Post?postId=${postId}`
-		})
+			url: `/pages/Post?postId=${postId}`
+		});
 	}
 	
-	function search(words) { // 搜索事件
-		const token = uni.getStorageSync('token')
-		console.log(searchValue.value)
+	// 搜索事件
+	function search(words) {
+		const token = uni.getStorageSync('token');
+		if (!token) {
+			uni.showToast({
+				title: '请登录后再搜索',
+				icon: 'none'
+			});
+			return;
+		}
+		
 		uni.request({
-			url: `${API_general_request_url.value}/api/search/search?words=${words.value}`,
+			url: `${API_general_request_url.value}/api/search/search?words=${searchValue.value}`,
 			method: 'GET',
 			header: {
 				'Authorization': `Bearer ${token}`
 			},
 			success: (res) => {
-				console.log(res)
 				if (res.statusCode === 200 && res.data.code === '2000') {
-					uni.setStorageSync('searchResultData',res.data.data); // 更新存储搜索结果
-					const searchResultData = uni.getStorageSync('searchResultData');
-					// console.log(searchResultData)
-					catList.value = searchResultData.cats;
-					posts.value = searchResultData.posts.records;
-					console.log(catList.value);
-					console.log(posts.value);
+					// 存储搜索结果
+					uni.setStorageSync('searchResultData', res.data.data);
+					
+					// 先处理猫猫数据
+					if (res.data.data.cats && res.data.data.cats.length > 0) {
+						catList.value = res.data.data.cats;
+					} else {
+						catList.value = [];
+					}
+					
+					// 再处理帖子数据
+					if (res.data.data.posts && res.data.data.posts.records) {
+						posts.value = res.data.data.posts.records;
+					} else {
+						posts.value = [];
+					}
 				} else {
 					uni.showToast({
-						title: res.data.msg || '获取搜索结果失败',
+						title: res.data.msg || '搜索失败',
 						icon: 'none'
-					})
+					});
 				}
 			},
-			fail: (error) => {
+			fail: () => {
 				uni.showToast({
-				title: '请求失败，请重试',
-				icon: 'none'
-				})
+					title: '请求失败,请重试',
+					icon: 'none'
+				});
 			}
-		})
+		});
 	}
-	
 </script>
 
 <style lang="scss" scoped>
-	.container{
-		width: 750rpx;
-		.layout{
-			width: 100%;
-			height: 100%;
-			.box-top{
-				display: flex;
-				// display: flex;
-				height: 100rpx;
-				align-items: center; /* 垂直居中对齐 */
-				.back{
-				// 	height: 30rpx;
-					width: 100rpx;
-				// 	// object-fit: cover;
-					.btn1{
-						border: none; /* 去除按钮默认边框 */
-						background: none; /* 去除按钮背景 */
-						padding: 0; /* 去除内边距 */
-						.img{
-							width: 30rpx;
-							height: 30rpx;
-						}
-					}
-				}
-				.search-text{
-					width: 650rpx;
-				}
-			}
-			.showCardBox{
-				width: 675rpx; /* 调整为布局适配 */
-				height: 450rpx;
-				margin-left: 20rpx;
-				margin-top: 20rpx;
-				padding: 20rpx; /* 增加内边距以提高间距 */
-				border-radius: 10rpx;
-				background-color: #ffffff; /* 白色背景使内容更清晰 */
-				// background: linear-gradient(to right, #6270db, #a9518c);
-				box-shadow: rgba(0, 0, 0, 0.08) 0px 0px 3px 1px; /* 软阴影 */
-				border: 0.666667rpx solid #EBEEF5;
-				overflow: hidden;
-				.y0hj0{ 
-					width: 100%;
-					height: 100%;
-					border-radius: 20rpx 20rpx 20rpx 20rpx;
-					box-shadow: 0 5rpx 15rpx rgba(0, 0, 0, 0.2); /* 软阴影 */
-					// background: linear-gradient(to right, #6270db, #a9518c);
-					// border: 0.666667rpx solid #EBEEF5;
-					overflow: hidden;
-					.paw{ // 卡片日记
-						width: 100%;
-						display: flex;
-						align-items: center;
-						// background: linear-gradient(to right, #6270db, #a9518c); /* 渐变背景 */
-						
-						background-color: #a0a0f0;
-						padding: 20rpx; /* 内边距增加 */
-						overflow: hidden;
-						.t89hmm{
-							.m7h9h{
-								background: rgba(255, 255, 255, 0); /* 透明背景 */
-							}
-						}
-					}
-					.y89yh9{ // 卡片选择器+轮播区
-						width: 100%;
-						// height: 100%;
-						border-radius: 10rpx;
-						margin-top: 15rpx;
-						background-color: #ffffff;
-						overflow: hidden;
-						// .th890h0{
-						// 	width: 100%;
-						// 	height: 100rpx;
-						// }
-						.tzz876{
-							width: 100%;
-							.t9x{
-								width: 100%;
-								height: 100%;
-								.Cardlist{
-									width: 100%;
-									height: 400rpx;
-									background-image: "";
-									.ta9u0a{
-										width: 100%;
-										height: 400rpx;
-										overflow-x: auto;
-										.t42f{
-											// width: 9000rpx;
-											height: 100%;
-											display: flex;
-											flex-wrap: nowrap;
-											// background: linear-gradient(to right, #9ca4db, #a97ca1); 
-											// background: linear-gradient(to right, #fdeda9, #fffce2); /* 渐变背景 */
-											.t2352:first-child{
-												margin-left: 10rpx;
-											}
-											
-											.t2352{ //每一个卡片
-												width: 300rpx;
-												height: 350rpx;
-												margin-top: 20rpx;
-												background-color: #fafafa;
-												align-items: center;
-												justify-content: center;
-												display: flex;
-												margin-right: 20rpx;
-												flex-direction: column; /* 垂直排列 */
-												/* 添加边框 */
-												border: 1rpx solid #dadada;
-												/* 添加圆角和阴影 */
-												border-radius: 20rpx; /* 圆角 */
-												box-shadow: 0 10rpx 20rpx rgba(0, 0, 0, 0.2); /* 阴影 */
-												background: linear-gradient(to bottom, #e9e9fa, #e6f2ff); /* 渐变背景 */
-												// overflow: hidden;
-												.t7908f{ //图片
-													width: 300rpx;
-													height: 225rpx;
-													.img32r{
-														width: 90%;
-														height: 90%;
-														border-radius: 20rpx 20rpx 20rpx 20rpx; /* 图片上部圆角 */
-														// object-fit: cover; /* 确保图片保持比例 */
-														margin-left: 14rpx;
-														margin-top: 10rpx;
-													}
-												}
-												.t990k{ //文字
-													width: 100%; /* 宽度设为100%，让文字块占满一行 */
-													height: 70rpx;
-													text-align: center; /* 居中文字 */
-													overflow: hidden; /* 隐藏溢出的部分 */
-													.t5grg3{
-														padding-left: 20rpx;
-														padding-right: 20rpx;
-														.t2rdf{
-															width: 100%;
-															height: 100%;
-															font-size: 26rpx;
-															overflow: hidden; /* 隐藏超出内容 */
-															display: -webkit-box;
-															-webkit-box-orient: vertical;
-															-webkit-line-clamp: 2; /* 限制最多显示两行 */
-															text-overflow: ellipsis; /* 超出部分显示省略号 */
-															word-break: break-word; /* 防止单词超出容器 */
-														}
-													}
-													
-												}
-												.divider { //分割线
-												  background: #E0E3DA;
-												  width: 90%;
-												  height: 2rpx;
-												  justify-content: center;
-												}
-												.t79h{ //操作区
-													width: 100%;
-													height: 53rpx;
-													display: flex;
-													font-size: 20rpx;
-													align-items: center;
-													justify-content: space-around;
-												}
-											}
-											
-										}
-									}
-								}
-							}
-						}
-					}
-					
-				}
-				
-			}
-			.postAreaLayout{
-				width: 100%; /* 确保布局区域宽度充满父容器 */
-				height: 86vh; /* 设置布局高度，使其可以滚动 */
-				background-color: #ebebeb;
-				.content{
-					display: flex; // 弹性布局
-					flex-wrap: wrap; /* 使每行能容纳多个box，允许子元素换行显示 */
-					justify-content: space-between; /* 对齐方式：两端对齐元素之间等距排列 */
-					.box{ // 每个帖子盒子
-						width: 363rpx; /* 每个box占据父容器的 370/750，留出间隙 */
-						height: 550rpx;
-						background-color: #ffffff;
-						margin: 6rpx; //避免 box 垂直紧贴
-						border-radius: 10rpx;
-						overflow: hidden; /* 防止子元素超出边界 */
-						.pic{
-							height: 80%;
-							width: 100%; /* 确保图片宽度与box匹配 */
-							object-fit: cover; /* 确保图片按比例缩放，不超出容器 */
-							border-top-left-radius: 10rpx; /* 图片也应用圆角 */
-							border-top-right-radius: 10rpx; /* 图片也应用圆角 */
-						}
-						.text{
-							font-size: 25rpx;
-							padding-left: 13rpx;
-							padding-bottom: 2rpx;
-							height: 8%;
-						}
-						.info{
-							display: flex;
-							align-items: center; // 居中对齐弹性盒的各项 <div> 元素
-							justify-content: space-between; /* 确保头像、昵称和点赞按钮分布 */
-							height: 9%;
-							padding-left: 15rpx;
-							padding-top: 5rpx;
-							padding-right: 15rpx;
-							.avatar {
-							    width: 40rpx;
-							    height: 40rpx;
-							    border-radius: 50%; /* 圆形头像 */
-							    object-fit: cover;
-							}
-							.nickname {
-							    font-size: 20rpx;
-							    margin-left: 10rpx;
-							    flex-grow: 1; /* 让昵称占据剩余空间 */
-							}
-							.likes {
-								display: flex;
-								align-items: center;
-								.like-icon {
-								    width: 24rpx;
-								    height: 24rpx;
-								}
-					
-								.like-count {
-								    font-size: 18rpx;
-								    margin-left: 5rpx;
-								}
-							}
-						}
-					}
-				}
-				
-			}
-		}
-	}
+// 文本省略混入
+@mixin text-ellipsis($line: 1) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  @if $line == 1 {
+    white-space: nowrap;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $line;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+  }
+}
+
+// 隐藏滚动条
+::-webkit-scrollbar {
+  display: none;
+  width: 0 !important;
+  height: 0 !important;
+  -webkit-appearance: none;
+  background: transparent;
+}
+
+.container {
+  min-height: 100vh;
+  background: #f8f9fa;
+  
+  .layout {
+    .search-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      padding: 20rpx;
+      background: #fff;
+      box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+      
+      .back-btn {
+        padding: 20rpx;
+        
+        .back-icon {
+          width: 40rpx;
+          height: 40rpx;
+        }
+      }
+      
+      .search-bar {
+        flex: 1;
+        
+        :deep(.uni-searchbar) {
+          padding: 0;
+          
+          .uni-searchbar__box {
+            border-radius: 100rpx;
+          }
+        }
+      }
+    }
+    
+    .main-content {
+      margin-top: 120rpx;
+      height: calc(100vh - 120rpx);
+      
+      .section-title {
+        padding: 30rpx 30rpx 20rpx;
+        font-size: 32rpx;
+        font-weight: 600;
+        color: #333;
+      }
+      
+      .cat-cards-section {
+        padding-bottom: 30rpx;
+        background: #fff;
+        margin-bottom: 20rpx;
+        
+        .cards-scroll {
+          .cards-wrapper {
+            display: flex;
+            padding: 0 20rpx;
+            
+            .cat-card {
+              flex-shrink: 0;
+              width: 280rpx;
+              margin-right: 20rpx;
+              border-radius: 20rpx;
+              background: #fff;
+              box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.08);
+              overflow: hidden;
+              transition: transform 0.3s ease;
+              
+              &:active {
+                transform: scale(0.98);
+              }
+              
+              .cat-avatar {
+                width: 100%;
+                height: 280rpx;
+              }
+              
+              .cat-info {
+                padding: 20rpx;
+                
+                .cat-name {
+                  font-size: 28rpx;
+                  font-weight: 500;
+                  color: #333;
+                }
+                
+                .cat-detail {
+                  font-size: 24rpx;
+                  color: #999;
+                  margin-top: 8rpx;
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      .posts-section {
+        background: #fff;
+        
+        .posts-grid {
+          padding: 0 20rpx;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 20rpx;
+          
+          .post-card {
+            border-radius: 16rpx;
+            background: #fff;
+            box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            
+            &:active {
+              transform: scale(0.98);
+            }
+            
+            .post-cover {
+              width: 100%;
+              height: 340rpx;
+            }
+            
+            .post-content {
+              padding: 20rpx;
+              
+              .post-title {
+                font-size: 26rpx;
+                color: #333;
+                line-height: 1.4;
+                @include text-ellipsis(2);
+              }
+              
+              .post-footer {
+                margin-top: 16rpx;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                
+                .author {
+                  display: flex;
+                  align-items: center;
+                  
+                  .author-avatar {
+                    width: 36rpx;
+                    height: 36rpx;
+                    border-radius: 50%;
+                  }
+                  
+                  .author-name {
+                    margin-left: 10rpx;
+                    font-size: 24rpx;
+                    color: #666;
+                    @include text-ellipsis;
+                  }
+                }
+                
+                .likes {
+                  display: flex;
+                  align-items: center;
+                  
+                  .like-count {
+                    margin-left: 6rpx;
+                    font-size: 24rpx;
+                    color: #999;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      .no-result {
+        padding-top: 200rpx;
+        text-align: center;
+        
+        .no-result-icon {
+          width: 200rpx;
+          height: 200rpx;
+          opacity: 0.5;
+        }
+        
+        .no-result-text {
+          margin-top: 30rpx;
+          font-size: 28rpx;
+          color: #999;
+        }
+      }
+    }
+  }
+}
 </style>

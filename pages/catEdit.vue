@@ -239,7 +239,7 @@
 	// 请求猫的详细信息
 	function fetchCatDetails(catId) {
 		uni.request({
-			url: `${API_general_request_url.value}/api/cat/findById?ID=${catId}`,
+			url: `${API_general_request_url.value}/api/cat/${catId}`,
 			method: 'GET',
 			header: {  
 			    'Authorization': `Bearer ${uni.getStorageSync('token')}` 	 
@@ -369,8 +369,8 @@
 
 			// 提交更新请求
 			const postResponse = await uni.request({  
-			url: `${API_general_request_url.value}/api/cat/update`,  
-			method: 'POST',  
+			url: `${API_general_request_url.value}/api/cat`,  
+			method: 'PUT',  
 			header: {  
 				'Authorization': `Bearer ${token}`,
 				'Content-Type': 'application/json'

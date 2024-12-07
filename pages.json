@@ -73,10 +73,9 @@
 		}
 	},
 	{
-		"path" : "pages/SearchResultPage",
-		"style" : 
-		{
-			"navigationBarTitleText" : ""
+		"path": "pages/SearchResultPage",
+      	"style": {
+			"navigationStyle": "custom"
 		}
 	},
 	{
@@ -91,6 +90,24 @@
 		"style" : 
 		{
 			"navigationBarTitleText" : ""
+		}
+	},
+	{
+		"path": "pages/PostReview",
+		"style": {
+			"navigationStyle": "custom"
+		}
+	},
+	{
+		"path": "pages/UserManage",
+		"style": {
+			"navigationStyle": "custom"
+		}
+	},
+	{
+		"path": "pages/user/edit",
+		"style": {
+			"navigationBarTitleText": ""
 		}
 	}
   ],
