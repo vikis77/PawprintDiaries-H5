@@ -106,20 +106,26 @@
 	import axios from 'axios';
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
 	import { toBeDeveloped, showToast } from '@/src/utils/toast'
-	
+	import { useAppStore } from '@/store/modules/app'
+	import { storeToRefs } from 'pinia'
+	import { getPosts } from '@/src/api/post'
+
+	// 创建 store 实例
+	const appStore = useAppStore()
+	// 使用 storeToRefs 解构获取响应式状态
+	const { postList, pagination } = storeToRefs(appStore)
+	// 使用 postList 作为数据源
+	const posts = postList
+	const currentPage = pagination.page
+	const pageSize = pagination.size
+
 	const popup = ref(null)
 	const showLeft = ref(null);
 	const scrollTop = ref(0); // 保持为 ref
 	const clientHeight = ref(0); // 用于存储器的可视高度
-	const curPage = ref(0); // 当前页数
-	const pages = ref(0) // 总页数
-	const size = ref(10) // 页面大小
+	
 	const status = ref('more'); // 加载更多的状态
-	// const posts = ref({
-	// 	postId = 0,
-	// 	article = ''
-	// });
-	const posts = ref([]);
+
 	
 	// 声明弹窗的内
 	const dialogContent = ref(`
@@ -177,40 +183,38 @@
 	  
 	});
 	
+
+	
 	// 发送请求获取帖子数据，包括加载初始数据和分页加载更多数据
 	const fetchMorePosts = async (isRefresh = false) => {
-		try {
-			const response = await axios.get(`${API_general_request_url.value}/api/post/getPostBySendtimeForPage?page=${curPage.value}&pageSize=${size.value}`);
+		// 调用全局获取帖子数据的方法
+		await getPosts(undefined, undefined, isRefresh)
+		return []
+		// try {
+		// 	const response = await axios.get(`${API_general_request_url.value}/api/post/getPostBySendtimeForPage?page=${currentPage.value}&pageSize=${pageSize.value}`);
 			
-			if (response.status === 200 && response.data.code === "2000") {
-				pages.value = response.data.data.pages;
-				curPage.value = response.data.data.current;
-				
-				if (isRefresh) {
-					// 刷新时替换所有数据
-					posts.value = response.data.data.records;
-				} else {
-					// 加载更多时追加数据
-					posts.value = [...posts.value, ...response.data.data.records];
-				}
-				
-				uni.setStorageSync("postsList", posts.value);
-				return response.data.data.records;
-			}
-			return [];
-		} catch (error) {
-			uni.showToast({
-				title: "获取帖子失败",
-				icon: "none"
-			});
-			console.error('获取帖子失败', error);
-			return [];
-		}
+		// 	if (response.status === 200 && response.data.code === "2000") {
+		// 		appStore.setPageSize(response.data.data.current, response.data.data.size);
+		// 		const newPosts = response.data.data.records;
+		// 		if (isRefresh) {
+		// 			// 刷新时替换所有数据
+		// 			appStore.setPostList(newPosts);
+		// 		} else {
+		// 			// 加载更多时追加数据
+		// 			appStore.setPostList([...appStore.postList, ...newPosts]);
+		// 		}
+		// 		return newPosts;
+		// 	}
+		// 	return [];
+		// } catch (error) {
+		// 	uni.showToast({
+		// 		title: "获取帖子失败",
+		// 		icon: "none"
+		// 	});
+		// 	console.error('获取帖子失败', error);
+		// 	return [];
+		// }
 	};
-
-
-	// 页面加载，获取第一页的帖子数据
-	fetchMorePosts();
 	
 	// 点击查看更多-查看声明帮助
 	const getMore = ()=> {
@@ -320,7 +324,7 @@
 		});
 	};
 
-	// �� script setup 中添加以下变量和方法
+	// 在 script setup 中添加以下变量和方法
 	const lastTapTime = ref(0); // 用于记录上次点击时间
 
 	// 添加处理双击的方法
@@ -365,16 +369,13 @@
 		isTriggered.value = true;
 		
 		try {
-			// 重置页码
-			curPage.value = 0;
-			// 重新获取数据
 			await fetchMorePosts(true);
-			
 			uni.showToast({
 				title: '刷新成功',
 				icon: 'success'
 			});
 		} catch (error) {
+			console.error('刷新失败', error);
 			uni.showToast({
 				title: '刷新失败',
 				icon: 'error'
@@ -392,13 +393,11 @@
 	// 添加加载更多方法
 	const loadMore = async () => {
 		if (loadMoreStatus.value !== 'more') return;
-		
 		loadMoreStatus.value = 'loading';
-		curPage.value++;
-		
 		try {
-			const newPosts = await fetchMorePosts(false);
-			if (!newPosts || newPosts.length === 0) {
+			await getPosts(undefined, undefined, false);
+			if (!appStore.postList || appStore.pagination.total === 0 || appStore.pagination.page >= appStore.pagination.total) {
+				console.log(appStore.pagination.page, appStore.pagination.total)
 				loadMoreStatus.value = 'noMore';
 				uni.showToast({
 					title: '没有更多数据了',
@@ -420,7 +419,7 @@
 	const onScrollToLower = async () => {
 		console.log('触底加载更多');
 		// 检查是否还有更多数据可加载
-		if (curPage.value < pages.value - 1) {
+		if (appStore.pagination.page < appStore.pagination.total) {
 			await loadMore();
 		} else {
 			// 已经加载完所有数据

@@ -35,6 +35,7 @@
     "@dcloudio/uni-template-compiler": "^2.0.2-4020420240722004",
     "@dcloudio/vue-cli-plugin-uni": "^2.0.2-4020420240722004",
     "@dcloudio/webpack-uni-pages-loader": "^2.0.2-4020420240722004",
+    "@pinia/nuxt": "^0.9.0",
     "@types/node": "^20.11.24",
     "@vue/cli-service": "^5.0.8",
     "@vue/runtime-core": "^3.4.21",
