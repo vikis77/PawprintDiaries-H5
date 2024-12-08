@@ -2,19 +2,10 @@
 	<view class="container">
 		<view class="layout">
 			<!-- 头部导航 -->
-			<view class="header">
-				<uni-row class="header-row" :width="750">
-					<uni-col :span="8" class="header-left">
-						<img src="../static/返回.png" @click="handleGoback" class="header-icon"/>
-					</uni-col>
-					<uni-col :span="8" class="header-center">
-						<text class="header-title">猫猫编辑</text>
-					</uni-col>
-					<uni-col :span="8" class="header-right">
-						<image src="../static/更多.png" class="header-icon"/>
-					</uni-col>
-				</uni-row>
-			</view>
+			<NavBar1001 
+				:title="catId ? '猫猫编辑' : '添加猫猫'"
+				:showRight="false"
+			/>
 			
 			<!-- 表单区域 -->
 			<view class="form-container">
@@ -165,22 +156,24 @@
 
 <script setup>
 	import { ref, onMounted } from 'vue';
+	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+	import NavBar1001 from '@/src/components/common/NavBar1001.vue'
 	
-	const API_general_request_url = ref('');
-	const pic_general_request_url = ref('');
-	if (process.env.NODE_ENV === 'development'){
-		// 图片
-		pic_general_request_url.value = "http://localhost:8000"
-		// 请求
-		API_general_request_url.value = "http://localhost:8080"
-	} else {
-		// 图片
-		pic_general_request_url.value = "https://cdn.luckyiur.com/catcat"
-		// 请求
-		API_general_request_url.value = "https://pawprintdiaries.luckyiur.com"
-	}
-	
-	const catBaseFormData = ref(null)
+	const catId = ref(null);
+	const catBaseFormData = ref({
+		catname: '',
+		gender: 2,
+		age: '',
+		food: '',
+		taboo: '',
+		catCharacter: '',
+		healthStatus: '健康',
+		sterilizationStatus: '未绝育',
+		vaccinationStatus: '未接种',
+		badRecord: '',
+		catGuide: '',
+		avatar: []
+	});
 	const selectedTempFilePaths = ref([]); // 存储已选择的图片的路径
 	const selectedTempFiles = ref([]); // 存储已选择的图片信息
 	const sexs =ref(
@@ -230,10 +223,12 @@
 	)
 	
 	onMounted(() => {
-		uni.showLoading({ title: '加载中...' });
-		const catId = new URLSearchParams(window.location.search).get('catId');  // 获取 URL 中的 catId 参数
-		console.log('Received catId:', catId);
-		fetchCatDetails(catId);  // 请求猫的详细信息
+		const urlCatId = new URLSearchParams(window.location.search).get('catId');
+		if (urlCatId) {
+			catId.value = urlCatId;
+			uni.showLoading({ title: '加载中...' });
+			fetchCatDetails(urlCatId);
+		}
 	});
 	
 	// 请求猫的详细信息
@@ -264,17 +259,13 @@
 			},
 			fail: (e) => {
 				uni.showToast({
-					title: '请求获取小猫信息失败，请重试',
+					title: '请求获取小��信息失败，请重试',
 					icon: 'none'
 				});
 			}
 		})
 		console.log(catBaseFormData.value)
 		uni.hideLoading();
-	}
-	
-	const handleGoback =()=>{
-		uni.navigateBack()
 	}
 	
 	// 选择新头像
@@ -301,146 +292,121 @@
 		const token = uni.getStorageSync('token');  
 		if (!token) {  
 			uni.showToast({  
-			title: '未找到有效的登录令牌',  
-			icon: 'error'  
+				title: '未找到有效的登录令牌',  
+				icon: 'error'  
 			});  
 			return;  
 		}  
 
 		try {  
 			let postData = {
-			'catId': catBaseFormData.value.catId,
-			'catname': catBaseFormData.value.catname,
-			'gender': catBaseFormData.value.gender,
-			'age': catBaseFormData.value.age,
-			'brithday': catBaseFormData.value.datetimesingle,
-			'food': catBaseFormData.value.food,
-			'taboo': catBaseFormData.value.taboo,
-			'catCharacter': catBaseFormData.value.catCharacter,
-			'healthStatus': catBaseFormData.value.healthStatus,
-			'sterilizationStatus': catBaseFormData.value.sterilizationStatus,
-			'vaccinationStatus': catBaseFormData.value.vaccinationStatus,
-			'badRecord': catBaseFormData.value.badRecord,
-			'area': catBaseFormData.value.area,
-			'catGuide': catBaseFormData.value.catGuide
+				'catname': catBaseFormData.value.catname,
+				'gender': catBaseFormData.value.gender,
+				'age': catBaseFormData.value.age,
+				'food': catBaseFormData.value.food,
+				'taboo': catBaseFormData.value.taboo,
+				'catCharacter': catBaseFormData.value.catCharacter,
+				'healthStatus': catBaseFormData.value.healthStatus,
+				'sterilizationStatus': catBaseFormData.value.sterilizationStatus,
+				'vaccinationStatus': catBaseFormData.value.vaccinationStatus,
+				'badRecord': catBaseFormData.value.badRecord,
+				'catGuide': catBaseFormData.value.catGuide
 			};
+			
+			if (catId.value) {
+				postData.catId = catId.value;
+			}
 
 			// 只有在选择了新头像时才处理头像上传
 			if (selectedTempFiles.value && selectedTempFiles.value.length > 0) {
-			// 获取上传凭证
-			const response = await uni.request({  
-				url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,  
-				method: 'GET',  
-				header: {  
-				'Authorization': `Bearer ${token}`  
-				}  
-			});  
-				
-			if (response.statusCode !== 200 || response.data.code !== '2000') {  
-				throw new Error('获取上传凭证失败');  
-			}  
-				
-			const uploadToken = response.data.data.qiniuToken;  
-			
-			// 上传文件到七牛云  
-			const uploadRes = await new Promise((resolve, reject) => {  
-				uni.uploadFile({  
-				url: 'https://upload-z2.qiniup.com',  
-				filePath: selectedTempFiles.value[0].path,  
-				name: 'file',  
-				formData: {  
-					token: uploadToken,  
-					key: `catcat/cat_avatar/${selectedTempFiles.value[0].name}`  
-				},  
-				success: (res) => {  
-					if (res.statusCode === 200) {  
-					resolve(res);  
-					} else {  
-					reject(new Error('图片上传失败'));  
+				// 获取上传凭证
+				const response = await uni.request({  
+					url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,  
+					method: 'GET',  
+					header: {  
+						'Authorization': `Bearer ${token}`  
 					}  
-				},  
-				fail: reject
 				});  
-			});
+				
+				if (response.statusCode !== 200 || response.data.code !== '2000') {  
+					throw new Error('获取上传凭证失败');  
+				}  
+				
+				const uploadToken = response.data.data.qiniuToken;  
+				
+				// 上传文件到七牛云  
+				const uploadRes = await new Promise((resolve, reject) => {  
+					uni.uploadFile({  
+						url: 'https://upload-z2.qiniup.com',  
+						filePath: selectedTempFiles.value[0].path,  
+						name: 'file',  
+						formData: {  
+							token: uploadToken,  
+							key: `catcat/cat_avatar/${selectedTempFiles.value[0].name}`  
+						},  
+						success: (res) => {  
+							if (res.statusCode === 200) {  
+								resolve(res);  
+							} else {  
+								reject(new Error('图片上传失败'));  
+							}  
+						},  
+						fail: reject
+					});  
+				});
 
-			// 添加头像信息到请求数据
-			postData.avatar = selectedTempFiles.value[0].name;
+				// 添加头像信息到请求数据
+				postData.avatar = selectedTempFiles.value[0].name;
 			}
 
-			// 提交更新请求
+			// 提交请求
 			const postResponse = await uni.request({  
-			url: `${API_general_request_url.value}/api/cat`,  
-			method: 'PUT',  
-			header: {  
-				'Authorization': `Bearer ${token}`,
-				'Content-Type': 'application/json'
-			},  
-			data: postData
+				url: `${API_general_request_url.value}/api/cat`,  
+				method: catId.value ? 'PUT' : 'POST',  // 根据是否有catId决定是更新还是新增
+				header: {  
+					'Authorization': `Bearer ${token}`,
+					'Content-Type': 'application/json'
+				},  
+				data: postData
 			});  
 			
 			if (postResponse.statusCode === 200 && postResponse.data.code === '2000') {  
-			// 先显示提示
-			await new Promise((resolve) => {
-				uni.showToast({  
-				title: '提交成功',  
-				icon: 'success',
-				duration: 600,
-				success: () => {
-					setTimeout(resolve, 600); // 等待提示显示完成
-				}
-				});  
-			});
-			
-			// 提示完成后再返回
-			uni.navigateBack();
+				// 先显示提示
+				await new Promise((resolve) => {
+					uni.showToast({  
+						title: catId.value ? '更新成功' : '添加成功',  
+						icon: 'success',
+						duration: 600,
+						success: () => {
+							setTimeout(resolve, 600); // 等待提示显示完成
+						}
+					});  
+				});
+				
+				// 提示完成后再返回
+				uni.navigateBack();
 			} else {  
-			throw new Error(postResponse.data.msg || '提交失败');
+				throw new Error(postResponse.data.msg || '提交失败');
 			}
 		} catch (error) {  
 			console.error('提交过程中发生错误:', error);  
 			uni.showToast({  
-			title: error.message || '提交失败',  
-			icon: 'error'  
+				title: error.message || '提交失败',  
+				icon: 'error'  
 			});  
 		}  
-		};
+	};
+
+	// 返回
+	const handleGoback = () => {
+		uni.navigateBack()
+	}
 </script>
 
 <style lang="scss" scoped>
 .container {
 	min-height: 100vh;
 	background-color: #f5f7fa;
-	
-	.header {
-		position: sticky;
-		top: 0;
-		z-index: 100;
-		background-color: #fff;
-		box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-		
-		&-row {
-			height: 180rpx;
-			display: flex;
-			align-items: center;
-		}
-		
-		&-icon {
-			width: 48rpx;
-			height: 48rpx;
-		}
-		
-		&-title {
-			font-size: 36rpx;
-			font-weight: 600;
-			color: #333;
-		}
-		
-		&-left, &-center, &-right {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-		}
-	}
 	
 	.form-container {
 		padding: 30rpx;

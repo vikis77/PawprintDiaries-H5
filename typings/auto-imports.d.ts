@@ -1,3 +1,6 @@
+// uni-app 自动导入类型声明文件
+// 作用说明：解决自动导入的 Vue、Pinia、uni-app 等相关 API 的类型声明问题，使 TypeScript 可以正确识别这些全局可用的 API
+
 /* eslint-disable */
 /* prettier-ignore */
 // @ts-nocheck

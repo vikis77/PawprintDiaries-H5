@@ -21,36 +21,45 @@
 			<view class="box-top">
 				<view class="setting">
 					<button @click="showDrawer" class="setting-button" plain="ture">
-						<img src="../static/setting.png" class="setting-icon" />
+						<img src="../../static/setting.png" class="setting-icon" />
 					</button>
 					<view class="drawer-body">
 						<uni-drawer ref="showLeft" mode="left" :width="320">
 							<view class="drawer-content">
-								<button plain="ture" class="drawer1" @click="handlePostReview">帖子审核</button>
+								<button plain="ture" class="drawer1" @click="handlePostReview">审核</button>
+								<button plain="ture" class="drawer1" @click="handleCommentReview">评论审核</button>
 								<button plain="ture" class="drawer1" @click="handleUserManage">用户管理</button>
 								<!-- <button plain="ture" class="drawer1" @click="toBeDeveloped"></button>
 								<button plain="ture" class="drawer1" @click="toBeDeveloped"></button>
 								<button plain="ture" class="drawer1" @click="toBeDeveloped"></button> -->
 								<button plain="ture" class="drawer1" @click="handleSendPost">发布帖子</button>
 								<button plain="ture" class="drawer1" @click="handleCatManage">猫猫管理</button>
-								<button plain="ture" class="drawer1" @click="handleClickLogin">登录</button>
+								<button plain="ture" class="drawer1" @click="handleClickLogin">登录/注册</button>
+								<button plain="ture" class="drawer1" @click="handleAbout">关于软件</button>
 								
 							</view>
 						</uni-drawer>
 					</view>
 				</view>
 				<view class="discover">
-					<button plain="ture" class="btn">发现</button>
+					<button plain="ture" class="btn" @click="handleDiscoverClick">发现</button>
 				</view>
 				<view class="search" @click="searchHandler">
 					<button plain="ture" class="btn">
-						<img src="../static/search.png" class="search-icon"/>
+						<img src="../../static/search.png" class="search-icon"/>
 					</button>
 				</view>
 			</view>
 		</view>
 		
-		<uni-notice-bar show-get-more show-icon text="本应用程序为个人项目演示，展开查看声明和帮助。" @getmore="getMore" />
+		<view class="notice-container">
+			<uni-notice-bar 
+				show-get-more 
+				show-icon 
+				text="本应用程序为个人项目演示，展开查看声明和帮助。" 
+				@getmore="getMore" 
+			/>
+		</view>
 		
 		<!-- 帖子区 -->
 		<scroll-view 
@@ -64,8 +73,10 @@
 			@refresherpulling="onPulling"
 			@refresherrefresh="onRefresh"
 			@refresherrestore="onRestore"
+			@scrolltolower="onScrollToLower"
+			ref="scrollViewRef"
 		>
-			<view class="content">
+			<view class="content" id="top">
 				<view v-for="post in posts" :key="post.postId"  class="box">
 					<image class="pic" :src="`${pic_general_request_url}/post_pics/${post.coverPicture}`" mode="aspectFill" @click="handlerClickPost(post.postId)"></image>
 					<view class="text" @click="handlerClickPost(post.postId)">{{ post.title }}</view>
@@ -73,13 +84,17 @@
 						<image class="avatar" :src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}`" mode="aspectFill"></image>
 						<text class="nickname">{{ post.authorNickname }}</text>
 						<view class="likes">
-						<image class="like-icon" src="../static/爱心.svg"></image>
+						<image class="like-icon" src="../../static/爱心.svg"></image>
 						<text class="like-count">{{ post.likeCount }}</text>
 						</view>
 					</view>
 				</view>
 			</view>
-			<uni-load-more iconType="circle" :status="status" class="yg7789"/>
+			
+			<!-- 添加底部加载状态 -->
+			<view class="load-more">
+				<uni-load-more :status="loadMoreStatus" />
+			</view>
 		</scroll-view>
 		
 		<!-- 加载更多 -->
@@ -87,29 +102,15 @@
 </template>
 
 <script setup>
-	import { ref, onMounted } from 'vue';
+	import { ref, onMounted, nextTick } from 'vue';
 	import axios from 'axios';
-	import UniDrawer from '@dcloudio/uni-ui/lib/uni-drawer/uni-drawer.vue'
-	
-	const API_general_request_url = ref('');
-	const pic_general_request_url = ref('');
-	console.log("当前 NODE_ENV:", process.env.NODE_ENV);
-	if (process.env.NODE_ENV === 'development'){
-		// 图片
-		pic_general_request_url.value = "http://localhost:8000"
-		// 请求
-		API_general_request_url.value = "http://localhost:8080"
-	} else {
-		// 图片
-		pic_general_request_url.value = "https://cdn.luckyiur.com/catcat"
-		// 请求
-		API_general_request_url.value = "https://pawprintdiaries.luckyiur.com"
-	}
+	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+	import { toBeDeveloped, showToast } from '@/src/utils/toast'
 	
 	const popup = ref(null)
 	const showLeft = ref(null);
-	const scrollTop = ref(0); // 控制滚动位置
-	const clientHeight = ref(0); // 用于存储容器的可视高度
+	const scrollTop = ref(0); // 保持为 ref
+	const clientHeight = ref(0); // 用于存储器的可视高度
 	const curPage = ref(0); // 当前页数
 	const pages = ref(0) // 总页数
 	const size = ref(10) // 页面大小
@@ -120,11 +121,11 @@
 	// });
 	const posts = ref([]);
 	
-	// 声明弹窗的内容
+	// 声明弹窗的内
 	const dialogContent = ref(`
-		<p>本应用程序为演示应用，旨在展示个人学习和开发的项目。特此声明：</p>
+		<p>本应用为演示应用，旨在展示个学习和开发的项目。特此声明：</p>
 		<p>1. 非商业用途：本项目仅用于学习和展示，所有功能和内容均为个人开发，不得用于商业目的。</p>
-		<p>2. 知识产权：项目中使用的所有第三方库、组件和资源均归其合法拥有者所有。项目不对其知识产权的合法性负责。</p>
+		<p>2. 知识产权：项目中使用的所有第三方库、组件和资源均归合法拥有者所有。项目不对其知识产权的合法性负责。</p>
 		<p>3. 数据隐私：本项目未涉及用户数据的收集和存储，用户在使用过程中请勿输入敏感个人信息。开发者不对任何因使用本应用而导致的隐私泄露或数据安全问题负责。</p>
 		<p>4. 功能稳定性：本应用处于学习开发阶段，可能存在不稳定或未完善的功能，使用者需自行承担风险。</p>
 		<p>5. 免版权资源：项目中的所有图片资源均为免版权可使用，展示的数据均为测试数据，不涉及任何真实用户或实际情况。</p>
@@ -176,101 +177,44 @@
 	  
 	});
 	
-	// 加载更多
-	const loadMorePosts = async () => {
-		console.log('开始加载更多。。。')
-		curPage.value++; // 页数递增
-		// 从后端获取数据
-		const newPosts = await fetchMorePosts();
-		posts.value.push(...newPosts);
-		if (newPosts.length === 0) {
-			status.value = 'noMore'; // 表示没有更多数据
-		}
-	};
-	
-	// 发起请求获取帖子数据，包括加载初始数据和分页加载更多数据
-	const fetchMorePosts = async () => {
+	// 发送请求获取帖子数据，包括加载初始数据和分页加载更多数据
+	const fetchMorePosts = async (isRefresh = false) => {
 		try {
-			// 发送请求获取数据
-			console.log(`${API_general_request_url.value}/api/post/getPostBySendtimeForPage`);
 			const response = await axios.get(`${API_general_request_url.value}/api/post/getPostBySendtimeForPage?page=${curPage.value}&pageSize=${size.value}`);
-			console.log("发起请求获取帖子数据，响应数据：");
-			console.log(response);
-
-			// 判断响应是否成功
+			
 			if (response.status === 200 && response.data.code === "2000") {
-				// 更新分页信息
 				pages.value = response.data.data.pages;
 				curPage.value = response.data.data.current;
-
-				// 如果是加载更多，合并新数据和旧数据
-				if (status.value === 'loading') {
-					posts.value = [...posts.value, ...response.data.data.records];
-				} else {
-					// 否则重新加载数据
+				
+				if (isRefresh) {
+					// 刷新时替换所有数据
 					posts.value = response.data.data.records;
+				} else {
+					// 加载更多时追加数据
+					posts.value = [...posts.value, ...response.data.data.records];
 				}
-
-				// 将帖子数据存储到本地缓存
+				
 				uni.setStorageSync("postsList", posts.value);
-				console.log("posts数据：");
-				console.log(posts.value);
+				return response.data.data.records;
 			}
+			return [];
 		} catch (error) {
-			// 请求失败时显示错误提示
 			uni.showToast({
-				title: "获取帖子失败" + error,
+				title: "获取帖子失败",
 				icon: "none"
 			});
 			console.error('获取帖子失败', error);
+			return [];
 		}
 	};
 
 
-	// 页面加载时，获取第一页的帖子数据
+	// 页面加载，获取第一页的帖子数据
 	fetchMorePosts();
 	
-	// 添加刷新相关的响应式变量
-const isTriggered = ref(false);
-
-// 下拉刷新相关方法
-const onPulling = () => {
-  console.log('下拉刷新触发');
-}
-
-const onRefresh = async () => {
-  console.log('正在刷新');
-  isTriggered.value = true;
-  
-  try {
-    // 重置页码
-    curPage.value = 0;
-    // 重新获取数据
-    await fetchMorePosts();
-    
-    uni.showToast({
-      title: '刷新成功',
-      icon: 'success'
-    });
-  } catch (error) {
-    uni.showToast({
-      title: '刷新失败',
-      icon: 'error' 
-    });
-  } finally {
-    // 结束刷新状态
-    isTriggered.value = false;
-  }
-}
-
-const onRestore = () => {
-  console.log('刷新被复位');
-  isTriggered.value = false;
-}
-
 	// 点击查看更多-查看声明帮助
 	const getMore = ()=> {
-		popup.value.open() // 打开声明弹窗
+		popup.value.open() // 打开声明窗
 	}
 	
 	// 打开抽屉
@@ -283,62 +227,58 @@ const onRestore = () => {
 	}
 	function searchHandler(){
 		uni.navigateTo({
-			url:"/pages/Search"
+			url:"Search"
 		})
 	}
 	
 	// 点击某个帖子
 	function handlerClickPost(postId){
 		uni.navigateTo({
-			url:`/pages/Post?postId=${postId}`
+			url:`Post?postId=${postId}`
 		})
 	}
 	
 	// 监听滚动事件，判断是否到达底部
 	function handleScroll(event) {
-		const { scrollTop: top, scrollHeight } = event.detail;
+		const { scrollTop: currentScrollTop, scrollHeight } = event.detail;
 		
-		console.log('滚动位置:', top);
-		console.log('内容总高度:', scrollHeight);
-		console.log('容器可视高度:', clientHeight.value);
+		// 正确设置 scrollTop 的值
+		scrollTop.value = currentScrollTop;
+		uni.setStorageSync('scrollTop', currentScrollTop);
 		
-		//如果滚动到接近底部，并且没有在加载状态下，触发加载更多
-		console.log(scrollHeight - top - clientHeight.value)
-		if (scrollHeight - top - clientHeight.value < 50 && status.value !== 'loading') {
-			status.value = 'loading'; // 设置加载状态
-			loadMorePosts(); // 加载更多内容
+		// 判断是否接近底部（这里设置距离底部100px时触发）
+		if (scrollHeight - currentScrollTop - clientHeight.value < 100 && loadMoreStatus.value === 'more') {
+			loadMore();
 		}
-		  
-		//保存滚动位置
-		scrollTop.value = event.detail.scrollTop;
-		uni.setStorageSync('scrollTop', scrollTop.value);
 	}
 	
 	function handleClickLogin(){
 		uni.navigateTo({
-			url:"/pages/login"
+			url:"login"
 		})
 	}
-	
-	const toBeDeveloped = () => {
-			uni.showToast({
-				title: '待开发',
-				icon: 'error'
-			})
-		}
 
 	// 点击帖子管理
 	const handlePostReview = () => {
 		const token = uni.getStorageSync('token');
 		if (!token) {
-			uni.showToast({
-				title: '请先登录',
-				icon: 'none'
-			});
+			showToast('请先登录')
 			return;
 		}
 		uni.navigateTo({
-			url: '/pages/PostReview'
+			url: 'PostReview'
+		});
+	}
+
+	// 点击评论审核
+	const handleCommentReview = () => {
+		const token = uni.getStorageSync('token');
+		if (!token) {
+			showToast('请先登录')
+			return;
+		}
+		uni.navigateTo({
+			url: 'CommentReview'
 		});
 	}
 	
@@ -346,22 +286,25 @@ const onRestore = () => {
 	function handleSendPost(){
 		const token = uni.getStorageSync('token')
 		if (!token) {
-			// 提示用户登录
-			uni.showToast({
-				title: '请登录之后再来吧 ~~',
-				icon: 'none'
-			});
+			showToast('请先登录')
 			return; // 终止函数，避免继续执行
 		}
 		uni.navigateTo({
-			url: '/pages/SendPost'
+			url: 'SendPost'
 		})
 	}
 	
 	// 点击猫猫管理
 	const handleCatManage = () => {
 		uni.navigateTo({
-			url: '/pages/CatManage?from=home'
+			url: 'CatManage'
+		})
+	}
+	
+	// 点击关于按钮
+	const handleAbout = () => {
+		uni.navigateTo({
+			url: 'About'
 		})
 	}
 
@@ -369,15 +312,120 @@ const onRestore = () => {
 	const handleUserManage = () => {
 		const token = uni.getStorageSync('token');
 		if (!token) {
-			uni.showToast({
-				title: '请先登录',
-				icon: 'none'
-			});
+			showToast('请先登录')
 			return;
 		}
 		uni.navigateTo({
-			url: '/pages/UserManage'
+			url: 'UserManage'
 		});
+	};
+
+	// �� script setup 中添加以下变量和方法
+	const lastTapTime = ref(0); // 用于记录上次点击时间
+
+	// 添加处理双击的方法
+	const handleDiscoverClick = () => {
+		const currentTime = new Date().getTime();
+		const tapGap = currentTime - lastTapTime.value;
+		
+		if (tapGap < 300) { // 300毫秒内的双击
+			// 使用 uni-app 的方式控制 scroll-view 滚动
+			const scrollViewRef = ref(null);
+			
+			// 将 scroll-view 滚动到顶部
+			uni.createSelectorQuery()
+				.select('.layout')
+				.boundingClientRect(data => {
+					if (data) {
+						scrollTop.value = 0;
+						// 使用 uni.pageScrollTo 来实现平滑滚动
+						uni.pageScrollTo({
+							scrollTop: 0,
+							duration: 300  // 300ms的滚动动画
+						});
+					}
+				})
+				.exec();
+		}
+		
+		lastTapTime.value = currentTime;
+	};
+
+	// 下拉刷新相关变量和方法
+	const isTriggered = ref(false);
+	const loadMoreStatus = ref('more'); // 可能的状态：more/loading/noMore
+
+	// 下拉刷新相关方法
+	const onPulling = () => {
+		console.log('下拉刷新触发');
+	}
+
+	const onRefresh = async () => {
+		console.log('正在刷新');
+		isTriggered.value = true;
+		
+		try {
+			// 重置页码
+			curPage.value = 0;
+			// 重新获取数据
+			await fetchMorePosts(true);
+			
+			uni.showToast({
+				title: '刷新成功',
+				icon: 'success'
+			});
+		} catch (error) {
+			uni.showToast({
+				title: '刷新失败',
+				icon: 'error'
+			});
+		} finally {
+			isTriggered.value = false;
+		}
+	}
+
+	const onRestore = () => {
+		console.log('刷新复位');
+		isTriggered.value = false;
+	}
+
+	// 添加加载更多方法
+	const loadMore = async () => {
+		if (loadMoreStatus.value !== 'more') return;
+		
+		loadMoreStatus.value = 'loading';
+		curPage.value++;
+		
+		try {
+			const newPosts = await fetchMorePosts(false);
+			if (!newPosts || newPosts.length === 0) {
+				loadMoreStatus.value = 'noMore';
+				uni.showToast({
+					title: '没有更多数据了',
+					icon: 'none'
+				});
+			} else {
+				loadMoreStatus.value = 'more';
+			}
+		} catch (error) {
+			loadMoreStatus.value = 'more';
+			uni.showToast({
+				title: '加载失败',
+				icon: 'none'
+			});
+			console.error('加载更多失败:', error);
+		}
+	}
+
+	const onScrollToLower = async () => {
+		console.log('触底加载更多');
+		// 检查是否还有更多数据可加载
+		if (curPage.value < pages.value - 1) {
+			await loadMore();
+		} else {
+			// 已经加载完所有数据
+			loadMoreStatus.value = 'noMore';
+		}
 	};
 </script>
 
@@ -390,12 +438,20 @@ const onRestore = () => {
 	}
 	.container{
 		width: 750rpx; /* 设置容器宽度为屏幕宽度 */
-		height: 100%vh;
+		height: 100vh;
+		background-color: #ebebeb;
 		.layout-top{
-			// padding-top: 40rpx;
+			height: 100rpx;
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			z-index: 999;
+			background-color: #ffffff;
+			padding: 10rpx 0;
 			.box-top{
 				display: flex;
-				margin-top: 20rpx;
+				padding: 10rpx 0;
 				.setting{
 					width: 33vw;
 					.setting-button{
@@ -427,12 +483,16 @@ const onRestore = () => {
 					width: 33vw;
 					.btn{
 						border: none;
+						font-size: 34rpx;
+      					font-weight: 600;
 					}
 				}
 				.search{
 					width: 33vw;
 					.btn{
 						border: none;
+						font-size: 34rpx;
+						font-weight: 600;
 						.search-icon{
 							padding-top: 17rpx;
 							width: 30rpx;
@@ -442,16 +502,33 @@ const onRestore = () => {
 				}
 			}
 		}
+		.notice-container {
+			height: 100rpx;
+			position: fixed;
+			top: 120rpx;
+			left: 0;
+			right: 0;
+			z-index: 998;
+			background-color: #ffffff;
+			padding: 2rpx 0;
+		}
 		.layout{
-			width: 100%; /* 确保布局区域宽度充满父容器 */
-			height: 100vh; /* 设置布局高度，使其可以滚动 */
+			width: 100%;
+			height: 80vh;
+			padding-top: 230rpx;
 			background-color: #ebebeb;
+			position: relative;
+			overflow-y: auto;
+			transition: all 0.3s ease-out; // 添加过渡效果
+			scroll-behavior: smooth; /* 添加平滑滚动效果 */
 			.content{
-				display: flex; // 弹性布局
-				flex-wrap: wrap; /* 使每行能容纳多个box，允许子元素换行显示 */
-				justify-content: space-between; /* 对齐方式：两端对齐元素之间等距排列 */
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: space-between;
+				padding-bottom: 20rpx;
+				// padding-top: 205rpx;
 				.box{ // 每个帖子盒子
-					width: 363rpx; /* 每个box占据父容器的 370/750，留出间隙 */
+					width: 363rpx; /* 每个box占据父容器的 370/750，出间距 */
 					height: 550rpx;
 					background-color: #ffffff;
 					margin: 6rpx; //避免 box 垂直紧贴
@@ -472,7 +549,7 @@ const onRestore = () => {
 					}
 					.info{
 						display: flex;
-						align-items: center; // 居中对齐弹性盒的各项 <div> 元素
+						align-items: center; // 居中对齐弹性盒的各项 <div> 素
 						justify-content: space-between; /* 确保头像、昵称和点赞按钮分布 */
 						height: 9%;
 						padding-left: 15rpx;
@@ -481,7 +558,7 @@ const onRestore = () => {
 						.avatar {
 						    width: 40rpx;
 						    height: 40rpx;
-						    border-radius: 50%; /* 圆形头像 */
+						    border-radius: 50%; /* 圆头像 */
 						    object-fit: cover;
 						}
 						.nickname {
@@ -506,9 +583,12 @@ const onRestore = () => {
 				}
 			}
 			
-		}
-		.yg7789{
-			background-color: #ebebeb;
+			.load-more {
+				padding: 20rpx 0;
+				text-align: center;
+				color: #999;
+				font-size: 24rpx;
+			}
 		}
 	}
 </style>

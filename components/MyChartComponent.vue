@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="charts-box">
     <qiun-vue-ucharts 
       type="line"
@@ -82,4 +82,4 @@ export default defineComponent({
     width: 500px;
     height: 300px;
   }
-</style>
+</style> -->

@@ -42,20 +42,8 @@
 
 <script setup>
 	import { ref } from 'vue';
-	
-	const API_general_request_url = ref('');
-	const pic_general_request_url = ref('');
-	if (process.env.NODE_ENV === 'development'){
-		// 图片
-		pic_general_request_url.value = "http://localhost:8000"
-		// 请求
-		API_general_request_url.value = "http://localhost:8080"
-	} else {
-		// 图片
-		pic_general_request_url.value = "https://cdn.luckyiur.com/catcat"
-		// 请求
-		API_general_request_url.value = "https://pawprintdiaries.luckyiur.com"
-	}
+	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+
 	
 	const username = ref('');
 	const email = ref('');
@@ -64,7 +52,7 @@
 	
 	const goToLogin = () => {
 	  uni.navigateTo({
-		url: '/pages/login'
+		url: 'login'
 	  })
 	}
 	
@@ -106,7 +94,7 @@
 	          icon: 'success'
 	        });
 	        uni.navigateTo({ 
-	        	url: "/pages/login"
+	        	url: "login"
 	        });
 	      } else {
 	        uni.showToast({
@@ -128,7 +116,7 @@
 	
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 	.container {
 		width: 750rpx;
 		height: 100vh;
@@ -138,7 +126,7 @@
 		align-items: center;
 	  
 		.layout{
-			width: 80%;
+			width: 90%;
 			padding-top: 200rpx;
 			.header {
 				width: 100%;

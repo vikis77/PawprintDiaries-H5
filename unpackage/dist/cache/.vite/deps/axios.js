@@ -1,6 +1,8 @@
-import {
-  __export
-} from "./chunk-P2LSHJDD.js";
+var __defProp = Object.defineProperty;
+var __export = (target, all3) => {
+  for (var name in all3)
+    __defProp(target, name, { get: all3[name], enumerable: true });
+};
 
 // ../../../../01-Codes/HBuilderProjects/PawPrint Diaries/node_modules/axios/lib/helpers/bind.js
 function bind(fn, thisArg) {
@@ -2042,7 +2044,7 @@ function dispatchRequest(config) {
 }
 
 // ../../../../01-Codes/HBuilderProjects/PawPrint Diaries/node_modules/axios/lib/env/data.js
-var VERSION = "1.7.8";
+var VERSION = "1.7.9";
 
 // ../../../../01-Codes/HBuilderProjects/PawPrint Diaries/node_modules/axios/lib/helpers/validator.js
 var validators = {};

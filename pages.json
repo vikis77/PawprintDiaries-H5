@@ -1,152 +1,183 @@
 {
 	"easycom": {
-			"autoscan": true,
-			"custom": {
-				// uni-ui 规则如下配置
-				"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+		"autoscan": true,
+		"custom": {
+			"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+		}
+	},
+	"pages": [
+		{
+			"path": "src/pages/Home",
+			"style": {
+				"navigationBarTitleText": "首页",
+				"navigationStyle": "custom"
 			}
 		},
-	"pages": [
-    {
-      "path": "pages/Home",
-      "style": {
-        "navigationBarTitleText": ""
-      }
-    },
-    {
-      "path": "pages/CatClaw",
-      "style": {
-        "navigationBarTitleText": ""
-      }
-    },
-    {
-      "path": "pages/Map",
-      "style": {
-        "navigationBarTitleText": ""
-      }
-    },
-    {
-      "path": "pages/My",
-      "style": {
-        "navigationBarTitleText": ""
-      }
-    },
-	{
-	  "path": "pages/Search",
-	  "style": {
-	    "navigationBarTitleText": ""
-	  }
-	},{
-	  "path": "pages/Post",
-	  "style": {
-	    "navigationBarTitleText": ""
-	  }
-	},{
-	  "path": "pages/Card",
-	  "style": {
-	    "navigationBarTitleText": ""
-	  }
-	},{
-	  "path": "pages/ModifyCatInfo",
-	  "style": {
-	    "navigationBarTitleText": ""
-	  }
-	},{
-	  "path": "pages/SendPost",
-	  "style": {
-	    "navigationBarTitleText": ""
-	  }
-	},{
-	  "path": "pages/login",
-	  "style": {
-			"navigationBarTitleText": ""
-		}
-	},{
-	  "path": "pages/register",
-	  "style": {
-			"navigationBarTitleText": ""
-		}
-	},{
-	  "path": "pages/test",
-	  "style": {
-			"navigationBarTitleText": ""
-		}
-	},
-	{
-		"path": "pages/SearchResultPage",
-      	"style": {
-			"navigationStyle": "custom"
-		}
-	},
-	{
-		"path" : "pages/CatManage",
-		"style" : 
 		{
-			"navigationBarTitleText" : ""
-		}
-	},
-	{
-		"path" : "pages/catEdit",
-		"style" : 
+			"path": "src/pages/CatClaw",
+			"style": {
+				"navigationBarTitleText": "猫爪",
+				"navigationStyle": "custom"
+			}
+		},
 		{
-			"navigationBarTitleText" : ""
+			"path": "src/pages/Map",
+			"style": {
+				"navigationBarTitleText": "地图",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/My",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/login",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/register",
+			"style": {
+				"navigationBarTitleText": "注册",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/Post",
+			"style": {
+				"navigationBarTitleText": "帖子详情",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/SendPost",
+			"style": {
+				"navigationBarTitleText": "发布帖子",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/Search",
+			"style": {
+				"navigationBarTitleText": "搜索",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/SearchResultPage",
+			"style": {
+				"navigationBarTitleText": "搜索结果",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/Card",
+			"style": {
+				"navigationBarTitleText": "猫咪档案",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/catEdit",
+			"style": {
+				"navigationBarTitleText": "编辑猫咪信息",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/ModifyCatInfo",
+			"style": {
+				"navigationBarTitleText": "修改猫咪信息",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/CatManage",
+			"style": {
+				"navigationBarTitleText": "猫咪管理",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/UserManage",
+			"style": {
+				"navigationBarTitleText": "用户管理",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/PostReview",
+			"style": {
+				"navigationBarTitleText": "帖子审核",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/About",
+			"style": {
+				"navigationBarTitleText": "关于",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/UserEdit",
+			"style": {
+				"navigationBarTitleText": "编辑资料",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "src/pages/CommentReview",
+			"style": {
+				"navigationBarTitleText": "评论审核",
+				"navigationStyle": "custom"
+			}
 		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "PawPrint Diaries",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
 	},
-	{
-		"path": "pages/PostReview",
-		"style": {
-			"navigationStyle": "custom"
-		}
+	"tabBar": {
+		"backgroundColor": "#fff",
+		"borderStyle": "black",
+		"list": [
+			{
+				"pagePath": "src/pages/Home",
+				"iconPath": "../../static/home.svg",
+				"selectedIconPath": "../../static/home-active.svg",
+				"text": ""
+			},
+			{
+				"pagePath": "src/pages/CatClaw",
+				"iconPath": "../../static/paw.svg",
+				"selectedIconPath": "../../static/paw-active.svg",
+				"text": ""
+			},
+			{
+				"pagePath": "src/pages/Map",
+				"iconPath": "../../static/导航.png",
+				"selectedIconPath": "../../static/导航选中.png",
+				"text": ""
+			},
+			{
+				"pagePath": "src/pages/My",
+				"iconPath": "../../static/mine.svg",
+				"selectedIconPath": "../../static/mine-active.svg",
+				"text": ""
+			}
+		]
 	},
-	{
-		"path": "pages/UserManage",
-		"style": {
-			"navigationStyle": "custom"
-		}
-	},
-	{
-		"path": "pages/user/edit",
-		"style": {
-			"navigationBarTitleText": ""
-		}
+	"usingComponents": {
+		"qiun-wx-ucharts": "@qiun/wx-ucharts"
 	}
-  ],
-  "globalStyle":{
-	  "navigationStyle":"custom" // 取消原生头部导航栏
-  },
-  // 配置底部 tarbar 导航栏
-  "tabBar": {
-    "backgroundColor": "#fff", // 底部导航栏颜色
-    "borderStyle": "black", // tabbar上边框的颜色
-    "list": [
-      {
-        "pagePath": "pages/Home",
-        "iconPath": "../static/home.svg", 
-        "selectedIconPath": "../static/home-active.svg", 
-        "text": ""
-      },
-      {
-        "pagePath": "pages/CatClaw",
-        "iconPath": "../static/paw.svg", 
-        "selectedIconPath": "../static/paw-active.svg",
-        "text": ""
-      },
-      {
-        "pagePath": "pages/Map",
-        "iconPath": "../static/导航.png", 
-        "selectedIconPath": "../static/导航选中.png",
-        "text": ""
-      },
-      {
-        "pagePath": "pages/My",
-        "iconPath": "../static/mine.svg", 
-        "selectedIconPath": "../static/mine-active.svg",
-        "text": ""
-      }
-    ]
-  },
-  "usingComponents": {
-      "qiun-wx-ucharts": "@qiun/wx-ucharts"
-    }
-
 }
+

@@ -1,13 +1,10 @@
 <template>
   <view class="user-edit-container">
-    <!-- 顶部返回按钮 -->
-    <view class="nav-bar">
-      <view class="back-btn" @click="handleBack">
-        <text class="iconfont icon-back">&#xe679;</text>
-        <text class="back-text">返回</text>
-      </view>
-      <text class="page-title">编辑资料</text>
-    </view>
+    <NavBar1001 
+      :title="'编辑资料'"
+      :showLeft="true"
+      :showRight="false"
+    />  
 
     <!-- 用户基本信息编辑区域 -->
     <view class="user-info-section">
@@ -91,17 +88,8 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
-
-const API_general_request_url = ref('');
-const pic_general_request_url = ref('');
-
-if (process.env.NODE_ENV === 'development') {
-  pic_general_request_url.value = "http://localhost:8000";
-  API_general_request_url.value = "http://localhost:8080";
-} else {
-  pic_general_request_url.value = "https://cdn.luckyiur.com/catcat";
-  API_general_request_url.value = "https://pawprintdiaries.luckyiur.com";
-}
+import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+import NavBar1001 from '@/src/components/common/NavBar1001.vue'
 
 const formRef = ref(null);
 

@@ -4,7 +4,7 @@
 		<!-- 顶部导航搜索返回区 -->
 		<view class="search-header">
 		  <view class="back-btn" @click="handlerGoback">
-			<img src="../static/返回.png" class="back-icon"/>
+			<img src="../../static/返回.png" class="back-icon"/>
 		  </view>
 		  <view class="search-bar">
 			<uni-search-bar
@@ -96,7 +96,7 @@
   
 		  <!-- 无搜索结果展示 -->
 		  <view v-if="(!catList || !catList.length) && (!posts || !posts.length)" class="no-result">
-			<image src="../static/无结果.png" class="no-result-icon"/>
+			<img src="../../static/emp-common-empty state.png" class="no-result-icon"/>
 			<text class="no-result-text">暂无相关搜索结果</text>
 		  </view>
 		</scroll-view>
@@ -107,18 +107,8 @@
 <script setup>
 	import { ref, onMounted } from 'vue';
 	import { onLoad } from '@dcloudio/uni-app';
-	import uniSearchBar from '@dcloudio/uni-ui/lib/uni-search-bar/uni-search-bar.vue';
-	import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue';
-	
-	const API_general_request_url = ref('');
-	const pic_general_request_url = ref('');
-	if (process.env.NODE_ENV === 'development'){
-		pic_general_request_url.value = "http://localhost:8000"
-		API_general_request_url.value = "http://localhost:8080"
-	} else {
-		pic_general_request_url.value = "https://cdn.luckyiur.com/catcat"
-		API_general_request_url.value = "https://pawprintdiaries.luckyiur.com"
-	}
+	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+
 	
 	const catList = ref([]);
 	const posts = ref([]);
@@ -163,21 +153,21 @@
 	// 返回搜索页
 	function handlerGoback() {
 		uni.redirectTo({
-			url: '/pages/Search'
+			url: 'Search'
 		});
 	}
 	
 	// 点击猫咪卡片
 	function handleClickCard(catId) {
 		uni.navigateTo({
-			url: `/pages/Card?catId=${catId}`
+			url: `Card?catId=${catId}`
 		});
 	}
 	
 	// 点击帖子
 	function handlerClickPost(postId) {
 		uni.navigateTo({
-			url: `/pages/Post?postId=${postId}`
+			url: `Post?postId=${postId}`
 		});
 	}
 	
@@ -433,7 +423,10 @@
       
       .no-result {
         padding-top: 200rpx;
-        text-align: center;
+        text-align: center;	
+		display: flex;
+		flex-direction: column;
+		align-items: center;
         
         .no-result-icon {
           width: 200rpx;

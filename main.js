@@ -1,38 +1,21 @@
-import App from './App'
+// 主文件
 
-// #ifndef VUE3
-import Vue from 'vue'
-import './uni.promisify.adaptor'
-Vue.config.productionTip = false
-App.mpType = 'app'
-const app = new Vue({
-  ...App
-})
-app.$mount()
-// #endif
+// 作用说明：创建 Vue 应用实例，并使用 Pinia 插件来管理应用的状态
 
-// #ifdef VUE3
 import { createSSRApp } from 'vue'
+// import { createSSRApp } from 'vue'
+import App from './App'
+// import pinia from './store'
+
 export function createApp() {
+  // 创建 Vue 应用实例
   const app = createSSRApp(App)
+  // 使用 pinia 插件
+  // app.use(pinia)
   return {
+    // 返回 Vue 应用实例
     app
   }
 }
-// #endif
-
-
-// import { createApp } from 'vue'
-// import App from './App.vue'
-// import UniUI from '@dcloudio/uni-ui'
-
-// // 创建应用实例
-// const app = createApp(App)
-
-// // 注册 uni-ui 组件库
-// app.use(UniUI)
-
-// // 挂载应用
-// app.mount('#app')
 
 

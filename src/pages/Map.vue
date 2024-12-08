@@ -9,7 +9,7 @@
 						<view class="search-row">
 							<view class="search-item">
 								<view class="icon-label">
-									<img class="icon" src="../static/时间.png" mode="aspectFill"/>
+									<img class="icon" src="../../static/时间.png" mode="aspectFill"/>
 									<text class="label">选择日期</text>
 								</view>
 								<view class="picker-container">
@@ -28,7 +28,7 @@
 						<view class="search-row">
 							<view class="search-item">
 								<view class="icon-label">
-									<img class="icon" src="../static/布偶猫-稀有色.png" mode="aspectFill"/>
+									<img class="icon" src="../../static/布偶猫-稀有色.png" mode="aspectFill"/>
 									<text class="label">选择小猫</text>
 								</view>
 								<view class="picker-container">
@@ -55,7 +55,7 @@
 				
 				<!-- 地图分隔装饰 -->
 				<view class="map-divider">
-					<image class="divider-icon" src="../static/mapLogo.png" mode="aspectFit"/>
+					<image class="divider-icon" src="../../static/mapLogo.png" mode="aspectFit"/>
 				</view>
 				
 				<!-- 2D地图 -->
@@ -66,7 +66,7 @@
 			</view>
 
 			<!-- 统计信息面板 -->
-			<view class="stats-panel" v-if="path.length > 0">
+			<!-- <view class="stats-panel" v-if="path.length > 0">
 				<view class="stats-item">
 					<text class="stats-label">今日发现</text>
 					<text class="stats-value">{{path.length}}次</text>
@@ -79,7 +79,7 @@
 					<text class="stats-label">最近出现</text>
 					<text class="stats-value">10分钟前</text>
 				</view>
-			</view>
+			</view> -->
 			
 			<!-- 悬浮按钮 -->
 			<uni-fab 
@@ -140,7 +140,7 @@
 							<view class="image-container">
 								<img v-if="imagePath" :src="imagePath" mode="aspectFit" class="preview-image"/>
 								<view v-else class="upload-placeholder" @click="chooseImage">
-									<img src="../static/布偶猫-稀有色.png" mode="aspectFit" class="camera-icon"/>
+									<img src="../../static/布偶猫-稀有色.png" mode="aspectFit" class="camera-icon"/>
 									<text class="upload-text">点击拍照或选择图片</text>
 								</view>
 							</view>
@@ -176,29 +176,11 @@
 
 <script setup>
 	import { onMounted, onUnmounted, ref, nextTick } from "vue";
+	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+	import { toBeDeveloped, showToast } from '@/src/utils/toast'
 	import AMapLoader from "@amap/amap-jsapi-loader";
-	import UniDataPicker from '@dcloudio/uni-ui/lib/uni-data-picker/uni-data-picker'; // 入 uni-data-picker
-	import UniDataSelect from '@dcloudio/uni-ui/lib/uni-data-select/uni-data-select';
-	import uniSection from '@dcloudio/uni-ui/lib/uni-section/uni-section.vue';
-	import uniRow from '@dcloudio/uni-ui/lib/uni-row/uni-row.vue';
-	import uniCol from '@dcloudio/uni-ui/lib/uni-col/uni-col.vue';
 	
 	const token = ref(`${uni.getStorageSync("token")}`);
-	const API_general_request_url = ref('');
-	const pic_general_request_url = ref('');
-	// const imagePath = ref('');
-	// const recognitionResult = ref(null);  // 添加识别结果的响应式变量
-	if (process.env.NODE_ENV === 'development'){
-		// 图片
-		pic_general_request_url.value = "http://localhost:8000"
-		// 请求
-		API_general_request_url.value = "http://localhost:8080"
-	} else {
-		// 图片
-		pic_general_request_url.value = "https://cdn.luckyiur.com/catcat"
-		// 请求
-		API_general_request_url.value = "https://pawprintdiaries.luckyiur.com"
-	}
 
 	const popupFromUpload = ref(null); // 绑定表单上传
 	const reportForm = ref(null); // 表单
@@ -245,7 +227,7 @@
 		},
 		{
 			iconPath: '/tempStatic/拍照.png',
-			selectedIconPath: '../static/拍照.png',
+			selectedIconPath: '../../static/拍照.png',
 			text: '校猫识别',
 			active: false
 		}]
@@ -501,7 +483,7 @@
 			map1.addControl(new AMap.Geolocation());
 			// 添加自定义图片叠加层
 			const imageLayer = new AMap.ImageLayer({
-			  url: "../static/realmap.jpg",
+			  url: "../../static/realmap.jpg",
 			  bounds: new AMap.Bounds(
 				[113.386036, 22.523024], // 左下角坐标  经度：左右（越大越右） 纬：上下（越大越上）
 				[113.396039, 22.532817]  // 右上坐标  
@@ -597,7 +579,7 @@
 				// console.log(marker)
 				map1catMarker = new AMap.Marker({
 					position: [marker[0], marker[1]], // 经纬度 113 22
-					icon: "../static/红点12.svg",
+					icon: "../../static/红点12.svg",
 					offset: new AMap.Pixel(-20, -20), // 根据图标的尺寸整偏移
 				});
 				map1catMarker.setMap(map1);
@@ -613,7 +595,7 @@
 				// console.log(marker)
 				map2catMarker = new AMap.Marker({
 					position: [marker[0], marker[1]], // 经纬度 113 22
-					icon: "../static/红点12.svg",
+					icon: "../../static/红点12.svg",
 					offset: new AMap.Pixel(-5, -5), // 根据图标的尺寸调整偏移
 				});
 				map2catMarker.setMap(map2);
@@ -641,14 +623,14 @@
 			// 添加起点的标记
 			let starMarker1 = new AMap.Marker({
 			  position: linePath[0], // 轨迹线的最后一个点
-			  icon: "../static/猫32.svg",
+			  icon: "../../static/猫32.svg",
 			  offset: new AMap.Pixel(-20, -20), // 根据图标的尺寸调整偏移
 			});
 			map1.add(starMarker1);
 			// 添加结束点的标记
 			let endMarker1 = new AMap.Marker({
 			  position: linePath[linePath.length - 1], // 轨迹线的最后一个点
-			  icon: "../static/到站16.svg",
+			  icon: "../../static/到站16.svg",
 			  offset: new AMap.Pixel(-8, -10), // 根据图标的尺寸调整偏移
 			});
 			map1.add(endMarker1);
@@ -664,14 +646,14 @@
 			
 			let starMarker2 = new AMap.Marker({ // 添加起始点的标记
 			  position: path.value[0], // 轨迹线的最后一个点
-			  icon: "../static/猫32.svg",
+			  icon: "../../static/猫32.svg",
 			  offset: new AMap.Pixel(-20, -20), // 根据图标的尺寸调整偏移
 			});
 			map2.add(starMarker2);
 			
 			let endMarker2 = new AMap.Marker({ // 添加��束点的标记
 			  position: path.value[path.value.length - 1], // 轨迹线的最后一个点
-			  icon: "../static/到站16.svg",
+			  icon: "../../static/到站16.svg",
 			  offset: new AMap.Pixel(-8, -10), // 根据图的尺寸调整偏移
 			});
 			map2.add(endMarker2);
@@ -862,26 +844,26 @@
 		}
 	};
 
-	const toBeDeveloped = (type) => {
-		if (type === 'catRecognition') {
-			// 重置状态
-			imagePath.value = '';
-			recognitionResult.value = null;
-			// 打开拍照识猫弹出层
-			popupPhotoUpload.value.open();
-		} else {
-			uni.showToast({
-				title: '待开发',
-				icon: 'error'
-			});
-		}
-	};
+	// const toBeDeveloped = (type) => {
+	// 	if (type === 'catRecognition') {
+	// 		// 重置状态
+	// 		imagePath.value = '';
+	// 		recognitionResult.value = null;
+	// 		// 打开拍照识猫弹出层
+	// 		popupPhotoUpload.value.open();
+	// 	} else {
+	// 		uni.showToast({
+	// 			title: '待开发',
+	// 			icon: 'error'
+	// 		});
+	// 	}
+	// };
 </script>
 
 <style lang="scss" scoped>
 .container {
 	width: 750rpx;
-	height: 100vh;
+	height: 94vh;
 	background-color: #f5f5f5;
 }
 
@@ -890,7 +872,7 @@
 	height: 100%;
 	display: flex;
 	flex-direction: column;
-	padding-bottom: 140rpx; /* 为悬浮按钮预留空间 */
+	// padding-bottom: 140rpx; /* 为悬浮按钮预留空间 */
 }
 
 /* 顶部搜索区域 */

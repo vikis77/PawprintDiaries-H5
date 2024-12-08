@@ -3,15 +3,18 @@
 		<view class="layout">
 			<!-- 头部导航 -->
 			<view class="header">
-				<uni-row class="header-row" :width="750">
+				<uni-row class="header-row" >
 					<uni-col :span="8" class="header-left">
-						<img src="../static/返回.png" @click="handleGoback" class="header-icon" />
+						<img src="../../static/返回.png" @click="handleGoback" class="header-icon" />
 					</uni-col>
 					<uni-col :span="8" class="header-center">
 						<text class="header-title">猫猫管理</text>
 					</uni-col>
 					<uni-col :span="8" class="header-right">
-						<img src="../static/猫砂盆.png" @click="handleAdd" class="header-icon" />
+						<view class="add-button" @click="handleAdd">
+							<img src="../../static/添加.png" class="header-icon" />
+							<text class="add-text">添加</text>
+						</view>
 					</uni-col>
 				</uni-row>
 			</view>
@@ -45,27 +48,11 @@
 </template>
 
 <script setup>
-import uniCard from '@dcloudio/uni-ui/lib/uni-card/uni-card.vue';
-import uniRow from '@dcloudio/uni-ui/lib/uni-row/uni-row.vue';  // 添加 uniRow 导入
-import uniCol from '@dcloudio/uni-ui/lib/uni-col/uni-col.vue';  // 添加 uniCol 导入
-
-const API_general_request_url = ref('');
-const pic_general_request_url = ref('');
-if (process.env.NODE_ENV === 'development') {
-	// 图片
-	pic_general_request_url.value = "http://localhost:8000"
-	// 请求
-	API_general_request_url.value = "http://localhost:8080"
-} else {
-	// 图片
-	pic_general_request_url.value = "https://cdn.luckyiur.com/catcat"
-	// 请求
-	API_general_request_url.value = "https://pawprintdiaries.luckyiur.com"
-}
+import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
 
 const gridList = ref([
 	{
-		url: '../static/猫.png',
+		url: '../../static/猫.png',
 		data: '',
 		text: '在校小猫',
 		text2: '只',
@@ -108,12 +95,12 @@ const handleGoback = () => {
 		// 先将分段器状态存入storage
 		uni.setStorageSync('resetSegmentedControl', true)
 		uni.switchTab({
-			url: '/pages/CatClaw'
+			url: 'CatClaw'
 		})
 	} else {
 		// 默认返回Home页面
 		uni.switchTab({
-			url: '/pages/Home'
+			url: 'Home'
 		})
 	}
 }
@@ -122,14 +109,14 @@ const handleGoback = () => {
 const handleClickGrid = (cat) => {
 	console.log(cat.catId)
 	uni.navigateTo({
-		url: `/pages/Card?catId=${cat.catId}`
+		url: `Card?catId=${cat.catId}`
 	})
 }
 
 // 添加猫猫
 const handleAdd = () => {
 	uni.navigateTo({
-		url: '/pages/catEdit?mode=add'
+		url: './catEdit'
 	})
 }
 </script>
@@ -147,7 +134,7 @@ const handleAdd = () => {
 		z-index: 100;
 
 		&-row {
-			height: 180rpx;
+			height: 150rpx;
 			display: flex;
 			align-items: center;
 		}
@@ -169,6 +156,34 @@ const handleAdd = () => {
 			display: flex;
 			align-items: center;
 			justify-content: center;
+		}
+
+		.add-button {
+			display: flex;
+			align-items: center;
+			background: #ffffff;
+			padding: 12rpx 28rpx;
+			border-radius: 50rpx;
+			border: 2rpx solid #8d5da3;
+			box-shadow: 0 4rpx 12rpx rgba(141, 93, 163, 0.1);
+			transition: all 0.2s ease;
+
+			&:active {
+				transform: scale(0.97);
+				background: #f9f6fb;
+			}
+
+			.header-icon {
+				width: 32rpx;
+				height: 32rpx;
+				margin-right: 8rpx;
+			}
+
+			.add-text {
+				color: #8d5da3;
+				font-size: 26rpx;
+				font-weight: 500;
+			}
 		}
 	}
 

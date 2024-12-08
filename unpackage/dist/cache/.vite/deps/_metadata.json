@@ -1,31 +1,15 @@
 {
-  "hash": "a90086b4",
-  "configHash": "41f69515",
-  "lockfileHash": "dfccff25",
-  "browserHash": "f4901cce",
+  "hash": "56009f1f",
+  "configHash": "a0637ec9",
+  "lockfileHash": "9f5b9dd7",
+  "browserHash": "9e41b0d8",
   "optimized": {
     "axios": {
       "src": "../../../../../node_modules/axios/index.js",
       "file": "axios.js",
-      "fileHash": "dce8f5ce",
-      "needsInterop": false
-    },
-    "@amap/amap-jsapi-loader": {
-      "src": "../../../../../node_modules/@amap/amap-jsapi-loader/dist/index.js",
-      "file": "@amap_amap-jsapi-loader.js",
-      "fileHash": "5a880177",
-      "needsInterop": true
-    },
-    "jwt-decode": {
-      "src": "../../../../../node_modules/jwt-decode/build/esm/index.js",
-      "file": "jwt-decode.js",
-      "fileHash": "946c3574",
+      "fileHash": "87364730",
       "needsInterop": false
     }
   },
-  "chunks": {
-    "chunk-P2LSHJDD": {
-      "file": "chunk-P2LSHJDD.js"
-    }
-  }
+  "chunks": {}
 }

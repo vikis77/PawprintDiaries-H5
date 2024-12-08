@@ -1,6 +1,4 @@
-<!-- 猫爪页面（第二页）
- 
- -->
+<!-- 猫爪页面（第二页）-->
 <template>
 	<view class="container">
 		<view class="layout">
@@ -32,35 +30,53 @@
 							<view class="t9x">
 								<!-- 卡片循环区域 -->
 								<view class="Cardlist">
-									<scroll-view class="ta9u0a" scroll-x="true">
-										<view class="t42f">
+									<scroll-view 
+										class="ta9u0a" 
+										scroll-x="true"
+										@scroll="handleScroll"
+										@touchstart="handleTouchStart"
+										@touchmove="handleTouchMove"
+										@touchend="handleTouchEnd"
+									>
+										<!-- 刷新图标 -->
+										<view class="refresh-loading" v-show="translateX > 20">
+											<uni-icons type="refresh" size="20" :class="{'refresh-rotate': isRefreshing}"></uni-icons>
+										</view>
+										
+										<view class="t42f" :style="{ transform: `translateX(${translateX}px)`, transition: isTransitioning ? 'transform 0.3s ease' : 'none' }">
 											<!-- 循环展示猫猫卡片 -->
-											<view class="t2352" v-for="cat in catList" :key="cat.catId">
+											<view 
+												class="t2352" 
+												v-for="cat in catList" 
+												:key="cat.catId"
+												@click="handleClickCard(cat.catId)"
+											>
 												<!-- 猫猫头像 -->
-												<view class="t7908f" @click="handleClickCard(cat.catId)">
+												<view class="t7908f">
 													<image class="img32r" :src="`${pic_general_request_url}/cat_avatar/${cat.avatar}`" mode="aspectFill"></image>
 												</view>
 												<!-- 猫猫信息  -->
-												<view class="t990k" @click="handleClickCard(cat.catId)">
+												<view class="t990k">
 													<view class="t5grg3">
 														<text class="t2rdf">{{ cat.catname }} - {{ cat.age }}个月 - {{ cat.gender === 1 ? '雄性' : '雌性' }}</text>
 													</view>
 												</view>
 												<!-- 分割线 -->
 												<view class="divider"/>
-												<!-- 热度讨论分享 -->
-												<view class="t79h" @click="toBeDeveloped">
-													<view class="">
-														<uni-icons type="fire" size="18"></uni-icons>
-														热度
+												<!-- 互动区域 -->
+												<view class="interaction-area">
+													<text class="preview-text">仅预览</text>
+													<view class="interaction-item">
+														<uni-icons type="heart" size="18" color="#666"></uni-icons>
+														<text>{{cat.likes || 0}}</text>
 													</view>
-													<view class="">
-														<uni-icons type="chatbubble" size="18"></uni-icons>
-														讨论
+													<view class="interaction-item">
+														<uni-icons type="fire" size="18" color="#ff9c6e"></uni-icons>
+														<text>{{cat.heat || 0}}</text>
 													</view>
-													<view class="">
-														<uni-icons type="paperclip" size="18"></uni-icons>
-														分享
+													<view class="interaction-item">
+														<uni-icons type="chat" size="18" color="#666"></uni-icons>
+														<text>{{cat.comments || 0}}</text>
 													</view>
 												</view>
 											</view>
@@ -76,11 +92,11 @@
 			<!-- 展示统计信息 -->
 			<view class="showStatisticsBox">
 				<view class="th0hzf" >
-					<uni-card class="tz0v898" margin=0  title="校猫数据统计卡片" :sub-title="nowTime" extra="" thumbnail="../static/猫咪-copy.png" >
+					<uni-card class="tz0v898" margin=0  title="校猫数据统计卡片" :sub-title="nowTime" extra="" thumbnail="../../static/猫咪-copy.png" >
 						<view class="gridbody" >
 							<uni-grid class="tyh08hz" :column="3" :square="false" :highlight="false" >
-								<uni-grid-item v-for="(item, index) in gridList" :index="index" :key="index" class="t99zv" >
-									<view class="grid-item-box">
+								<uni-grid-item v-for="(item, index) in gridList" :index="index" :key="index" class="t99zv" @click="showGridDetail(item)">
+									<view class="grid-item-box" :class="{ 'grid-item-active': activeGridIndex === index }">
 										<view class="tzh0h">
 											<img v-if="item.url !== ''" :src="item.url" class="th80" mode="aspectFill" />
 											<text class="tm9q1a">{{item.data}}</text>
@@ -230,23 +246,54 @@
 				<view class="qr-content">
 				<view class="qr-item">
 					<text class="qr-title">微信支付</text>
-					<img class="qr-image" src="../static/猫.png" mode="aspectFit"/>
+					<img class="qr-image" src="../../static/猫.png" mode="aspectFit"/>
 				</view>
 				<view class="qr-item">
 					<text class="qr-title">支付宝</text>
-					<img class="qr-image" src="../static/猫.png" mode="aspectFit"/>
+					<img class="qr-image" src="../../static/猫.png" mode="aspectFit"/>
 				</view>
 				</view>
 				<view class="donate-note">
 				<text>说明：</text>
-				<text>1. 您的每一笔捐赠都将用于校园猫咪的日常护理</text>
+				<text>1. 您的每一笔捐赠都将用于校园日常护理</text>
 				<text>2. 资金使用情况将定期公示</text>
-				<text>3. 感谢您的爱心支持！</text>
+				<text>3. 感谢您的爱心支持</text>
 				</view>
 				<view class="popup-buttons">
 				<button class="btn-cancel" @click="closeDonatePopup">关闭</button>
 				</view>
 			</view>
+			</uni-popup>
+
+			<!-- 添加统计信息详情弹窗 -->
+			<uni-popup ref="gridDetailPopup" type="center">
+				<view class="grid-detail-popup">
+					<view class="popup-header">
+						<text class="title">{{selectedGrid.text}}</text>
+						<uni-icons type="closeempty" size="24" color="#666" @click="closeGridDetail"></uni-icons>
+					</view>
+					<view class="popup-content">
+						<!-- <view class="detail-icon"> -->
+							<!-- <image :src="selectedGrid.url" mode="aspectFit"></image> -->
+						<!-- </view> -->
+						<view class="detail-info">
+							<view class="detail-number">
+								<text class="number">{{selectedGrid.data}}</text>
+								<text class="unit">{{selectedGrid.text2}}</text>
+							</view>
+							<view class="detail-description">
+								<text>{{getDetailDescription(selectedGrid)}}</text>
+							</view>
+						</view>
+						<view class="detail-chart" v-if="selectedGrid.chartData">
+							<qiun-data-charts 
+								type="line"
+								:opts="selectedGrid.chartOpts"
+								:chartData="selectedGrid.chartData"
+							/>
+						</view>
+					</view>
+				</view>
 			</uni-popup>
 		</view>
 	</view>
@@ -254,37 +301,12 @@
 
 <script setup>
 	import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-	import uniSection from '@dcloudio/uni-ui/lib/uni-section/uni-section.vue'
-	import uniCard from '@dcloudio/uni-ui/lib/uni-card/uni-card.vue'
-	import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue';
-	import uniListItem from '@dcloudio/uni-ui/lib/uni-list-item/uni-list-item.vue';
-	import uniSegmentedControl from '@dcloudio/uni-ui/lib/uni-segmented-control/uni-segmented-control.vue';
-	import uniGrid from '@dcloudio/uni-ui/lib/uni-grid/uni-grid.vue';
-	import uniGridItem from '@dcloudio/uni-ui/lib/uni-grid-item/uni-grid-item.vue';
-	// import uniPopup from '@dcloudio/uni-ui/lib/uni-popup/uni-popup';
-	import uniForms from '@dcloudio/uni-ui/lib/uni-forms/uni-forms.vue';
-	import uniFormsItem from '@dcloudio/uni-ui/lib/uni-forms-item/uni-forms-item.vue';
-	import uniEasyInput from '@dcloudio/uni-ui/lib/uni-easyinput/uni-easyinput.vue';
-	import uniDataCheckbox from '@dcloudio/uni-ui/lib/uni-data-checkbox/uni-data-checkbox.vue';
-	import uniDatetimePicker from '@dcloudio/uni-ui/lib/uni-datetime-picker/uni-datetime-picker.vue';
-	import uniPopup from '@dcloudio/uni-ui/lib/uni-popup/uni-popup.vue';
-	import uniDataSelect from '@dcloudio/uni-ui/lib/uni-data-select/uni-data-select.vue'
+	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+	import { toBeDeveloped, showToast } from '@/src/utils/toast'
+
+
 	
-	const API_general_request_url = ref('');
-	const pic_general_request_url = ref('');
-	if (process.env.NODE_ENV === 'development'){
-		// 图片
-		pic_general_request_url.value = "http://localhost:8000"
-		// 请求
-		API_general_request_url.value = "http://localhost:8080"
-	} else {
-		// 图片
-		pic_general_request_url.value = "https://cdn.luckyiur.com/catcat"
-		// 请求
-		API_general_request_url.value = "https://pawprintdiaries.luckyiur.com"
-	}
-	
-	const cover="../static/xxavatar1.jpg"
+	const cover="../../static/xxavatar1.jpg"
 	const nowTime = ref('')
 	const gridList = ref([])
 	const CardlistAllDynamicWidth =ref(0)
@@ -355,7 +377,7 @@
 		  linearType: "opacity", //渐变类型，可选值："none"关闭渐变,"opacity"透明渐变,"custom"自定义颜色
 		  seriesGap: 5, // 多series每个柱子之间的间距
 		  linearOpacity: 0.5, // 透明渐变的透明度（值范围0到1，值越小越透明）
-		  barBorderCircle: true, // 启用分组柱状图半圆边框，
+		  barBorderCircle: true, // 启用组柱状图半圆边框，
 		  customColor: [
 			"#FA7D8D",
 			"#EB88E2"
@@ -377,7 +399,7 @@
 			// 获取第一只猫的ID作为默认值
 			const defaultCatId = catList.value.length > 0 ? catList.value[0].catId : '';
 			uni.navigateTo({
-				url: `/pages/CatManage?catId=${defaultCatId}&from=catclaw`
+				url: `CatManage?catId=${defaultCatId}&from=catclaw`
 			});
 		}
 		currentArea.value = indexObj.currentIndex;
@@ -554,7 +576,7 @@
 					}));
 					uni.setStorageSync("catList",res.data.data);
 					gridList.value = [{
-									url: '../static/猫.png',
+									url: '../../static/猫.png',
 									data: catList.value.length,
 									text: '在校小猫数量',
 									text2: '（只）',
@@ -562,7 +584,7 @@
 									type: "primary"
 								},
 								{
-									url: '/static/c2.png',
+									url: '/static/宠物领养信息.png',
 									text: '已领养数量',
 									data: catDataAnalysisData.value.adoptionCount || 0,
 									text2: '（只）',
@@ -570,7 +592,7 @@
 									type: "success"
 								},
 								{
-									url: '/static/c3.png',
+									url: '/static/default-avatar-1.png',
 									text: '已绝育数量',
 									data: catDataAnalysisData.value.sterilizationRatio['已绝育'] || 0,
 									text2: '（只）',
@@ -578,7 +600,7 @@
 									type: "warning"
 								},
 								{
-									url: '/static/c4.png',
+									url: '/static/syringe.png',
 									text: '已打疫苗',
 									data: catDataAnalysisData.value.vaccinationRatio['已接种'] || 0,
 									text2: '（只）',
@@ -586,31 +608,31 @@
 									type: "error"
 								},
 								{
-									url: '/static/c5.png',
+									url: '/static/左1-copy.png',
 									text: '健康数量',
 									data: catDataAnalysisData.value.healthStatus['健康'] || 0,
 									text2: '（只）'
 								},
 								{
-									url: '/static/c6.png',
+									url: '/static/铃铛.png',
 									text: '本月新增',
 									data: catDataAnalysisData.value.monthlyNewCount || 0,
 									text2: '（只）'
 								},
 								{
-									url: '../static/我的资金.png',
+									url: '../../static/我的资金.png',
 									data: catDataAnalysisData.value.fundBalance || 0,
 									text: '救助资金剩余',
 									text2: '（元）'
 								},
 								{
-									url: '',
+									url: '../../static/支出.png',
 									data: catDataAnalysisData.value.lastMonthExpense || 0,
 									text: '上月支出',
 									text2: '（元）'
 								},
 								{
-									url: '',
+									url: '../../static/收入.png',
 									data: catDataAnalysisData.value.lastMonthIncome || 0,
 									text: '上月收入',
 									text2: '（元）'
@@ -837,7 +859,7 @@
 	// 点击卡片时跳转，传递catId给卡片页面
 	function handleClickCard(catId) {
 		uni.navigateTo({
-			url:`/pages/Card?catId=${catId}` // 传递小猫的id
+			url:`Card?catId=${catId}` // 传递小猫的id
 		})
 	}
 	
@@ -860,12 +882,6 @@
 		popupDonate.value.open();
 	};
 	
-	const toBeDeveloped = () => {
-		uni.showToast({
-			title: '待开发',
-			icon: 'error'
-		})
-	}
 
 	const showDonateMenu = ref(false);
 
@@ -888,7 +904,7 @@
 		// });
 	})
 
-	// 组件卸载时移除事件监
+	// 组件卸载时移除事件监听
 	onUnmounted(() => {
 		// uni.$off('updateSegmentedControl');
 	})
@@ -959,10 +975,319 @@
 		})
 	}
 
-	// 添加猫咪选择理函数
+	// 添加猫咪选择列表数据
 	const handleCatSelect = (value) => {
 		adoptFormsData.value.catName = value;
 	}
+
+	const gridDetailPopup = ref(null);
+	const selectedGrid = ref({});
+	const activeGridIndex = ref(-1);
+
+	// 显示格子详情
+	const showGridDetail = (item) => {
+		selectedGrid.value = item;
+		// 根据不同类型添加趋势数据
+		switch(item.text) {
+			case '在校小猫数量':
+				selectedGrid.value.chartData = {
+					categories: ["5月","6月","7月","8月","9月","10月"],
+					series: [{
+						name: "校内小猫总数量",
+						data: [25, 28, 25, 17, 24, 20]
+					}]
+				};
+				selectedGrid.value.chartOpts = {
+					color: ["#1890FF"],
+					padding: [15,10,0,15],
+					enableScroll: false,
+					legend: {},
+					xAxis: { disableGrid: true },
+					yAxis: { gridType: "dash", dashLength: 2 },
+					extra: {
+						line: {
+							type: "straight",
+							width: 2,
+							activeType: "hollow"
+						}
+					}
+				};
+				break;
+			case '已领养数量':
+				selectedGrid.value.chartData = {
+					categories: ["5月","6月","7月","8月","9月","10月"],
+					series: [{
+						name: "每月领养数量",
+						data: [2, 3, 4, 2, 5, 3]
+					}]
+				};
+				selectedGrid.value.chartOpts = {
+					color: ["#91CB74"],
+					padding: [15,10,0,15],
+					enableScroll: false,
+					legend: {},
+					xAxis: { disableGrid: true },
+					yAxis: { gridType: "dash", dashLength: 2 },
+					extra: { line: { type: "curve", width: 2 } }
+				};
+				break;
+			case '已绝育数量':
+				selectedGrid.value.chartData = {
+					categories: ["5月","6月","7月","8月","9月","10月"],
+					series: [{
+						name: "累计绝育数量",
+						data: [8, 10, 12, 15, 18, 20]
+					}]
+				};
+				selectedGrid.value.chartOpts = {
+					color: ["#FAC858"],
+					padding: [15,10,0,15],
+					enableScroll: false,
+					legend: {},
+					xAxis: { disableGrid: true },
+					yAxis: { gridType: "dash", dashLength: 2 },
+					extra: { line: { type: "straight", width: 2 } }
+				};
+				break;
+			case '已打疫苗':
+				selectedGrid.value.chartData = {
+					categories: ["5月","6月","7月","8月","9月","10月"],
+					series: [{
+						name: "累计接种数量",
+						data: [5, 8, 12, 14, 16, 18]
+					}]
+				};
+				selectedGrid.value.chartOpts = {
+					color: ["#EE6666"],
+					padding: [15,10,0,15],
+					enableScroll: false,
+					legend: {},
+					xAxis: { disableGrid: true },
+					yAxis: { gridType: "dash", dashLength: 2 },
+					extra: { line: { type: "straight", width: 2 } }
+				};
+				break;
+			case '健康数量':
+				selectedGrid.value.chartData = {
+					categories: ["5月","6月","7月","8月","9月","10月"],
+					series: [{
+						name: "健康猫咪数量",
+						data: [15, 18, 16, 14, 19, 17]
+					}]
+				};
+				selectedGrid.value.chartOpts = {
+					color: ["#73C0DE"],
+					padding: [15,10,0,15],
+					enableScroll: false,
+					legend: {},
+					xAxis: { disableGrid: true },
+					yAxis: { gridType: "dash", dashLength: 2 },
+					extra: { line: { type: "curve", width: 2 } }
+				};
+				break;
+			case '本月新增':
+				selectedGrid.value.chartData = {
+					categories: ["5月","6月","7月","8月","9月","10月"],
+					series: [{
+						name: "每月新增数量",
+						data: [3, 4, 2, 5, 3, 4]
+					}]
+				};
+				selectedGrid.value.chartOpts = {
+					color: ["#3CA272"],
+					padding: [15,10,0,15],
+					enableScroll: false,
+					legend: {},
+					xAxis: { disableGrid: true },
+					yAxis: { gridType: "dash", dashLength: 2 },
+					extra: { line: { type: "straight", width: 2 } }
+				};
+				break;
+			case '救助资金剩余':
+				selectedGrid.value.chartData = {
+					categories: ["5月","6月","7月","8月","9月","10月"],
+					series: [{
+						name: "资金余额变化",
+						data: [5000, 4500, 6000, 5500, 7000, 6500]
+					}]
+				};
+				selectedGrid.value.chartOpts = {
+					color: ["#FC8452"],
+					padding: [15,10,0,15],
+					enableScroll: false,
+					legend: {},
+					xAxis: { disableGrid: true },
+					yAxis: { gridType: "dash", dashLength: 2 },
+					extra: { line: { type: "curve", width: 2 } }
+				};
+				break;
+			case '上月支出':
+				selectedGrid.value.chartData = {
+					categories: ["5月","6月","7月","8月","9月","10月"],
+					series: [{
+						name: "月度支出",
+						data: [1200, 1500, 1000, 1800, 1300, 1600]
+					}]
+				};
+				selectedGrid.value.chartOpts = {
+					color: ["#9A60B4"],
+					padding: [15,10,0,15],
+					enableScroll: false,
+					legend: {},
+					xAxis: { disableGrid: true },
+					yAxis: { gridType: "dash", dashLength: 2 },
+					extra: { line: { type: "straight", width: 2 } }
+				};
+				break;
+			case '上月收入':
+				selectedGrid.value.chartData = {
+					categories: ["5月","6月","7月","8月","9月","10月"],
+					series: [{
+						name: "月度收入",
+						data: [2000, 2500, 1800, 2800, 2300, 2600]
+					}]
+				};
+				selectedGrid.value.chartOpts = {
+					color: ["#ea7ccc"],
+					padding: [15,10,0,15],
+					enableScroll: false,
+					legend: {},
+					xAxis: { disableGrid: true },
+					yAxis: { gridType: "dash", dashLength: 2 },
+					extra: { line: { type: "curve", width: 2 } }
+				};
+				break;
+		}
+		gridDetailPopup.value.open();
+	};
+
+	// 关闭格子详情
+	const closeGridDetail = () => {
+		gridDetailPopup.value.close();
+		activeGridIndex.value = -1;
+	};
+
+	// 获取详细描述
+	const getDetailDescription = (grid) => {
+		switch(grid.text) {
+			case '在校小猫数量':
+				return '这是目前在校园内生活的所有猫咪数量。从趋势图可以看出，数量基本保持稳定，略有波动。';
+			case '已领养数量':
+				return '这是通过我们平台成功找到新家的猫咪数量。每月平均有3-4只猫咪被领养。';
+			case '已绝育数量':
+				return '这是已经完成绝育手术的猫咪数量。可以看到绝育数量在稳步增加，这对控制流浪猫数量很有帮助。';
+			case '已打疫苗':
+				return '这是已经接种疫苗的猫咪数量。疫苗接种率持续提升，有效预防了传染病的发生。';
+			case '健康数量':
+				return '这是目前身体状况良好的猫咪数量。通过定期体检和及时治疗，保持了较高的健康比例。';
+			case '本月新增':
+				return '这是每月新登记的猫咪数量。新增数量保持在合理范围内，便于管理和照顾。';
+			case '救助资金剩余':
+				return '这是目前救助基金的余额。资金状况总体良好，可以保证猫咪们得到妥善照顾。';
+			case '上月支出':
+				return '这是每月用于猫咪护理的支出，包括食物、医疗、绝育手术等费用。支出合理且透明。';
+			case '上月收入':
+				return '这是每月收到的爱心捐赠。感谢大家的持续支持，使我们能够为猫咪提供更好的照顾。';
+			default:
+				return '';
+			
+		}
+	};
+
+	// 添加滑动相关变量
+	const touchStartX = ref(0);
+	const touchMoveX = ref(0);
+	const translateX = ref(0);
+	const isRefreshing = ref(false);
+	const isTransitioning = ref(false);
+	const scrollLeft = ref(0);
+
+	// 监听滚动事件
+	const handleScroll = (e) => {
+		scrollLeft.value = e.detail.scrollLeft;
+	};
+
+	// 处理触摸开始
+	const handleTouchStart = (event) => {
+		if (isRefreshing.value) return;
+		touchStartX.value = event.touches[0].clientX;
+		isTransitioning.value = false;
+	};
+
+	// 处理触摸移动
+	const handleTouchMove = (event) => {
+		if (isRefreshing.value) return;
+		
+		const currentX = event.touches[0].clientX;
+		const diffX = currentX - touchStartX.value;
+		
+		// 只有在滚动到最左侧时才允许右滑
+		if (diffX > 0 && scrollLeft.value === 0) {
+			translateX.value = Math.min(diffX * 0.5, 100); // 添加阻尼效果
+		}
+	};
+
+	// 处理触摸结束
+	const handleTouchEnd = (event) => {
+		if (isRefreshing.value) return;
+		
+		const endX = event.changedTouches[0].clientX;
+		const diffX = endX - touchStartX.value;
+		
+		isTransitioning.value = true;
+		
+		// 只有在最左侧且滑动距离足够时才触发刷新
+		if (diffX > 50 && scrollLeft.value === 0) {
+			refreshCatList();
+		} else {
+			// 否则回弹
+			translateX.value = 0;
+		}
+	};
+
+	// 修改刷新方法
+	const refreshCatList = () => {
+		if (isRefreshing.value) return;
+		
+		isRefreshing.value = true;
+		uni.vibrateShort(); // 添加触感反馈
+		
+		// 设置刷新时的固定位置
+		translateX.value = 60;
+		
+		// 使用Fisher-Yates洗牌算法随机打乱数组
+		const shuffleArray = (array) => {
+			for (let i = array.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[array[i], array[j]] = [array[j], array[i]];
+			}
+			return array;
+		};
+		
+		// 创建数组副本并打乱顺序
+		const shuffledList = shuffleArray([...catList.value]);
+		
+		// 延迟更新列表，让动画有时间播放
+		setTimeout(() => {
+			// 重置位置
+			translateX.value = 0;
+			
+			// 更新列表
+			catList.value = shuffledList;
+			
+			// 显示刷新提示
+			// uni.showToast({
+			// 	title: '刷新成功',
+			// 	icon: 'success',
+			// 	duration: 1500
+			// });
+			
+			// 重置刷新状态
+			setTimeout(() => {
+				isRefreshing.value = false;
+			}, 500);
+		}, 800);
+	};
 </script>
 
 <style lang="scss" scoped>
@@ -1110,13 +1435,24 @@
 													justify-content: center;
 												}
 												
-												.t79h {
+												.interaction-area {
 													width: 100%;
 													height: 53rpx;
 													display: flex;
-													font-size: 20rpx;
 													align-items: center;
 													justify-content: space-around;
+													padding: 0 20rpx;
+													
+													.interaction-item {
+														display: flex;
+														align-items: center;
+														gap: 8rpx;
+														
+														text {
+															color: #666;
+															font-size: 24rpx;
+														}
+													}
 												}
 											}
 										}
@@ -1160,6 +1496,12 @@
 								align-items: center;
 								justify-content: center;
 								flex-direction: column;
+								transition: all 0.3s ease;
+								
+								&:active, &.grid-item-active {
+									transform: scale(0.95);
+									background-color: rgba(0, 0, 0, 0.05);
+								}
 								
 								.tzh0h {
 									display: flex;
@@ -1538,6 +1880,132 @@
 					}
 				}
 			}
+		}
+	}
+
+	.grid-item-box {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-direction: column;
+		transition: all 0.3s ease;
+		
+		&:active, &.grid-item-active {
+			transform: scale(0.95);
+			background-color: rgba(0, 0, 0, 0.05);
+		}
+	}
+
+	.grid-detail-popup {
+		width: 600rpx;
+		background-color: #fff;
+		border-radius: 20rpx;
+		overflow: hidden;
+		
+		.popup-header {
+			padding: 30rpx;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			border-bottom: 1px solid #eee;
+			
+			.title {
+				font-size: 32rpx;
+				font-weight: bold;
+				color: #333;
+			}
+		}
+		
+		.popup-content {
+			padding: 30rpx;
+			
+			.detail-icon {
+				text-align: center;
+				margin-bottom: 20rpx;
+				
+				image {
+					width: 80rpx;
+					height: 80rpx;
+				}
+			}
+			
+			.detail-info {
+				text-align: center;
+				margin-bottom: 30rpx;
+				
+				.detail-number {
+					margin-bottom: 20rpx;
+					
+					.number {
+						font-size: 60rpx;
+						color: #b876d9;
+						font-weight: bold;
+					}
+					
+					.unit {
+						font-size: 24rpx;
+						color: #999;
+						margin-left: 10rpx;
+					}
+				}
+				
+				.detail-description {
+					font-size: 28rpx;
+					color: #666;
+					line-height: 1.5;
+					padding: 0 30rpx;
+				}
+			}
+			
+			.detail-chart {
+				height: 400rpx;
+				margin-top: 30rpx;
+			}
+		}
+	}
+
+	.preview-text {
+		font-size: 20rpx;
+		color: #999;
+		background: rgba(153, 153, 153, 0.1);
+		padding: 2rpx 8rpx;
+		border-radius: 10rpx;
+		margin-left: 4rpx;
+		font-weight: 400;
+	}
+
+	.Cardlist {
+		position: relative;
+		
+		.refresh-loading {
+			position: absolute;
+			left: 20rpx;
+			top: 50%;
+			transform: translateY(-50%);
+			z-index: 10;
+			width: 40rpx;
+			height: 40rpx;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: rgba(255, 255, 255, 0.9);
+			border-radius: 50%;
+			box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+		}
+		
+		.refresh-rotate {
+			animation: refresh-rotate 1s linear infinite;
+		}
+	}
+
+	@keyframes refresh-rotate {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
 		}
 	}
 </style>

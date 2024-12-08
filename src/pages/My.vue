@@ -3,12 +3,17 @@
     <!-- 顶部导航栏 -->
     <view class="nav-bar">
       <view class="left">
-        <uni-icons type="settings" size="24" @click="toBeDeveloped" />
+        <view class="nav-btn" @click="handleLoginLogout">
+          <uni-icons type="person" size="20" color="#333" />
+          <text>{{ isLoggedIn ? '退出' : '登录' }}</text>
+        </view>
       </view>
       <view class="title">我的主页</view>
       <view class="right">
-        <uni-icons type="chat" size="24" style="margin-right: 20rpx;" @click="toBeDeveloped" />
-        <uni-icons type="more-filled" size="24" @click="toBeDeveloped" />
+        <view class="nav-btn primary" @click="handlerClickSendPost">
+          <uni-icons type="plus" size="20" color="#fff" />
+          <text>发帖</text>
+        </view>
       </view>
     </view>
     <!-- 个人信息区域 -->
@@ -23,11 +28,11 @@
           </view>
         </view>
         <view class="signature">{{ user.signature || '这个人很懒，还没有签名' }}</view>
-        <view class="profile-tags">
+        <!-- <view class="profile-tags">
           <view class="tag" @click="toBeDeveloped">🐱 铲屎官</view>
           <view class="tag" @click="toBeDeveloped">📍 北京</view>
           <view class="tag" @click="toBeDeveloped">🏷️ 添加更多标签</view>
-        </view>
+        </view> -->
       </view>
 
       <!-- 数据统计 -->
@@ -88,18 +93,18 @@
 
     <!-- 帖子列表区域 -->
     <scroll-view :scroll-top="scrollTop" scroll-y="true" class="post-list" 
-                 :class="{'empty-state': !user.postList?.length}"
+                 :class="{'empty-state': !getActiveList.length}"
                  @scroll="handleScroll">
-      <template v-if="user.postList?.length">
+      <template v-if="getActiveList.length">
         <view class="content">
-          <view v-for="post in user.postList" :key="post.postId" class="box">
+          <view v-for="post in getActiveList" :key="post.postId" class="box">
             <img class="pic" :src="`${pic_general_request_url}/post_pics/${post.coverPicture}`" 
                    mode="aspectFill" @click="handlerClickPost(post.postId)"></img>
             <view class="post-info">
               <view class="text" @click="handlerClickPost(post.postId)">{{ post.title }}</view>
               <view class="stats">
                 <view class="likes">
-                  <img class="icon" src="../static/爱心.svg"></img>
+                  <img class="icon" src="../../static/爱心.svg"></img>
                   <text>{{ post.likeCount }}</text>
                 </view>
                 <view class="comments">
@@ -113,9 +118,9 @@
       </template>
       <template v-else>
         <view class="empty-state-content">
-          <img src="../static/emp-common-empty state.png" mode="aspectFit"></img>
-          <text>还没有发布任何内容</text>
-          <button class="primary-button" @click="toBeDeveloped">去发布第一篇笔记</button>
+          <img src="../../static/emp-common-empty state.png" mode="aspectFit"></img>
+          <text>{{ getEmptyText }}</text>
+          <button v-if="activeTab === 'posts'" class="primary-button" @click="handlerClickSendPost">去发布第一篇笔记</button>
         </view>
       </template>
     </scroll-view>
@@ -123,20 +128,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue';
+import { ref, onMounted, computed } from 'vue'
+import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+import { toBeDeveloped, showToast } from '@/src/utils/toast'
 
-const API_general_request_url = ref('');
-const pic_general_request_url = ref('');
-if (process.env.NODE_ENV === 'development'){
-  pic_general_request_url.value = "http://localhost:8000"
-  API_general_request_url.value = "http://localhost:8080"
-} else {
-  pic_general_request_url.value = "https://cdn.luckyiur.com/catcat"
-  API_general_request_url.value = "https://pawprintdiaries.luckyiur.com"
-}
-
-// 响应式变量
+const isLoggedIn = ref(false)
 const activeTab = ref('posts')
 const scrollTop = ref(0)
 const user = ref({
@@ -156,14 +152,52 @@ const user = ref({
   fansCount: 0,
   followCount: 0,
   signature: '',
-  postList: []
+  postList: [],
+  collectionList: [],
+  likeList: []
 })
 
 // 切换标签
-const switchTab = (tab) => {
+const switchTab = async (tab) => {
   activeTab.value = tab
-  // TODO: 根据不同标签加载不同内容
-  toBeDeveloped()
+  const token = uni.getStorageSync('token')
+  if (!token) return
+  
+  try {
+    if (tab === 'posts') {
+      // 获取用户发帖列表
+      const res = await uni.request({
+        url: `${API_general_request_url.value}/api/user/posts`,
+        method: 'GET',
+        header: { 'Authorization': `Bearer ${token}` }
+      })
+      if (res.statusCode === 200 && res.data.code === '2000') {
+        user.value.postList = res.data.data
+      }
+    } else if (tab === 'collections') {
+      // 获取收藏列表
+      const res = await uni.request({
+        url: `${API_general_request_url.value}/api/user/collections`,
+        method: 'GET',
+        header: { 'Authorization': `Bearer ${token}` }
+      })
+      if (res.statusCode === 200 && res.data.code === '2000') {
+        user.value.collectionList = res.data.data
+      }
+    } else if (tab === 'likes') {
+      // 获取点赞列表
+      const res = await uni.request({
+        url: `${API_general_request_url.value}/api/user/likes`,
+        method: 'GET',
+        header: { 'Authorization': `Bearer ${token}` }
+      })
+      if (res.statusCode === 200 && res.data.code === '2000') {
+        user.value.likeList = res.data.data
+      }
+    }
+  } catch (error) {
+    showToast('获取数据失败')
+  }
 }
 
 // 处理滚动
@@ -175,15 +209,7 @@ const handleScroll = (e) => {
 const handlerClickPost = (postId) => {
   console.log(postId)
   uni.navigateTo({
-    url:`/pages/Post?postId=${postId}`
-  })
-}
-
-// 待开发功能提示
-const toBeDeveloped = () => {
-  uni.showToast({
-    title: '功能开发中',
-    icon: 'none'
+    url:`Post?postId=${postId}`
   })
 }
 
@@ -233,9 +259,77 @@ onShow(() => {
 // 在script setup中添加导航方法
 const goToEditProfile = () => {
   uni.navigateTo({
-    url: '/pages/user/edit'
+    url: 'UserEdit'
   })
 }
+
+// 点击发布帖子
+const handlerClickSendPost = () => {
+  // 判断是否登录
+  const token = uni.getStorageSync('token')
+  if (!token) {
+    showToast('请先登录')
+    return
+  }
+  uni.navigateTo({
+    url: 'SendPost'
+  })
+}
+
+// 检查登录状态
+const checkLoginStatus = () => {
+  const token = uni.getStorageSync('token')
+  isLoggedIn.value = !!token
+}
+
+// 处理登录登出
+const handleLoginLogout = () => {
+  if (isLoggedIn.value) {
+    // 登出逻辑
+    uni.removeStorageSync('token')
+    isLoggedIn.value = false
+    user.value = {} // 清空用户数据
+    showToast('已退出登录')
+  } else {
+    // 跳转到登录页
+    uni.navigateTo({
+      url: 'login'
+    })
+  }
+}
+
+// 在页面加载时检查登录状态
+onMounted(() => {
+  checkLoginStatus()
+})
+
+// 计算当前显示的列表
+const getActiveList = computed(() => {
+  switch (activeTab.value) {
+    case 'posts':
+      return user.value.postList || []
+    case 'collections':
+      return user.value.collectionList || []
+    case 'likes':
+      return user.value.likeList || []
+    default:
+      return []
+  }
+})
+
+// 计算空状态文本
+const getEmptyText = computed(() => {
+  switch (activeTab.value) {
+    case 'posts':
+      return '还没有发布任何内容'
+    case 'collections':
+      return '还没有收藏任何内容'
+    case 'likes':
+      return '还没有点赞任何内容'
+    default:
+      return '暂无内容'
+  }
+})
 </script>
 
 <style lang="scss" scoped>
@@ -247,25 +341,46 @@ const goToEditProfile = () => {
     position: sticky;
     top: 0;
     z-index: 100;
-    height: 120rpx;
+    height: 50rpx;
     background: #fff;
     display: flex;
     align-items: center;
-    padding: 0 30rpx;
-    padding-top: 40rpx;
+    justify-content: space-between;
+    padding: 40rpx 20rpx 20rpx;
     border-bottom: 1rpx solid #f0f0f0;
     
     .left, .right {
-      display: flex;
-      align-items: center;
-      width: 100rpx;
+      .nav-btn {
+        display: flex;
+        align-items: center;
+        padding: 12rpx 24rpx;
+        border-radius: 32rpx;
+        background: #f6f6f6;
+        transition: all 0.2s;
+        
+        text {
+          font-size: 26rpx;
+          color: #333;
+          margin-left: 8rpx;
+        }
+        
+        &:active {
+          opacity: 0.8;
+        }
+        
+        &.primary {
+          background: #333;
+          
+          text {
+            color: #fff;
+          }
+        }
+      }
     }
     
     .title {
-      flex: 1;
       font-size: 34rpx;
       font-weight: 600;
-      text-align: center;
     }
   }
   
@@ -434,6 +549,7 @@ const goToEditProfile = () => {
       display: flex;
       flex-wrap: wrap;
       padding: 10rpx;
+      background-color: #ebebeb;
       
       .box {
         width: calc(50% - 10rpx);
@@ -489,6 +605,7 @@ const goToEditProfile = () => {
     .empty-state-content {
       text-align: center;
       padding: 0rpx 0rpx;
+      height: calc(50vh - 120rpx);
       
       image {
         width: 240rpx;

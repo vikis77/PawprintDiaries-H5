@@ -1,17 +1,16 @@
 <template>
   <view class="container">
     <!-- 顶部导航栏 -->
-    <view class="header">
-      <view class="back-btn" @click="goBack">
-        <img src="../static/arrow.svg" mode="aspectFit" class="back-icon"/>
-      </view>
-      <text class="title">用户管理</text>
-    </view>
+    <NavBar1001 
+      title="用户管理"
+      :showLeft="true"
+      :showRight="false"
+    />
 
     <!-- 搜索栏 -->
     <view class="search-box">
       <view class="search-input">
-        <img src="../static/search.png" class="search-icon"/>
+        <img src="../../static/search.png" class="search-icon"/>
         <input 
           type="text" 
           v-model="searchKeyword"
@@ -80,14 +79,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-
-const API_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:8080' 
-  : 'https://pawprintdiaries.luckyiur.com';
-  
-const picUrl = process.env.NODE_ENV === 'development'
-  ? 'http://localhost:8000'
-  : 'https://cdn.luckyiur.com/catcat';
+import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js';
+import NavBar1001 from '@/src/components/common/NavBar1001.vue';
 
 // 响应式数据
 const users = ref([]);
@@ -279,37 +272,16 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .container {
-  height: 100vh;
+  width: 100%;
+  min-height: 100vh;
   background-color: #f5f5f5;
   
-  .header {
+  .search-box {
+    width: 95%;
+    padding: 20rpx;
+    background-color: #ffffff;
     display: flex;
     align-items: center;
-    padding: 20rpx;
-    background-color: #ffffff;
-    
-    .back-btn {
-      padding: 20rpx;
-      
-      .back-icon {
-        width: 40rpx;
-        height: 40rpx;
-      }
-    }
-    
-    .title {
-      flex: 1;
-      text-align: center;
-      font-size: 32rpx;
-      font-weight: bold;
-    }
-  }
-
-  .search-box {
-    display: flex;
-    padding: 20rpx;
-    background-color: #ffffff;
-    border-bottom: 1rpx solid #eee;
     
     .search-input {
       flex: 1;
@@ -345,7 +317,8 @@ onMounted(() => {
   }
 
   .user-list {
-    height: calc(100vh - 200rpx);
+    width: 100%;
+    padding-bottom: 20rpx;
     
     .empty-state {
       text-align: center;
