@@ -54,9 +54,9 @@
 				</view>
 				
 				<!-- 地图分隔装饰 -->
-				<view class="map-divider">
+				<!-- <view class="map-divider">
 					<image class="divider-icon" src="../../static/mapLogo.png" mode="aspectFit"/>
-				</view>
+				</view> -->
 				
 				<!-- 2D地图 -->
 				<view class="map-section">
@@ -213,21 +213,20 @@
 	})
 	const content = ref(
 		[{
-			// TODO 图片路径找不到/static/ 文件，路径把pages视为了根目录
-			iconPath: '/tempStatic/V1_report.png',
-			selectedIconPath: '/tempStatic/V1_report.png',
+			iconPath: new URL('../../static/tempStatic/V1_report.png', import.meta.url).href,
+			selectedIconPath: new URL('../../static/tempStatic/V1_report.png', import.meta.url).href,
 			text: '发现小猫',
 			active: false,
 		},
 		{
-			iconPath: '/tempStatic/aichong32.png',
-			selectedIconPath: '/tempStatic/aichong32.png',
+			iconPath: new URL('../../static/tempStatic/aichong32.png', import.meta.url).href,
+			selectedIconPath: new URL('../../static/tempStatic/aichong32.png', import.meta.url).href,
 			text: '拍猫识别',
 			active: false
 		},
 		{
-			iconPath: '/tempStatic/photo009.png',
-			selectedIconPath: '/tempStatic/photo009.png',
+			iconPath: new URL('../../static/tempStatic/photo009.png', import.meta.url).href,
+			selectedIconPath: new URL('../../static/tempStatic/photo009.png', import.meta.url).href,
 			text: '校猫识别',
 			active: false
 		}]
@@ -306,9 +305,9 @@
 	          responseData.value = response.data.data;
 	          mapDrawMode.value = 'point';
 	          path.value = responseData.value.map(item => [
-	            parseFloat(item.longitude.toFixed(6)),
-	            parseFloat(item.latitude.toFixed(6)),
-	            item.catName
+	            parseFloat((item.longitude || 0).toFixed(6)),
+	            parseFloat((item.latitude || 0).toFixed(6)),
+	            item.catName || '未知猫咪'
 	          ]);
 			  console.log("path",path.value)
 	          map1.clearMap();
@@ -640,15 +639,15 @@
 			// 添加起点的标记
 			let starMarker1 = new AMap.Marker({
 			  position: linePath[0], // 轨迹线的最后一个点
-			  icon: "../../static/cat32.svg",
-			  offset: new AMap.Pixel(-20, -20), // 根据图标的尺寸调整偏移
+			  icon: "../../static/startPoint.png",
+			  offset: new AMap.Pixel(-26, -44), // 根据图标的尺寸调整偏移
 			});
 			map1.add(starMarker1);
 			// 添加结束点的标记
 			let endMarker1 = new AMap.Marker({
 			  position: linePath[linePath.length - 1], // 轨迹线的最后一个点
-			  icon: "../../static/pos16.svg",
-			  offset: new AMap.Pixel(-8, -10), // 根据图标的尺寸调整偏移
+			  icon: "../../static/cat32.svg",
+			  offset: new AMap.Pixel(-15, -20), // 根据图标的尺寸调整偏移
 			});
 			map1.add(endMarker1);
 			
@@ -663,15 +662,15 @@
 			
 			let starMarker2 = new AMap.Marker({ // 添加起始点的标记
 			  position: path.value[0], // 轨迹线的最后一个点
-			  icon: "../../static/cat32.svg",
-			  offset: new AMap.Pixel(-20, -20), // 根据图标的尺寸调整偏移
+			  icon: "../../static/startPoint.png",
+			  offset: new AMap.Pixel(-26, -44), // 根据图标的尺寸调整偏移
 			});
 			map2.add(starMarker2);
 			
 			let endMarker2 = new AMap.Marker({ // 添加结束点的标记
 			  position: path.value[path.value.length - 1], // 轨迹线的最后一个点
-			  icon: "../../static/pos16.svg",
-			  offset: new AMap.Pixel(-8, -10), // 根据图的尺寸调整偏移
+			  icon: "../../static/cat32.svg",
+			  offset: new AMap.Pixel(-10, -20), // 根据图的尺寸调整偏移
 			});
 			map2.add(endMarker2);
 		}

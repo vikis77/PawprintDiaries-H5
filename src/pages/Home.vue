@@ -209,7 +209,11 @@
 
 	
 	// 发送请求获取帖子数据，包括加载初始数据和分页加载更多数据
+    // 目前只用到到上拉刷新，即isRefresh为true
 	const fetchMorePosts = async (isRefresh = false) => {
+        if (isRefresh) {
+            loadMoreStatus.value = 'more'
+        }
 		// 调用全局获取帖子数据的方法
 		await getPosts(undefined, undefined, isRefresh)
 		posts.value = appStore.postList
@@ -396,9 +400,10 @@
 		
 		try {
 			await getPosts(undefined, undefined, false);
-			
+			console.log(appStore.pagination)
 			// 检查是否还有更多数据
-			if (appStore.pagination.page >= appStore.pagination.total) {
+			if (appStore.pagination.page > appStore.pagination.total) {
+                console.log(appStore.pagination.page, appStore.pagination.total)
 				loadMoreStatus.value = 'noMore';
 				console.log('没有更多数据了');
 				uni.showToast({

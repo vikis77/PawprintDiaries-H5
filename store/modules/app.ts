@@ -217,7 +217,8 @@ export const useAppStore = defineStore('app', () => {
         postList.value = list
     }
     // 设置分页大小，页面大小默认10
-    function setPageSize(page: number, size: number = 10, total: number = 1) {
+    function setPageSize(page: number, size: number, total: number) {
+        console.log(page, size, total)
         pagination.value.page = page
         pagination.value.size = size
         pagination.value.total = total

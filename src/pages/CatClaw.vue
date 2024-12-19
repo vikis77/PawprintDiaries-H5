@@ -84,8 +84,8 @@
             <!-- 展示统计信息 -->
             <view class="showStatisticsBox">
                 <view class="th0hzf">
-                    <uni-card class="tz0v898" margin=0 title="校猫数据统计卡片" :sub-title="nowTime" extra=""
-                        thumbnail="../../static/cat-copy.png">
+                    <!-- thumbnail 图片现在只能使用网络图片，本地图片不显示 -->
+                    <uni-card class="tz0v898" margin="0" title="校猫数据统计卡片" :sub-title="nowTime" extra="" thumbnail="https://cdn.luckyiur.com/catcat/static_image/cat-copy.png">
                         <view class="gridbody">
                             <uni-grid class="tyh08hz" :column="3" :square="false" :highlight="false">
                                 <uni-grid-item v-for="(item, index) in gridList" :index="index" :key="index"
@@ -194,7 +194,7 @@
                                 <uni-easyinput v-model="adoptFormsData.name" placeholder="" />
                             </uni-forms-item>
                             <uni-forms-item label="您的班级" required label-width="70">
-                                <uni-easyinput v-model="adoptFormsData.class" placeholder="" />
+                                <uni-easyinput v-model="adoptFormsData.schoolClass" placeholder="" />
                             </uni-forms-item>
                             <uni-forms-item label="您的籍贯" required label-width="70">
                                 <uni-easyinput v-model="adoptFormsData.origin" placeholder="" />
@@ -322,7 +322,7 @@ const catSelectList = ref([]);
 const adoptFormsData = ref({
     catName: '',
     name: '',
-    class: '',
+    schoolClass: '',
     origin: '',
     phone: '',
     wechat: ''
@@ -895,7 +895,7 @@ const closeAdoptPopup = () => {
     adoptFormsData.value = {
         catName: '',
         name: '',
-        class: '',
+        schoolClass: '',
         origin: '',
         phone: '',
         wechat: ''
@@ -911,45 +911,83 @@ const closeDonatePopup = () => {
 // 提交领养表单
 const submitAdoptForm = () => {
     // 验证表单是否填写完整
-    if (!adoptFormsData.value.catName ||
-        !adoptFormsData.value.name ||
-        !adoptFormsData.value.class ||
-        !adoptFormsData.value.origin ||
-        !adoptFormsData.value.phone ||
-        !adoptFormsData.value.wechat) {
+    if (!adoptFormsData.value.catName) {
         uni.showToast({
-            title: '请填写完整信息',
+            title: '请选择小猫',
             icon: 'none'
         })
         return
     }
+    if (!adoptFormsData.value.name) {
+        uni.showToast({
+            title: '请填写领养人名字',
+            icon: 'none'
+        })
+        return
+    }
+    if (!adoptFormsData.value.schoolClass) {
+        uni.showToast({
+            title: '请填写领养人班级',
+            icon: 'none'
+        })
+        return
+    }
+    if (!adoptFormsData.value.origin) {
+        uni.showToast({
+            title: '请填写领养人地址',
+            icon: 'none'
+        })
+        return
+    }
+    if (!adoptFormsData.value.phone) {
+        uni.showToast({
+            title: '请填写领养人电话',
+            icon: 'none'
+        })
+        return
+    }
+    if (!adoptFormsData.value.wechat) { // 领养人微信
+        uni.showToast({
+            title: '请填写领养人微信',
+            icon: 'none'
+        })
+        return
+    }
+    // 将小猫名字映射为catId
+    // adoptFormsData.value.catId = adoptFormsData.value.catName;
+    console.log(adoptFormsData.value)
 
-    // 发送领养申请
-    uni.request({
-        url: `${API_general_request_url.value}/adopt/apply`,
-        method: 'POST',
-        data: adoptFormsData.value,
-        success: (res) => {
-            if (res.data.code === 200) {
-                uni.showToast({
-                    title: '申请提交成功',
-                    icon: 'success'
-                })
-                closeAdoptPopup()
-            } else {
-                uni.showToast({
-                    title: res.data.msg,
-                    icon: 'none'
-                })
-            }
-        },
-        fail: (err) => {
-            uni.showToast({
-                title: '提交失败，请稍后重试',
-                icon: 'none'
-            })
-        }
+    uni.showToast({
+        title: '提交成功，申请会尽快处理！',
+        icon: 'success'
     })
+    closeAdoptPopup()
+    // TODO 发送领养申请
+    // uni.request({
+    //     url: `${API_general_request_url.value}/adopt/apply`,
+    //     method: 'POST',
+    //     data: adoptFormsData.value,
+    //     success: (res) => {
+    //         if (res.data.code === 200) {
+    //             uni.showToast({
+    //                 title: '申请提交成功',
+    //                 icon: 'success'
+    //             })
+    //             closeAdoptPopup()
+    //         } else {
+    //             uni.showToast({
+    //                 title: res.data.msg,
+    //                 icon: 'none'
+    //             })
+    //         }
+    //     },
+    //     fail: (err) => {
+    //         uni.showToast({
+    //             title: '提交失败，请稍后重试',
+    //             icon: 'none'
+    //         })
+    //     }
+    // })
 }
 
 // 添加猫咪选择列表数据
@@ -1152,7 +1190,7 @@ const getDetailDescription = (grid) => {
         case '已领养数量':
             return '这是通过我们平台成功找到新家的猫咪数量。每月平均有3-4只猫咪被领养。';
         case '已绝育数量':
-            return '这是已经完成绝育手术的猫咪数量。可以看到绝育数量在稳步增加，这对控制流浪猫数量很有帮助。';
+            return '这是已经完成绝育���术的猫咪数量。可以看到绝育数量在稳步增加，这对控制流浪猫数量很有帮助。';
         case '已打疫苗':
             return '这是已经接种疫苗的猫咪数量。疫苗接种率持续提升，有效预防了传染病的发生。';
         case '健康数量':
@@ -1267,7 +1305,6 @@ const refreshCatList = () => {
         }, 500);
     }, 800);
 };
-
 
 </script>
 
@@ -1462,7 +1499,6 @@ scroll-view ::-webkit-scrollbar {
                 margin-bottom: 36rpx;
                 box-shadow: rgba(0, 0, 0, 0.08) 0px 0px 3px 1px;
                 border: 0.666667rpx solid #EBEEF5;
-
                 .tyh08hz {
                     width: 100%;
                     height: 100%;

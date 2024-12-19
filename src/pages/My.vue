@@ -206,6 +206,7 @@ const handlerClickPost = (postId) => {
 
 // 页面加载
 onShow(async () => {
+    checkLoginStatus()
     console.log("主页挂载")
     if (!checkLogin()) {
         appStore.setUserInfoNull()
@@ -269,6 +270,7 @@ const handlerClickSendPost = () => {
 // 检查登录状态
 const checkLoginStatus = () => {
     const token = uni.getStorageSync('token')
+    console.log(token)
     isLoggedIn.value = !!token
 }
 
@@ -290,7 +292,6 @@ const handleLoginLogout = () => {
 
 // 在页面加载时检查登录状态
 onMounted(() => {
-    checkLoginStatus()
 })
 
 // 计算当前显示的列表

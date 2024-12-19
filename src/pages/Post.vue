@@ -57,6 +57,9 @@
 				</view>
 				
 				<view class="text-content">
+                    <view class="post-title">
+                        {{ currentPost.title }}
+                    </view>
 					<view class="text">
 						{{ currentPost.article }}
 					</view>
@@ -84,7 +87,7 @@
 					</view>
 					<view class="chatbubble" @click="handleComment">
 						<uni-icons type="chatbubble" size="26"></uni-icons>
-						<text class="count">{{comments.length}}</text>
+						<text class="count">{{comments.length || 0}}</text>
 					</view>
 					<view class="paperplane" @click="handleShare">
 						<uni-icons type="paperplane" size="26"></uni-icons>
@@ -174,6 +177,8 @@
 	import { ref, onMounted } from 'vue';
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
 	import { toBeDeveloped, showToast } from '@/src/utils/toast'
+    import { useAppStore } from '@/store/modules/app'
+    const appStore = useAppStore()
 
 	
 	const post_authorId = ref('');
@@ -184,7 +189,7 @@
 	const touchStartY = ref(0);
 	const touchMoveY = ref(0);
 	const popupTranslateY = ref(0);
-    const comments = ref()
+    const comments = ref([]);
 	
 	// 创建响应式的当前帖子对象
 	const currentPost = ref({
@@ -234,6 +239,7 @@ const newComment = ref('');
 		userId.value = uni.getStorageSync('tokenDetail').userId;
 		const options = getCurrentPages().pop().options;
 		const postId = options.postId; // 获取当前帖子的ID
+        console.log("当前帖子ID：", postId)
 		// 获取当前帖子数据
 		uni.request({
 			url: `${API_general_request_url.value}/api/post/getPostByPostId?postId=${postId}`,
@@ -243,6 +249,7 @@ const newComment = ref('');
 			},
 			success: (res) => {
 				if (res.statusCode === 200 && res.data.code === '2000') {
+                    console.log('获取当前帖子数据成功',res.data)
 					const post = res.data.data;
 					console.log(post)
 					currentPost.value = {
@@ -275,15 +282,23 @@ const newComment = ref('');
             success: (res) => {
                 console.log(res)
                 if (res.statusCode === 200 && res.data.code === '2000') {
-                    comments.value = res.data.data;
-                    // commentCount.value = res.data.data.length || 0;
+                    comments.value = Array.isArray(res.data.data) ? res.data.data : [];
                     console.log('获取帖子评论列表成功')
                 } else {
                     uni.showToast({
                         title: res.data.msg || '获取评论列表失败',
                         icon: 'none'
                     })
+                    comments.value = [];
                 }
+            },
+            fail: (error) => {
+                console.error('获取评论列表失败:', error);
+                comments.value = [];
+                uni.showToast({
+                    title: '获取评论列表失败',
+                    icon: 'none'
+                });
             }
         })
 	})
@@ -388,11 +403,14 @@ const newComment = ref('');
 			showToast('评论内容不能为空');
 			return;
 		}
+        
+        // 获取当前用户信息
         const comment = {
             commentContext: newComment.value,
             postId: currentPost.value.postId,
             type: 20
         }   
+        
         uni.request({
             url: `${API_general_request_url.value}/api/comment/add`,
             method: 'POST',
@@ -402,10 +420,23 @@ const newComment = ref('');
             },
             success: (res) => {
                 if (res.statusCode === 200 && res.data.code === '2000') {
-                    console.log(res.data.data)
-                    console.log('评论成功')
-                    // 将评论添加到评论列表中
-                    comments.value.unshift(comment);
+                    console.log('评论成功', res.data.data);
+                    
+                    // 构建新评论对象，包含必要的显示信息
+                    const newCommentObj = {
+                        commentContext: newComment.value,
+                        createTime: new Date().toLocaleString(),
+                        nickname: appStore.userInfo.nickName,
+                        avatar: appStore.userInfo.avatar,
+                        likes: 0,
+                        liked: false,
+                        ...res.data.data  // 合并后端返回的数据
+                    };
+                    
+                    // 将新评论添加到列表开头
+                    comments.value.unshift(newCommentObj);
+                    
+                    // 清空输入框并关闭评论弹窗
                     newComment.value = '';
                     showToast('评论成功');
                     closeComments();
@@ -732,7 +763,13 @@ const newComment = ref('');
 			
 			.text-content {
 				padding: 30rpx;
-				
+				.post-title {
+					font-size: 32rpx;
+                    font-weight: 700;
+					color: #333;
+					line-height: 1.5;
+					margin-bottom: 20rpx;
+				}
 				.text {
 					font-size: 32rpx;
 					color: #333;

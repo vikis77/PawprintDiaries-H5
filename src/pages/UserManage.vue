@@ -140,8 +140,9 @@ const loadMore = () => {
 
 // 处理角色变更
 const handleRoleChange = (user) => {
+    console.log(user)
     selectedUser.value = user;
-    confirmContent.value = `确定要${user.role === 'ADMIN' ? '取消' : '设置'} ${user.nickname} 的管理员权限吗？`;
+    confirmContent.value = `确定要${user.role === 'ADMIN' ? '取消' : '设置'} ${user.nickName} 的管理员权限吗？`;
     confirmPopup.value.open();
 };
 
@@ -175,6 +176,10 @@ const confirmRoleChange = async () => {
                         icon: 'success'
                     });
                 } else {
+                    uni.showToast({
+                        title: res.data.msg,
+                        icon: 'error'
+                    })
                     throw new Error('修改角色失败');
                 }
             }

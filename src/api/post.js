@@ -15,7 +15,6 @@ export const getPosts = async (page = undefined, pageSize = undefined, isRefresh
     // 如果没有传入参数，使用store中的默认值
     if (page === undefined) page = appStore.pagination.page
     if (pageSize === undefined) pageSize = appStore.pagination.size
-    const total = appStore.pagination.total
     // 如果刷新，则将页码重置为0，否则页码加1
     if (isRefresh) {
         page = 1
@@ -23,8 +22,10 @@ export const getPosts = async (page = undefined, pageSize = undefined, isRefresh
         try {
             const response = await axios.get(`${API_general_request_url.value}/api/post/getRandomWeightedPosts?page=${page}&pageSize=${pageSize}`);
             if (response.status === 200 && response.data.code === "2000") {
+                console.log(response.data)
                 const newPosts = response.data.data
-                await appStore.setPageSize(page, pageSize, response.data.data.pages)
+                await appStore.setPageSize(page, pageSize, response.data.totalPages)
+                console.log(appStore.pagination)
                 await appStore.setPostList(newPosts);
                 console.log(newPosts)
                 return;
@@ -42,7 +43,7 @@ export const getPosts = async (page = undefined, pageSize = undefined, isRefresh
             if (response.status === 200 && response.data.code === "2000") {
                 const newPosts = response.data.data
                 appStore.setPostList([...appStore.postList, ...newPosts]);
-                appStore.setPageSize(page, pageSize, response.data.data.pages)
+                appStore.setPageSize(page, pageSize, response.data.totalPages)
                 console.log(newPosts)
                 return;
             }

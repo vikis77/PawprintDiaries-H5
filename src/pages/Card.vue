@@ -394,6 +394,9 @@
 	}
 	
 	function handleEdit() {
+        if (!checkLogin()) {
+            return
+        }
 		showMenu.value = false;
 		const catId = cat.value.catId;
 		uni.navigateTo({
@@ -699,7 +702,6 @@
 	
 	// 触摸开始
 	const touchStart = (e) => {
-		e.stopPropagation();
 		touchStartY.value = e.touches[0].clientY;
 		touchStartTime.value = Date.now();
 		moveSpeed.value = 0;
@@ -707,7 +709,6 @@
 	
 	// 触摸移动
 	const touchMove = (e) => {
-		e.stopPropagation();
 		const currentY = e.touches[0].clientY;
 		const moveDistance = currentY - touchStartY.value;
 		const currentTime = Date.now();
@@ -722,21 +723,19 @@
 		lastMoveTime.value = currentTime;
 		touchMoveY.value = currentY;
 
-		// 只有在向下滑动时才处理
-		if (moveDistance > 0) {
-			const scrollTop = e.currentTarget.scrollTop;
-			
-			// 如果已经滚动到顶部，则允许下拉关闭
-			if (scrollTop <= 0) {
-				popupTranslateY.value = moveDistance;
-				e.preventDefault(); // 阻止滚动
-			}
+		// 如果评论区已打开，处理下滑关闭
+		if (isPopupOpen.value && moveDistance > 0) {
+			popupTranslateY.value = moveDistance;
+			e.preventDefault(); // 阻止滚动
+		}
+		// 如果评论区未打开，处理上滑打开
+		else if (!isPopupOpen.value && moveDistance < -50) {
+			showComments();
 		}
 	};
 	
 	// 触摸结束
 	const touchEnd = (e) => {
-		e.stopPropagation();
 		const endY = e.changedTouches[0].clientY;
 		const moveDistance = endY - touchStartY.value;
 		const moveTime = Date.now() - touchStartTime.value;
@@ -744,13 +743,18 @@
 		// 判断是否为快速滑动（速度阈值可以调整）
 		const isQuickSlide = moveSpeed.value > 0.3; // 每毫秒0.3像素以上视为快速滑动
 		
-		if (moveDistance > 0) { // 向下滑动
-			if (moveDistance > 300 || isQuickSlide) {
-				// 滑动距离大于300px或快速滑动时关闭弹窗
+		if (isPopupOpen.value) {
+			// 评论区已打开时，处理下滑关闭，滑动距离大于300px或快速滑动时关闭弹窗
+			if (moveDistance > 300 || (moveDistance > 0 && isQuickSlide)) {
 				closeComments();
 			} else {
-				// 否则回弹
+				// 回弹
 				popupTranslateY.value = 0;
+			}
+		} else {
+			// 评论区未打开时，处理上滑打开
+			if (moveDistance < -100 || (moveDistance < 0 && isQuickSlide)) {
+				showComments();
 			}
 		}
 		
@@ -781,7 +785,7 @@
 				box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 				
 				&-row {
-					height: 180rpx;
+					height: 100rpx;
 					display: flex;
 					align-items: center;
 				}

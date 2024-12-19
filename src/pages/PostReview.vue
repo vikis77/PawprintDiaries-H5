@@ -208,6 +208,10 @@ onMounted(async () => {
     text-align: center;
     padding: 40rpx;
     color: #999;
+    height: calc(100vh - 150rpx);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .post-item {
