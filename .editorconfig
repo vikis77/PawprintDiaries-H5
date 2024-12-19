@@ -1,0 +1,25 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# 顶层配置文件
+root = true
+
+# 所有文件通用配置
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Vue文件配置
+[*.{vue,js,jsx,ts,tsx}]
+indent_style = space
+indent_size = 4
+
+# HTML, CSS, SCSS, LESS, JSON文件配置
+[*.{html,css,scss,less,json}]
+indent_style = space
+indent_size = 4
+
+# Markdown文件配置
+[*.md]
+trim_trailing_whitespace = false 

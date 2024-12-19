@@ -4,7 +4,7 @@
       <!-- 返回按钮 -->
       <view class="back-section">
         <view class="back-button" @click="goBack">
-          <img class="back-icon" src="../../static/返回.png" mode="aspectFit" />
+          <img class="back-icon" src="../../static/goback.png" mode="aspectFit" />
         </view>
       </view>
       

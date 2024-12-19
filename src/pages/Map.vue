@@ -9,7 +9,7 @@
 						<view class="search-row">
 							<view class="search-item">
 								<view class="icon-label">
-									<img class="icon" src="../../static/时间.png" mode="aspectFill"/>
+									<img class="icon" src="../../static/time2.png" mode="aspectFill"/>
 									<text class="label">选择日期</text>
 								</view>
 								<view class="picker-container">
@@ -28,7 +28,7 @@
 						<view class="search-row">
 							<view class="search-item">
 								<view class="icon-label">
-									<img class="icon" src="../../static/布偶猫-稀有色.png" mode="aspectFill"/>
+									<img class="icon" src="../../static/cat007.png" mode="aspectFill"/>
 									<text class="label">选择小猫</text>
 								</view>
 								<view class="picker-container">
@@ -140,7 +140,7 @@
 							<view class="image-container">
 								<img v-if="imagePath" :src="imagePath" mode="aspectFit" class="preview-image"/>
 								<view v-else class="upload-placeholder" @click="chooseImage">
-									<img src="../../static/布偶猫-稀有色.png" mode="aspectFit" class="camera-icon"/>
+									<img src="../../static/cat007.png" mode="aspectFit" class="camera-icon"/>
 									<text class="upload-text">点击拍照或选择图片</text>
 								</view>
 							</view>
@@ -214,20 +214,20 @@
 	const content = ref(
 		[{
 			// TODO 图片路径找不到/static/ 文件，路径把pages视为了根目录
-			iconPath: '/tempStatic/V1_填写表单.png',
-			selectedIconPath: '/tempStatic/V1_填写表单.png',
+			iconPath: '/tempStatic/V1_report.png',
+			selectedIconPath: '/tempStatic/V1_report.png',
 			text: '发现小猫',
 			active: false,
 		},
 		{
 			iconPath: '/tempStatic/aichong32.png',
-			selectedIconPath: '/tempStatic/拍照识猫.png',
+			selectedIconPath: '/tempStatic/aichong32.png',
 			text: '拍猫识别',
 			active: false
 		},
 		{
-			iconPath: '/tempStatic/拍照.png',
-			selectedIconPath: '../../static/拍照.png',
+			iconPath: '/tempStatic/photo009.png',
+			selectedIconPath: '/tempStatic/photo009.png',
 			text: '校猫识别',
 			active: false
 		}]
@@ -287,7 +287,7 @@
 	const dataListCat = ref(); // text显示文(猫名)  value选中后的值   disable	是否禁用
 	const selectedValueC = ref('all'); // 选中的猫
 	// 点击选中某只小猫，发送请求，小猫最近10条坐标
-	const onCatChange = (e) => { // e 即���的小猫的value 也是catId
+	const onCatChange = (e) => { // e 即的小猫的value 也是catId
 	  console.log('Selected value: ', e);
 	  selectedValueC.value = e;
 	  filterResults();
@@ -345,46 +345,60 @@
 	        responseData.value = response.data.data;
 	        // 如果是查询具体猫咪的轨迹(无论是否选择日期)
 	        if (selectedValueC.value !== 'all' && selectedValueC.value !== '') {
-	          mapDrawMode.value = 'line';
-	          // 如果有日期和猫咪ID,直接使用返回数据
-	          if(selectedDate.value) {
-	            path.value = Array.isArray(responseData.value) ?
-	              responseData.value.map(item => [
-	                parseFloat(item.longitude.toFixed(6)),
-	                parseFloat(item.latitude.toFixed(6)),
-	                item.catName
-	              ]) :
-	              [[
-	                parseFloat(responseData.value.longitude.toFixed(6)),
-	                parseFloat(responseData.value.latitude.toFixed(6)), 
-	                responseData.value.catName
-	              ]];
-	          } else {
-	            // 只有猫咪ID时使用records数据
-	            path.value = response.data.data.records.map(item => [
-	              parseFloat(item.longitude.toFixed(6)),
-	              parseFloat(item.latitude.toFixed(6)),
-	              item.catName
-	            ]);
-	          }
+	            mapDrawMode.value = 'line';
+	            if(selectedDate.value) {
+	                path.value = Array.isArray(responseData.value) ?
+	                    responseData.value
+	                        .filter(item => item.longitude != null && item.latitude != null)
+	                        .map(item => [
+	                            parseFloat((item.longitude || 0).toFixed(6)),
+	                            parseFloat((item.latitude || 0).toFixed(6)),
+	                            item.catName || '未知猫咪'
+	                        ]) :
+	                    (responseData.value && responseData.value.longitude != null && responseData.value.latitude != null) ? 
+	                        [[
+	                            parseFloat((responseData.value.longitude || 0).toFixed(6)),
+	                            parseFloat((responseData.value.latitude || 0).toFixed(6)),
+	                            responseData.value.catName || '未知猫咪'
+	                        ]] : [];
+	            } else {
+	                path.value = response.data.data.records
+	                    .filter(item => item.longitude != null && item.latitude != null)
+	                    .map(item => [
+	                        parseFloat((item.longitude || 0).toFixed(6)),
+	                        parseFloat((item.latitude || 0).toFixed(6)),
+	                        item.catName || '未知猫咪'
+	                    ]);
+	            }
 	        } else {
-	          // 只选择日期或部显示时显示点
-	          mapDrawMode.value = 'point';
-	          path.value = Array.isArray(responseData.value) ?
-	            responseData.value.map(item => [
-	              parseFloat(item.longitude.toFixed(6)),
-	              parseFloat(item.latitude.toFixed(6)),
-	              item.catName
-	            ]) :
-	            [[
-	              parseFloat(responseData.value.longitude.toFixed(6)),
-	              parseFloat(responseData.value.latitude.toFixed(6)),
-	              responseData.value.catName
-	            ]];
+	            mapDrawMode.value = 'point';
+	            path.value = Array.isArray(responseData.value) ?
+	                responseData.value
+	                    .filter(item => item.longitude != null && item.latitude != null)
+	                    .map(item => [
+	                        parseFloat((item.longitude || 0).toFixed(6)),
+	                        parseFloat((item.latitude || 0).toFixed(6)),
+	                        item.catName || '未知猫咪'
+	                    ]) :
+	                (responseData.value && responseData.value.longitude != null && responseData.value.latitude != null) ?
+	                    [[
+	                        parseFloat((responseData.value.longitude || 0).toFixed(6)),
+	                        parseFloat((responseData.value.latitude || 0).toFixed(6)),
+	                        responseData.value.catName || '未知猫咪'
+	                    ]] : [];
 	        }
-	        map1.clearMap();
-	        map2.clearMap();
-	        mapDraw();
+	        
+	        // 只有在有有效数据时才清除和重绘地图
+	        if (path.value.length > 0) {
+	            map1.clearMap();
+	            map2.clearMap();
+	            mapDraw();
+	        } else {
+	            uni.showToast({
+	                title: '暂无有效的坐标数据',
+	                icon: 'none'
+	            });
+	        }
 	      }
 	    }
 	  });
@@ -431,22 +445,25 @@
 						responseData.value = response.data.data;
 						console.log(responseData.value);
 						mapDrawMode.value = 'point';
-						path.value = responseData.value.map(item => [
-						  parseFloat(item.longitude.toFixed(6)), // 保留经度的前6位
-						  parseFloat(item.latitude.toFixed(6)),  // 同样保留纬度的前6位
-						  item.catName
-						]);
+						// 添加数据验证和空值处理
+						path.value = responseData.value
+							.filter(item => item.longitude != null && item.latitude != null) // 过滤掉无效坐标
+							.map(item => [
+								parseFloat((item.longitude || 0).toFixed(6)), // 添加默认值
+								parseFloat((item.latitude || 0).toFixed(6)),  
+								item.catName || '未知猫咪'  // 添加默认名称
+							]);
 						console.log(path.value);
 					} else {
 						uni.showToast({
-						title: res.data.msg || '全部小猫最新坐标失败',
-						icon: 'none'
+							title: response.data.msg || '获取小猫坐标失败',
+							icon: 'none'
 						});
 					}
 				},
 				fail: () => {
 					uni.showToast({
-						title: '请求全部小猫最新坐标失败，重试',
+						title: '请求小猫坐标失败，请重试',
 						icon: 'none'
 					});
 				}
@@ -475,7 +492,7 @@
 				rotation: 0, // 置旋转角度，0表示北方在上，90表示地图顺时针旋转90度
 				rotateEnable: true, //是否开启地图旋转交互 鼠标右 + 鼠标画圈移动 或 键盘Ctrl + 鼠标左键画圈动
 				pitchEnable: true, //是否开启地图倾斜交互 鼠标右键 + 鼠标上下移动或键盘Ctrl + 鼠标左键上下移动
-				features: ['bg', 'road','name'] // 显示背景、道路和建筑物，但���显示地名
+				features: ['bg', 'road','name'] // 显示背景、道路和建筑物，但显示地名
 			});
 			// 添加比例尺控件
 			map1.addControl(new AMap.Scale());
@@ -579,12 +596,12 @@
 				// console.log(marker)
 				map1catMarker = new AMap.Marker({
 					position: [marker[0], marker[1]], // 经纬度 113 22
-					icon: "../../static/红点12.svg",
+					icon: "../../static/redpoint12.svg",
 					offset: new AMap.Pixel(-20, -20), // 根据图标的尺寸整偏移
 				});
 				map1catMarker.setMap(map1);
 				map1catMarker.setLabel({
-				        offset: new AMap.Pixel(-17,-15),  //设��文本标注偏移量
+				        offset: new AMap.Pixel(-17,-15),  //设文本标注偏移量
 				        content: `<div class='mapLabelInfo'>${marker[2]}</div>`, //设置文本标注内容
 				        direction: 'right' //设置文本标注方位
 				    });
@@ -595,7 +612,7 @@
 				// console.log(marker)
 				map2catMarker = new AMap.Marker({
 					position: [marker[0], marker[1]], // 经纬度 113 22
-					icon: "../../static/红点12.svg",
+					icon: "../../static/redpoint12.svg",
 					offset: new AMap.Pixel(-5, -5), // 根据图标的尺寸调整偏移
 				});
 				map2catMarker.setMap(map2);
@@ -623,14 +640,14 @@
 			// 添加起点的标记
 			let starMarker1 = new AMap.Marker({
 			  position: linePath[0], // 轨迹线的最后一个点
-			  icon: "../../static/猫32.svg",
+			  icon: "../../static/cat32.svg",
 			  offset: new AMap.Pixel(-20, -20), // 根据图标的尺寸调整偏移
 			});
 			map1.add(starMarker1);
 			// 添加结束点的标记
 			let endMarker1 = new AMap.Marker({
 			  position: linePath[linePath.length - 1], // 轨迹线的最后一个点
-			  icon: "../../static/到站16.svg",
+			  icon: "../../static/pos16.svg",
 			  offset: new AMap.Pixel(-8, -10), // 根据图标的尺寸调整偏移
 			});
 			map1.add(endMarker1);
@@ -646,14 +663,14 @@
 			
 			let starMarker2 = new AMap.Marker({ // 添加起始点的标记
 			  position: path.value[0], // 轨迹线的最后一个点
-			  icon: "../../static/猫32.svg",
+			  icon: "../../static/cat32.svg",
 			  offset: new AMap.Pixel(-20, -20), // 根据图标的尺寸调整偏移
 			});
 			map2.add(starMarker2);
 			
-			let endMarker2 = new AMap.Marker({ // 添加��束点的标记
+			let endMarker2 = new AMap.Marker({ // 添加结束点的标记
 			  position: path.value[path.value.length - 1], // 轨迹线的最后一个点
-			  icon: "../../static/到站16.svg",
+			  icon: "../../static/pos16.svg",
 			  offset: new AMap.Pixel(-8, -10), // 根据图的尺寸调整偏移
 			});
 			map2.add(endMarker2);

@@ -37,11 +37,11 @@ const props = defineProps({
 	},
 	leftIcon: {
 		type: String,
-		default: '../../../static/返回.png'
+		default: '../../../static/goback.png'
 	},
 	rightIcon: {
 		type: String,
-		default: '../../../static/猫砂盆.png'
+		default: '../../../static/macshapen.png'
 	},
 	customBack: {
 		type: Boolean,
@@ -79,7 +79,7 @@ const handleRightClick = () => {
     z-index: 100;
 
     &-row {
-        height: 150rpx;
+        height: 100rpx;
         display: flex;
         align-items: center;
     }

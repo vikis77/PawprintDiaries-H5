@@ -9,14 +9,14 @@
 				<view class="header">
 					<uni-row class="header-row" :width="750">
 						<uni-col :span="8" class="header-left">
-							<img src="../../static/返回.png" @click="handleGoback" class="header-icon"/>
+							<img src="../../static/goback.png" @click="handleGoback" class="header-icon"/>
 						</uni-col>
 						<uni-col :span="8" class="header-center">
 							<text class="header-title">小猫卡片</text>
 						</uni-col>
 						<uni-col :span="8" class="header-right">
 							<view class="more-menu">
-								<img src="../../static/更多.png" @click.stop="toggleMenu" class="header-icon"/>
+								<img src="../../static/more.png" @click.stop="toggleMenu" class="header-icon"/>
 								<!-- 遮罩层 -->
 								<view v-if="showMenu" class="mask" @click.stop="showMenu = false"></view>
 								<!-- 悬浮菜单 -->
@@ -44,14 +44,17 @@
 						</view>
 						<!-- 添加互动区域 -->
 						<view class="interaction-area">
+							<!-- 点赞 -->
 							<view class="interaction-item" @click="handleLike">
 								<uni-icons :type="isLiked ? 'heart-filled' : 'heart'" size="24" :color="isLiked ? '#ff4d4f' : '#666'"></uni-icons>
-								<text :class="{'liked': isLiked}">{{likeCount}}</text>
+								<text :class="{'liked': isLiked}">{{cat.likeCount}}</text>
 							</view>
+							<!-- 热度 -->
 							<view class="interaction-item">
 								<uni-icons type="fire" size="24" color="#ff9c6e"></uni-icons>
-								<text>{{cat.heat || 0}}</text>
+								<text>{{cat.trending || 0}}</text>
 							</view>
+							<!-- 评论 -->
 							<view class="interaction-item" @click="showComments">
 								<uni-icons type="chat" size="24" color="#666"></uni-icons>
 								<text>{{commentCount}}</text>
@@ -74,9 +77,9 @@
 								<text>种类：</text>
 							</view>
 							<!-- <view class="tzv8u">
-								<image class="tz8888" src="../../static/猫包.png" mode=""></image>
-								<image class="tz8888" src="../../static/猫包.png" mode=""></image>
-								<image class="tz8888" src="../../static/猫包.png" mode=""></image>
+								<image class="tz8888" src="../../static/catbag.png" mode=""></image>
+								<image class="tz8888" src="../../static/catbag.png" mode=""></image>
+								<image class="tz8888" src="../../static/catbag.png" mode=""></image>
 							</view> -->
 							
 						</view>
@@ -154,13 +157,13 @@
 			<uni-popup ref="popupSelect" type="center" background-color="transparent">
 				<view class="donate-section">
 					<view class="donate-card" @click="handleClickAdopt">
-						<img class="card-icon" src="/static/爱心领养hover.png" mode="aspectFit"/>
+						<img class="card-icon" src="/static/hover.png" mode="aspectFit"/>
 						<text class="card-title">我要领养</text>
 						<text class="card-desc">给流浪猫一个温暖的家</text>
 					</view>
 					
 					<view class="donate-card" @click="handleClickDonate">
-						<img class="card-icon" src="/static/在线捐赠.png" mode="aspectFit"/>
+						<img class="card-icon" src="/static/donate.png" mode="aspectFit"/>
 						<text class="card-title">我要捐赠</text>
 						<text class="card-desc">为流浪猫献上一份爱心</text>
 					</view>
@@ -212,11 +215,11 @@
 					<view class="qr-content">
 						<view class="qr-item">
 							<text class="qr-title">微信支付</text>
-							<img class="qr-image" src="../../static/猫.png" mode="aspectFit"/>
+							<img class="qr-image" src="../../static/cat.png" mode="aspectFit"/>
 						</view>
 						<view class="qr-item">
 							<text class="qr-title">支付宝</text>
-							<img class="qr-image" src="../../static/猫.png" mode="aspectFit"/>
+							<img class="qr-image" src="../../static/cat.png" mode="aspectFit"/>
 						</view>
 					</view>
 					<view class="donate-note">
@@ -241,22 +244,22 @@
 						<view class="drag-bar-inner"></view>
 					</view>
 					<view class="popup-header">
-						<text class="title">猫友评论 ({{commentCount}})</text>
+						<text class="title">猫友评论（已通过审核）</text>
 						<uni-icons type="closeempty" size="24" @click="closeComments"></uni-icons>
 					</view>
-					<scroll-view scroll-y="true" class="comments-container">
+					<scroll-view scroll-y="true" class="comments-container" :show-scrollbar="false">
 						<view class="comment-item" v-for="(comment, index) in comments" :key="index">
-							<image class="commenter-avatar" :src="comment.avatar" mode="aspectFill"></image>
+							<img class="commenter-avatar" :src="`${pic_general_request_url}/user_avatar/${comment.avatar}`" mode="aspectFill"></img>
 							<view class="comment-content">
 								<view class="comment-header">
-									<text class="commenter-name">{{comment.username}}</text>
-									<text class="comment-time">{{comment.time}}</text>
+									<text class="commenter-name">{{comment.nickName}}</text>
+									<text class="comment-time">{{comment.createTime}}</text>
 								</view>
-								<text class="comment-text">{{comment.content}}</text>
+								<text class="comment-text">{{comment.commentContext}}</text>
 								<view class="comment-actions">
 									<view class="action-item" @click="likeComment(index)">
 										<uni-icons :type="comment.isLiked ? 'heart-filled' : 'heart'" size="14" :color="comment.isLiked ? '#ff4d4f' : '#999'"></uni-icons>
-										<text>{{comment.likes}}</text>
+										<text>{{comment.likeCount}}</text>
 									</view>
 									<view class="action-item" @click="replyComment(index)">
 										<uni-icons type="chat" size="14" color="#999"></uni-icons>
@@ -282,6 +285,7 @@
 <script setup>
 	import { ref, onMounted } from 'vue';
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+	const appStore = useAppStore()
 	
 	const showMenu = ref(false);
 	const cat = ref(null);
@@ -314,17 +318,26 @@
 	const popupTranslateY = ref(0);
 	const touchStartTime = ref(0);
 	const isPopupOpen = ref(false);
+	const lastMoveTime = ref(0);
+	const moveSpeed = ref(0);
 	
-	onMounted(() => {
+	onShow(() => {
 		const options = getCurrentPages().pop().options; // 获取页面传递的参数
 		const catId = options.catId; // 获取传递过来的 catId
 		console.log(catId)
-		const catList = uni.getStorageSync('catList'); // 获取猫猫列表
+		// const catList = uni.getStorageSync('catList'); // 获取猫猫列表
+		const catList = appStore.catList
 		console.log(catList)
 		// 根据 catId 查找对应的小猫信息
 		const selectedCat = catList.find(cat => cat.catId === parseInt(catId));
 		// 将选中的猫信息存储到响应式数据中
 		cat.value = selectedCat;
+		
+		// 初始化点赞状态和数量
+		if (selectedCat) {
+			isLiked.value = selectedCat.isLikedToday || false;
+			likeCount.value = selectedCat.likeCount || 0;
+		}
 		
 		// 处理猫咪选择列表数据
 		catSelectList.value = catList.map(cat => ({
@@ -344,6 +357,7 @@
 			success: (response) => {
 				if (response.statusCode === 200 && response.data.code === '2000'){
 					picUrlDatas.value = response.data.data;
+                    console.log('获取小猫图片成功')
 				}else{
 					uni.showToast({
 						title: response.data.msg || '获取小猫图片失败',
@@ -361,7 +375,6 @@
 		})
 		
 		// 获取点赞和评论数据
-		getLikeStatus();
 		getComments();
 	});
 	
@@ -488,7 +501,7 @@
 				if (res.confirm) {
 					// 发送删除请求
 					uni.request({
-						url: `${API_general_request_url.value}/api/cat/delete/${cat.value.catId}`,
+						url: `${API_general_request_url.value}/api/cat/${cat.value.catId}`,
 						method: 'DELETE',
 						success: (response) => {
 							if (response.statusCode === 200 && response.data.code === '2000') {
@@ -529,42 +542,79 @@
 		});
 	}
 	
-	// 获取点赞状态
-	function getLikeStatus() {
-		// 模拟数据，实际应该从API获取
-		isLiked.value = false;
-		likeCount.value = Math.floor(Math.random() * 100);
-	}
-	
 	// 获取评论列表
 	function getComments() {
-		// 模拟数据，实际应该从API获取
-		comments.value = [
-			{
-				username: '猫咪爱好者',
-				avatar: '/static/猫.png',
-				content: '好可爱的小猫咪！',
-				time: '2024-01-20',
-				likes: 12,
-				isLiked: false
-			},
-			{
-				username: '铲屎官',
-				avatar: '/static/猫.png',
-				content: '这只猫很亲人，经常在教学楼附近晒太阳',
-				time: '2024-01-19',
-				likes: 8,
-				isLiked: false
+		// console.log(cat.value.catId)
+		uni.request({
+			url: `${API_general_request_url.value}/api/cat/comment/get/${cat.value.catId}`,
+			method: 'GET',
+			// header: {
+			// 	'Authorization': `Bearer ${uni.getStorageSync('token')}`
+			// },
+			success: (res) => {
+				if (res.statusCode === 200 && res.data.code === '2000') {
+					comments.value = res.data.data;
+					commentCount.value = res.data.data.length || 0;
+                    console.log('获取小猫评论列表成功')
+                    console.log(res.data.data)
+				} else {
+					uni.showToast({
+						title: res.data.msg || '获取小猫评论列表失败',
+						icon: 'none'
+					});
+				}
 			}
-		];
-		commentCount.value = comments.value.length;
+		})
 	}
 	
 	// 处理点赞
 	function handleLike() {
-		isLiked.value = !isLiked.value;
-		likeCount.value += isLiked.value ? 1 : -1;
-		// TODO: 发送点赞请求到后端
+		// 检查登录
+		if (!checkLogin()) {
+			uni.showToast({
+				title: '请先登录',
+				icon: 'none'
+			});
+			return;
+		}
+		
+		// 如果今天已经点赞过了
+		if (isLiked.value) {
+			uni.showToast({
+				title: '今天已经点赞过了',
+				icon: 'none'
+			});
+			return;
+		}
+
+		uni.request({
+			url: `${API_general_request_url.value}/api/cat/like/${cat.value.catId}`,
+			method: 'POST',
+			header: {  
+				'Authorization': `Bearer ${uni.getStorageSync('token')}`  
+			},
+			success: (res) => {	
+				if (res.statusCode === 200 && res.data.code === '2000') {
+					// 更新本地状态
+					isLiked.value = true;
+					likeCount.value += 1;
+					
+					// 更新store中的数据
+					const catList = appStore.catList;
+					const catIndex = catList.findIndex(c => c.catId === cat.value.catId);
+					if (catIndex !== -1) {
+						catList[catIndex].isLikedToday = true;
+						catList[catIndex].likeCount = likeCount.value;
+						appStore.setCatList([...catList]);
+					}
+					
+					uni.showToast({
+						title: '点赞成功',
+						icon: 'success'
+					});
+				}
+			}
+		});
 	}
 	
 	// 显示评论弹窗
@@ -591,27 +641,60 @@
 	
 	// 回复评论
 	function replyComment(index) {
+		// 获取当前评论的username
 		replyTo.value = comments.value[index].username;
 	}
 	
 	// 提交评论
 	function submitComment() {
+		// 检查登录
+		if (!checkLogin()) {
+			return;
+		}
+		// 检查评论是否为空
 		if (!newComment.value.trim()) return;
-		
+		// 获取当前用户信息
+        console.log(appStore.userInfo)
 		const comment = {
-			username: '当前用户', // 应该使用实际的用户信息
-			avatar: '/static/猫.png',
-			content: newComment.value,
+			nickName: appStore.userInfo.nickName, // 应该使用实际的用户信息
+			avatar: appStore.userInfo.avatar,
+			commentContext: newComment.value,
 			time: new Date().toLocaleDateString(),
-			likes: 0,
-			isLiked: false
+			likeCount: 0,
+			liked: false // 默认未点赞
 		};
+		console.log(newComment.value);
+		uni.request({
+			url: `${API_general_request_url.value}/api/cat/comment/add`,
+			method: 'POST',
+			data: {
+				catId: cat.value.catId,
+				commentContext: newComment.value,
+				isTop: 0 // 0表示不置顶，1表示置顶
+			},
+			header: {
+				'Authorization': `Bearer ${uni.getStorageSync('token')}`
+			},
+			success: (res) => {
+				if (res.statusCode === 200 && res.data.code === '2000') {
+                    // 添加评论到列表
+					comments.value.unshift(comment); // 添加到列表
+					commentCount.value++; // 增加评论计数
+					newComment.value = ''; // 清空评论输入框
+					replyTo.value = ''; // 清空回复对象
+					uni.showToast({
+						title: '评论成功',
+						icon: 'success'
+					});
+				} else {
+					uni.showToast({
+						title: res.data.msg || '评论失败',
+						icon: 'none'
+					});
+				}
+			}
+		})
 		
-		comments.value.unshift(comment);
-		commentCount.value++;
-		newComment.value = '';
-		replyTo.value = '';
-		// TODO: 发送评论请求到后端
 	}
 	
 	// 触摸开始
@@ -619,6 +702,7 @@
 		e.stopPropagation();
 		touchStartY.value = e.touches[0].clientY;
 		touchStartTime.value = Date.now();
+		moveSpeed.value = 0;
 	};
 	
 	// 触摸移动
@@ -626,18 +710,26 @@
 		e.stopPropagation();
 		const currentY = e.touches[0].clientY;
 		const moveDistance = currentY - touchStartY.value;
+		const currentTime = Date.now();
 		
-		// 如果弹窗已打开，只允许向下滑动
-		if (isPopupOpen.value) {
-			if (moveDistance > 0) {
-				touchMoveY.value = moveDistance;
+		// 计算移动速度 (像素/毫秒)
+		if (lastMoveTime.value) {
+			const timeDiff = currentTime - lastMoveTime.value;
+			const distanceDiff = currentY - touchMoveY.value;
+			moveSpeed.value = Math.abs(distanceDiff / timeDiff);
+		}
+		
+		lastMoveTime.value = currentTime;
+		touchMoveY.value = currentY;
+
+		// 只有在向下滑动时才处理
+		if (moveDistance > 0) {
+			const scrollTop = e.currentTarget.scrollTop;
+			
+			// 如果已经滚动到顶部，则允许下拉关闭
+			if (scrollTop <= 0) {
 				popupTranslateY.value = moveDistance;
-			}
-		} 
-		// 如果弹窗未打开，只允许向上滑动
-		else {
-			if (moveDistance < 0) {
-				touchMoveY.value = moveDistance;
+				e.preventDefault(); // 阻止滚动
 			}
 		}
 	};
@@ -648,24 +740,23 @@
 		const endY = e.changedTouches[0].clientY;
 		const moveDistance = endY - touchStartY.value;
 		const moveTime = Date.now() - touchStartTime.value;
-		const velocity = Math.abs(moveDistance / moveTime);
 		
-		// 判断是否为快速滑动（每毫秒移动0.3像素以上）
-		const isQuickSlide = velocity > 0.3;
+		// 判断是否为快速滑动（速度阈值可以调整）
+		const isQuickSlide = moveSpeed.value > 0.3; // 每毫秒0.3像素以上视为快速滑动
 		
-		if (isPopupOpen.value) {
-			// 向下滑动关闭
-			if (moveDistance > 150 || (moveDistance > 0 && isQuickSlide)) {
+		if (moveDistance > 0) { // 向下滑动
+			if (moveDistance > 300 || isQuickSlide) {
+				// 滑动距离大于300px或快速滑动时关闭弹窗
 				closeComments();
-			}
-		} else {
-			// 向上滑动打开
-			if (moveDistance < -50 || (moveDistance < 0 && isQuickSlide)) {
-				showComments();
+			} else {
+				// 否则回弹
+				popupTranslateY.value = 0;
 			}
 		}
 		
-		// 重置位置
+		// 重置状态
+		moveSpeed.value = 0;
+		lastMoveTime.value = 0;
 		touchMoveY.value = 0;
 		popupTranslateY.value = 0;
 	};
@@ -1242,14 +1333,11 @@
 	.comment-popup {
 		background-color: #fff;
 		border-radius: 20rpx 20rpx 0 0;
-		min-height: 60vh;
-		max-height: 90vh;
+		height: 60vh;
 		display: flex;
 		flex-direction: column;
 		transform: translateY(v-bind(popupTranslateY + 'px'));
-		transition: transform 0.2s ease-out;
-		position: relative;
-		z-index: 100;
+		transition: transform 0.3s ease-out;
 		
 		.drag-bar {
 			width: 100%;
@@ -1283,7 +1371,22 @@
 		
 		.comments-container {
 			flex: 1;
+			width: 92%;
 			padding: 0 30rpx;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
+			
+			// 隐藏滚动条
+			&::-webkit-scrollbar {
+				display: none;
+			}
+			-ms-overflow-style: none; /* IE and Edge */
+			scrollbar-width: none; /* Firefox */
+			
+			// 适配 scroll-view
+			:deep(.uni-scroll-view::-webkit-scrollbar) {
+				display: none;
+			}
 			
 			.comment-item {
 				display: flex;

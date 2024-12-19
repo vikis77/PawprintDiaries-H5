@@ -164,8 +164,8 @@
 			},
 			{
 				"pagePath": "src/pages/Map",
-				"iconPath": "../../static/导航.png",
-				"selectedIconPath": "../../static/导航选中.png",
+				"iconPath": "../../static/nav001.png",
+				"selectedIconPath": "../../static/nav002.png",
 				"text": ""
 			},
 			{

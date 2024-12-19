@@ -5,14 +5,14 @@
 			<view class="header">
 				<uni-row class="header-row" >
 					<uni-col :span="8" class="header-left">
-						<img src="../../static/返回.png" @click="handleGoback" class="header-icon" />
+						<img src="../../static/goback.png" @click="handleGoback" class="header-icon" />
 					</uni-col>
 					<uni-col :span="8" class="header-center">
 						<text class="header-title">猫猫管理</text>
 					</uni-col>
 					<uni-col :span="8" class="header-right">
 						<view class="add-button" @click="handleAdd">
-							<img src="../../static/添加.png" class="header-icon" />
+							<img src="../../static/add.png" class="header-icon" />
 							<text class="add-text">添加</text>
 						</view>
 					</uni-col>
@@ -52,7 +52,7 @@ import { API_general_request_url, pic_general_request_url } from '@/src/config/i
 
 const gridList = ref([
 	{
-		url: '../../static/猫.png',
+		url: '../../static/cat.png',
 		data: '',
 		text: '在校小猫',
 		text2: '只',
@@ -115,9 +115,11 @@ const handleClickGrid = (cat) => {
 
 // 添加猫猫
 const handleAdd = () => {
-	uni.navigateTo({
-		url: './catEdit'
-	})
+	if (checkLogin()) {
+		uni.navigateTo({
+			url: './catEdit'
+		})
+	}
 }
 </script>
 
@@ -134,7 +136,7 @@ const handleAdd = () => {
 		z-index: 100;
 
 		&-row {
-			height: 150rpx;
+			height: 100rpx;
 			display: flex;
 			align-items: center;
 		}

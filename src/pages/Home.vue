@@ -24,19 +24,41 @@
 						<img src="../../static/setting.png" class="setting-icon" />
 					</button>
 					<view class="drawer-body">
-						<uni-drawer ref="showLeft" mode="left" :width="320">
+						<uni-drawer ref="showLeft" mode="left" :width="250">
 							<view class="drawer-content">
-								<button plain="ture" class="drawer1" @click="handlePostReview">审核</button>
-								<button plain="ture" class="drawer1" @click="handleCommentReview">评论审核</button>
-								<button plain="ture" class="drawer1" @click="handleUserManage">用户管理</button>
-								<!-- <button plain="ture" class="drawer1" @click="toBeDeveloped"></button>
-								<button plain="ture" class="drawer1" @click="toBeDeveloped"></button>
-								<button plain="ture" class="drawer1" @click="toBeDeveloped"></button> -->
-								<button plain="ture" class="drawer1" @click="handleSendPost">发布帖子</button>
-								<button plain="ture" class="drawer1" @click="handleCatManage">猫猫管理</button>
-								<button plain="ture" class="drawer1" @click="handleClickLogin">登录/注册</button>
-								<button plain="ture" class="drawer1" @click="handleAbout">关于软件</button>
-								
+								<view class="drawer-header">
+									<text class="drawer-title">菜单</text>
+								</view>
+								<view class="drawer-items">
+									<button plain="true" class="drawer-item" @click="handlePostReview">
+										<img src="../../static/post-review.png" class="drawer-icon" />
+										<text>帖子审核</text>
+									</button>
+									<button plain="true" class="drawer-item" @click="handleCommentReview">
+										<img src="../../static/comment-review.png" class="drawer-icon" />
+										<text>评论审核</text>
+									</button>
+									<button plain="true" class="drawer-item" @click="handleUserManage">
+										<img src="../../static/user-manage.png" class="drawer-icon" />
+										<text>角色管理</text>
+									</button>
+									<button plain="true" class="drawer-item" @click="handleSendPost">
+										<img src="../../static/send-post.png" class="drawer-icon" />
+										<text>发布帖子</text>
+									</button>
+									<button plain="true" class="drawer-item" @click="handleCatManage">
+										<img src="../../static/cat007.png" class="drawer-icon" />
+										<text>猫猫管理</text>
+									</button>
+									<button plain="true" class="drawer-item" @click="handleClickLogin">
+										<img src="../../static/login.png" class="drawer-icon" />
+										<text>登录/注册</text>
+									</button>
+									<button plain="true" class="drawer-item" @click="handleAbout">
+										<image src="../../static/about.png" class="drawer-icon" />
+										<text>关于软件</text>
+									</button>
+								</view>
 							</view>
 						</uni-drawer>
 					</view>
@@ -84,7 +106,7 @@
 						<image class="avatar" :src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}`" mode="aspectFill"></image>
 						<text class="nickname">{{ post.authorNickname }}</text>
 						<view class="likes">
-						<image class="like-icon" src="../../static/爱心.svg"></image>
+						<image class="like-icon" src="../../static/love.svg"></image>
 						<text class="like-count">{{ post.likeCount }}</text>
 						</view>
 					</view>
@@ -109,6 +131,7 @@
 	import { useAppStore } from '@/store/modules/app'
 	import { storeToRefs } from 'pinia'
 	import { getPosts } from '@/src/api/post'
+	// import { checkLogin } from '@/src/api/system'
 
 	// 创建 store 实例
 	const appStore = useAppStore()
@@ -189,31 +212,10 @@
 	const fetchMorePosts = async (isRefresh = false) => {
 		// 调用全局获取帖子数据的方法
 		await getPosts(undefined, undefined, isRefresh)
+		posts.value = appStore.postList
+        console.log(`"完成获取新帖子，是否全新刷新：${isRefresh}"`)
+        console.log(posts.value)
 		return []
-		// try {
-		// 	const response = await axios.get(`${API_general_request_url.value}/api/post/getPostBySendtimeForPage?page=${currentPage.value}&pageSize=${pageSize.value}`);
-			
-		// 	if (response.status === 200 && response.data.code === "2000") {
-		// 		appStore.setPageSize(response.data.data.current, response.data.data.size);
-		// 		const newPosts = response.data.data.records;
-		// 		if (isRefresh) {
-		// 			// 刷新时替换所有数据
-		// 			appStore.setPostList(newPosts);
-		// 		} else {
-		// 			// 加载更多时追加数据
-		// 			appStore.setPostList([...appStore.postList, ...newPosts]);
-		// 		}
-		// 		return newPosts;
-		// 	}
-		// 	return [];
-		// } catch (error) {
-		// 	uni.showToast({
-		// 		title: "获取帖子失败",
-		// 		icon: "none"
-		// 	});
-		// 	console.error('获取帖子失败', error);
-		// 	return [];
-		// }
 	};
 	
 	// 点击查看更多-查看声明帮助
@@ -245,13 +247,16 @@
 	// 监听滚动事件，判断是否到达底部
 	function handleScroll(event) {
 		const { scrollTop: currentScrollTop, scrollHeight } = event.detail;
+		const clientHeight = event.detail.height;
 		
 		// 正确设置 scrollTop 的值
 		scrollTop.value = currentScrollTop;
 		uni.setStorageSync('scrollTop', currentScrollTop);
 		
-		// 判断是否接近底部（这里设置距离底部100px时触发）
-		if (scrollHeight - currentScrollTop - clientHeight.value < 100 && loadMoreStatus.value === 'more') {
+		// 计算是否接近底部
+		const threshold = 50; // 距离底部50px时触发
+		if (scrollHeight - currentScrollTop - clientHeight <= threshold && loadMoreStatus.value === 'more') {
+			console.log('触发加载更多');
 			loadMore();
 		}
 	}
@@ -264,38 +269,30 @@
 
 	// 点击帖子管理
 	const handlePostReview = () => {
-		const token = uni.getStorageSync('token');
-		if (!token) {
-			showToast('请先登录')
-			return;
+		if (checkLogin()) {
+			uni.navigateTo({
+				url: 'PostReview'
+			});
 		}
-		uni.navigateTo({
-			url: 'PostReview'
-		});
 	}
 
 	// 点击评论审核
 	const handleCommentReview = () => {
-		const token = uni.getStorageSync('token');
-		if (!token) {
-			showToast('请先登录')
-			return;
+		if (checkLogin()) {
+			uni.navigateTo({
+				url: 'CommentReview'
+			});
 		}
-		uni.navigateTo({
-			url: 'CommentReview'
-		});
 	}
 	
 	// 点击发布帖子
 	function handleSendPost(){
-		const token = uni.getStorageSync('token')
-		if (!token) {
-			showToast('请先登录')
-			return; // 终止函数，避免继续执行
+		if (checkLogin()) {
+			uni.navigateTo({
+				url: 'SendPost'
+			})
 		}
-		uni.navigateTo({
-			url: 'SendPost'
-		})
+		
 	}
 	
 	// 点击猫猫管理
@@ -314,14 +311,11 @@
 
 	// 用户管理
 	const handleUserManage = () => {
-		const token = uni.getStorageSync('token');
-		if (!token) {
-			showToast('请先登录')
-			return;
+		if (checkLogin()) {
+			uni.navigateTo({
+				url: 'UserManage'
+			});
 		}
-		uni.navigateTo({
-			url: 'UserManage'
-		});
 	};
 
 	// 在 script setup 中添加以下变量和方法
@@ -392,40 +386,44 @@
 
 	// 添加加载更多方法
 	const loadMore = async () => {
-		if (loadMoreStatus.value !== 'more') return;
+		// 如果正在加载或已经没有更多数据，则直接返回
+		if (loadMoreStatus.value !== 'more') {
+			return;
+		}
+		
 		loadMoreStatus.value = 'loading';
+		console.log('开始加载更多数据');
+		
 		try {
 			await getPosts(undefined, undefined, false);
-			if (!appStore.postList || appStore.pagination.total === 0 || appStore.pagination.page >= appStore.pagination.total) {
-				console.log(appStore.pagination.page, appStore.pagination.total)
+			
+			// 检查是否还有更多数据
+			if (appStore.pagination.page >= appStore.pagination.total) {
 				loadMoreStatus.value = 'noMore';
+				console.log('没有更多数据了');
 				uni.showToast({
 					title: '没有更多数据了',
 					icon: 'none'
 				});
 			} else {
 				loadMoreStatus.value = 'more';
+				console.log('加载成功，还有更多数据');
 			}
 		} catch (error) {
+			console.error('加载更多失败:', error);
 			loadMoreStatus.value = 'more';
 			uni.showToast({
 				title: '加载失败',
 				icon: 'none'
 			});
-			console.error('加载更多失败:', error);
 		}
 	}
 
-	const onScrollToLower = async () => {
-		console.log('触底加载更多');
-		// 检查是否还有更多数据可加载
-		if (appStore.pagination.page < appStore.pagination.total) {
-			await loadMore();
-		} else {
-			// 已经加载完所有数据
-			loadMoreStatus.value = 'noMore';
-		}
-	};
+	// 修改触底事件处理
+	const onScrollToLower = () => {
+		console.log('触发触底事件');
+		loadMore();
+	}
 </script>
 
 <style lang="scss" scoped>
@@ -437,20 +435,22 @@
 	}
 	.container{
 		width: 750rpx; /* 设置容器宽度为屏幕宽度 */
-		height: 100vh;
+		// height: 100vh;
+        // position: fixed;
+        // top: 200rpx;
 		background-color: #ebebeb;
-		.layout-top{
-			height: 100rpx;
+		.layout-top{ // 顶部导航栏
+			height: 6%;
 			position: fixed;
 			top: 0;
 			left: 0;
 			right: 0;
 			z-index: 999;
 			background-color: #ffffff;
-			padding: 10rpx 0;
+			// padding: 10rpx 0;
 			.box-top{
 				display: flex;
-				padding: 10rpx 0;
+				padding-top: 8rpx;
 				.setting{
 					width: 33vw;
 					.setting-button{
@@ -501,20 +501,23 @@
 				}
 			}
 		}
-		.notice-container {
-			height: 100rpx;
+		.notice-container { // 公告区
+			height: 80rpx;
 			position: fixed;
-			top: 120rpx;
+			top: 90rpx;
 			left: 0;
 			right: 0;
 			z-index: 998;
 			background-color: #ffffff;
 			padding: 2rpx 0;
 		}
-		.layout{
+		.layout{ // 帖子区
 			width: 100%;
-			height: 80vh;
-			padding-top: 230rpx;
+            position: fixed;
+            top: 180rpx;
+			height: 1350rpx;
+			// padding-top: 200rpx;
+            // margin-top: 200rpx;
 			background-color: #ebebeb;
 			position: relative;
 			overflow-y: auto;
@@ -587,6 +590,60 @@
 				text-align: center;
 				color: #999;
 				font-size: 24rpx;
+			}
+		}
+	}
+	.drawer-body {
+		.drawer-content {
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+			background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+			
+			.drawer-header {
+				padding: 40rpx 30rpx;
+				border-bottom: 1px solid rgba(0,0,0,0.1);
+				
+				.drawer-title {
+					font-size: 36rpx;
+					font-weight: 600;
+					color: #333;
+				}
+			}
+			
+			.drawer-items {
+				padding: 20rpx 0;
+				
+				.drawer-item {
+					display: flex;
+					align-items: center;
+					padding: 24rpx 40rpx;
+					margin: 10rpx 20rpx;
+					background: rgba(255,255,255,0.9);
+					border: none;
+					border-radius: 12rpx;
+					transition: all 0.3s ease;
+					
+					&:active {
+						transform: scale(0.98);
+					}
+					
+					&:hover {
+						background: rgba(255,255,255,1);
+						box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+					}
+					
+					.drawer-icon {
+						width: 40rpx;
+						height: 40rpx;
+						margin-right: 20rpx;
+					}
+					
+					text {
+						font-size: 28rpx;
+						color: #333;
+					}
+				}
 			}
 		}
 	}

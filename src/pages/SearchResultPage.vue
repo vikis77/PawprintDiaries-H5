@@ -4,7 +4,7 @@
 		<!-- 顶部导航搜索返回区 -->
 		<view class="search-header">
 		  <view class="back-btn" @click="handlerGoback">
-			<img src="../../static/返回.png" class="back-icon"/>
+			<img src="../../static/goback.png" class="back-icon"/>
 		  </view>
 		  <view class="search-bar">
 			<uni-search-bar

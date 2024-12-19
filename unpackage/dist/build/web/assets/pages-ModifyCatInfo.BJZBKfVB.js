@@ -1,1 +1,0 @@
-import{a,w as s,g as e,o as t,d as o,f as r}from"./index-CFSraVz9.js";import{_ as n}from"./_plugin-vue_export-helper.BCo6x5W8.js";const l=n({},[["render",function(n,l){const d=e;return t(),a(d,{class:"container"},{default:s((()=>[o(d,{class:"layout"},{default:s((()=>[r(" 111 ")])),_:1})])),_:1})}],["__scopeId","data-v-4b3b47e9"]]);export{l as default};

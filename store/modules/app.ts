@@ -4,19 +4,153 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-// 定义帖子类型接口
+
+// 评论审核类型接口
+interface AuditComment {
+    catCommentVO: CatComment[]; // 小猫待审核评论列表
+    postCommentVO: PostComment[]; // 帖子待审核评论列表
+}
+
+// 小猫评论接口
+interface CatComment {
+    id: number; // 评论ID
+    catId: number; // 小猫ID
+    commentContext: string; // 评论内容
+    commentUserId: number; // 评论用户ID
+    status: number; // 评论状态：10未审核 20通过 30不通过
+    isDeleted: number; // 是否删除：0否 1是
+    createTime: string; // 创建时间
+    updateTime: string; // 更新时间
+    likeCount: number; // 点赞数
+    isTop: number; // 是否置顶：0否 1是
+    avatar: string; // 评论者头像
+    nickName: string; // 评论者昵称
+    type: number; // 评论类型：10小猫 20帖子
+    liked: boolean; // 是否点赞
+}
+
+// 帖子评论接口
+interface PostComment {
+    id: number; // 评论ID
+    postId: number; // 帖子ID
+    createTime: string; // 创建时间
+    updateTime: string; // 更新时间
+    status: number; // 评论状态：10待审核 20通过 30未通过
+    isDeleted: number; // 是否删除：0否 1是
+    isTop: number; // 是否置顶：0否 1是
+    commentContext: string; // 评论内容
+    commentatorId: number; // 评论者ID
+    likeCount: number; // 点赞数
+    avatar: string; // 评论者头像
+    nickname: string; // 评论者昵称
+    type: number; // 评论类型：10小猫 20帖子
+    liked: boolean; // 是否点赞
+}
+
+
+// 用户信息
+interface UserInfo {
+    userId: string; // 用户ID
+    username: string; // 用户名
+    nickName: string; // 昵称
+    email: string; // 邮箱
+    phoneNumber: string; // 手机号
+    birthday: number; // 生日时间戳
+    address: string; // 住址
+    avatar: string; // 头像文件名
+    status: number; // 状态(1:启用,0:禁用)
+    createTime: number; // 创建时间戳
+    updateTime: number | null; // 更新时间戳
+    postCount: number; // 贴子数
+    fansCount: number; // 粉丝数
+    followCount: number; // 我的关注数
+    signature: string; // 个性签名
+    postList: PostDetail[]; // 该作者的首页帖子的集合
+    collectionList: PostDetail[] | null; // 该作者的收藏帖子的集合
+    likeList: PostDetail[] | null; // 该作者的点赞帖子的集合
+}
+
+// 首页！！帖子类型接口
 interface Post {
-    postId: number;
-    title: string;
-    coverPicture: string;
-    authorAvatar: string;
-    authorNickname: string;
-    likeCount: number;
-    // 其他帖子相关字段...
+    postId: number; // 帖子id
+    title: string; // 帖子标题
+    coverPicture: string; // 封面图片
+    authorAvatar: string; // 作者头像
+    authorNickname: string; // 作者昵称
+    likeCount: number; // 点赞数
+}
+
+// 帖子详情
+interface PostDetail {
+    postId: number; // 帖子id
+    title: string; // 帖子标题
+    article: string; // 文章内容
+    authorId: number; // 作者ID
+    likeCount: number; // 点赞数
+    collectingCount: number; // 收藏数
+    commentCount: number; // 评论数
+    sendTime: string; // 发帖时间
+    updateTime: string; // 更新时间
+    coverPicture: string; // 首页图片地址
+    isDeleted: number; // 是否删除
+    isAdopted: number; // 是否通过审核
+    approveUserId: number; // 审核人ID
+}
+
+// 定义猫猫列表类型接口
+interface CatList {
+    catId: number; // 猫猫id
+    catname: string; // 猫猫名称
+    gender: number; // 性别 0-公 1-母
+    age: number; // 年龄
+    birthday: number[]; // 生日
+    avatar: string; // 头像
+    food: string; // 食物偏好
+    taboo: string; // 禁忌
+    catCharacter: string; // 性格特征
+    healthStatus: string; // 健康状况
+    sterilizationStatus: string; // 绝育状态
+    vaccinationStatus: string; // 疫苗接种状态
+    badRecord: string; // 不良记录
+    area: string | null; // 活动区域
+    catGuide: string; // 撸猫指南
+    createTime: number[]; // 创建时间
+    updateTime: number[]; // 更新时间
+    trending: number; // 热度
+    likeCount: number; // 点赞数
+    isAdopted: number; // 是否已被领养
+    isLikedToday: number; // 今天是否已点赞
+}
+
+// 定义待审核帖子列表类型接口
+interface ApplyPost {
+    postId: number; // 帖子id
+    title: string; // 帖子标题
+    article: string; // 帖子内容
+    authorId: number; // 作者id
+    authorAvatar: string; // 作者头像
+    updateTime: string; // 更新时间
+    authorNickname: string; // 作者昵称
+    images: string[]; // 帖子图片
+    send_time: string; // 发送时间
 }
 
 // 使用组合式 API 风格定义 store
 export const useAppStore = defineStore('app', () => {
+    /* ---------------------定义状态--------------------- */
+    // 待审核评论列表
+    const auditCommentList = ref<AuditComment | null>(null)
+    // 帖子评论列表
+    const postCommentList = ref<PostComment[]>([])
+    // 小猫评论列表
+    const catCommentList = ref<CatComment[]>([])
+    // 用户信息
+    const userInfo = ref<UserInfo | null>(null)
+
+    // 待审核帖子列表
+    const applyPostList = ref<ApplyPost[]>([])
+    // 猫猫列表
+    const catList = ref<CatList[]>([])
     // 帖子列表
     const postList = ref<Post[]>([])
     // 分页状态
@@ -39,8 +173,46 @@ export const useAppStore = defineStore('app', () => {
     })
 
 
+    /* ---------------------设置状态--------------------- */
 
-    // Actions
+    // 设置帖子评论列表
+    function setPostCommentList(list: PostComment[]) {
+        postCommentList.value = list
+    }
+    // 设置小猫评论列表
+    function setCatCommentList(list: CatComment[]) {
+        catCommentList.value = list
+    }
+    // 设置待审核评论列表
+    function setAuditCommentList(auditComment: AuditComment) {
+        auditCommentList.value = auditComment
+    }
+    // 设置用户信息
+    function setUserInfo(user: UserInfo) {
+        userInfo.value = user
+    }
+    // 设置用户信息为空
+    function setUserInfoNull() {
+        userInfo.value = {
+            userId: '',
+            username: '',
+            nickName: '',
+            email: '',
+            phoneNumber: '',
+            birthday: 0,
+            address: '',
+            avatar: '',
+        }
+    }
+    // 设置待审核帖子列表
+    function setApplyPostList(list: ApplyPost[]) {
+        applyPostList.value = list
+    }
+    // 设置猫猫列表
+    function setCatList(list: CatList[]) {
+        catList.value = list
+    }
+    // 设置帖子列表
     function setPostList(list: Post[]) {
         postList.value = list
     }
@@ -65,17 +237,30 @@ export const useAppStore = defineStore('app', () => {
 
     // 返回状态和方法
     return {
-        // 状态
+        /* ---------------------状态--------------------- */
+        postCommentList,
+        catCommentList,
+        auditCommentList,
+        userInfo,
+        applyPostList,
+        catList,
         postList,
         pagination,
         isFirstLaunch,
         theme,
         settings,
-        // Actions
+        /* ---------------------方法--------------------- */
+        setPostCommentList,
+        setCatCommentList,
+        setAuditCommentList,
+        setApplyPostList,
+        setCatList,
         setPostList,
         setPageSize,
         setTheme,
         updateSettings,
-        markAsNotFirstLaunch
+        markAsNotFirstLaunch,
+        setUserInfo,
+        setUserInfoNull
     }
 }) 

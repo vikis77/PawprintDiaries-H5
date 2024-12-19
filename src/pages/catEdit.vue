@@ -23,28 +23,43 @@
 						
 						<uni-forms-item label="头像" required class="avatar-item">
 							<uni-file-picker
+								ref="filePicker"
 								mode="image"
 								:file-mediatype="['image']"
 								limit="1"
 								:auto-upload="false"
-								:file-list="catBaseFormData.avatar"
+								:value="selectedTempFiles"
 								@upload-success="onUploadSuccess"
 								@upload-fail="onUploadFail"
 								@select="selectAvator"
 								class="avatar-picker"
 							>
-								<view v-if="catBaseFormData.avatar.length > 0" class="avatar-preview-container">
-									<image 
-										:src="`${pic_general_request_url}/cat_avatar/${catBaseFormData.avatar}`" 
-										mode="aspectFill" 
-										class="avatar-preview"
-									/>
-								</view>
-								<view v-else class="avatar-placeholder">
-									<uni-icons type="camera-filled" size="24" color="#999"/>
-									<text class="placeholder-text">点击上传头像</text>
-								</view>
-								<text class="upload-tip">如上传新头像，不需要等待上传，继续填写，提交即可</text>
+								<template v-slot>
+									<view v-if="selectedTempFilePaths.length > 0" class="avatar-preview-container" @click="handleReselect">
+										<image 
+											:src="selectedTempFilePaths[0]" 
+											mode="aspectFill" 
+											class="avatar-preview"
+										/>
+										<view class="avatar-hover-mask">
+											<text class="hover-text">点击重新选择</text>
+										</view>
+									</view>
+									<view v-else-if="catBaseFormData.avatar" class="avatar-preview-container" @click="handleReselect">
+										<image 
+											:src="`${pic_general_request_url}/cat_avatar/${catBaseFormData.avatar}`" 
+											mode="aspectFill" 
+											class="avatar-preview"
+										/>
+										<view class="avatar-hover-mask">
+											<text class="hover-text">点击重新选择</text>
+										</view>
+									</view>
+									<view v-else class="avatar-placeholder">
+										<image src="/static/images/default-avatar.png" mode="aspectFill" class="default-avatar"/>
+										<text class="placeholder-text">点击上传头像</text>
+									</view>
+								</template>
 							</uni-file-picker>
 						</uni-forms-item>
 						
@@ -155,7 +170,7 @@
 </template>
 
 <script setup>
-	import { ref, onMounted } from 'vue';
+	import { ref, onMounted, nextTick } from 'vue';
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
 	import NavBar1001 from '@/src/components/common/NavBar1001.vue'
 	
@@ -221,6 +236,7 @@
 			value: '疾病'
 		}]
 	)
+	const filePicker = ref(null);
 	
 	onMounted(() => {
 		const urlCatId = new URLSearchParams(window.location.search).get('catId');
@@ -259,7 +275,7 @@
 			},
 			fail: (e) => {
 				uni.showToast({
-					title: '请求获取小��信息失败，请重试',
+					title: '请求获取小猫信息失败，请重试',
 					icon: 'none'
 				});
 			}
@@ -268,13 +284,27 @@
 		uni.hideLoading();
 	}
 	
+	// 处理重新选择
+	const handleReselect = (e) => {
+		e.stopPropagation(); // 阻止事件冒泡
+		// 先清空数据
+		selectedTempFilePaths.value = [];
+		selectedTempFiles.value = [];
+		// 等待DOM更新
+		nextTick(() => {
+			// 再调用选择器
+			filePicker.value?.choose();
+		});
+	}
+	
 	// 选择新头像
-	const selectAvator = (files)=>{
-		selectedTempFilePaths.value = files.tempFilePaths
-		selectedTempFiles.value = files.tempFiles
+	const selectAvator = (files) => {
+		selectedTempFilePaths.value = files.tempFilePaths;
+		selectedTempFiles.value = files.tempFiles;
 		console.log("已选择的文件路径列表:", selectedTempFilePaths.value);
 		console.log("已选择的文件列表:", selectedTempFiles.value);
 	}
+	
 	// 上传成功回调
 	const onUploadSuccess = (event) => {
 		const { tempFilePath, fileList } = event.detail;
@@ -290,76 +320,56 @@
 	// 处理提交表单
 	const submitForm = async() => {
 		const token = uni.getStorageSync('token');  
-		if (!token) {  
-			uni.showToast({  
-				title: '未找到有效的登录令牌',  
-				icon: 'error'  
-			});  
-			return;  
-		}  
+		if (!checkLogin()) {
+			return;
+		}
 
-		try {  
-			let postData = {
-				'catname': catBaseFormData.value.catname,
-				'gender': catBaseFormData.value.gender,
-				'age': catBaseFormData.value.age,
-				'food': catBaseFormData.value.food,
-				'taboo': catBaseFormData.value.taboo,
-				'catCharacter': catBaseFormData.value.catCharacter,
-				'healthStatus': catBaseFormData.value.healthStatus,
-				'sterilizationStatus': catBaseFormData.value.sterilizationStatus,
-				'vaccinationStatus': catBaseFormData.value.vaccinationStatus,
-				'badRecord': catBaseFormData.value.badRecord,
-				'catGuide': catBaseFormData.value.catGuide
-			};
-			
-			if (catId.value) {
-				postData.catId = catId.value;
-			}
+		console.log(catBaseFormData.value)
+		// 校验必填项
+		if (!catBaseFormData.value.catname || !catBaseFormData.value.age 
+			|| !catBaseFormData.value.food || !catBaseFormData.value.taboo || !catBaseFormData.value.catCharacter 
+			|| !catBaseFormData.value.healthStatus || !catBaseFormData.value.sterilizationStatus 
+			|| !catBaseFormData.value.vaccinationStatus) {
+			uni.showToast({
+				title: '请填写所有必填项',
+				icon: 'none'
+			});
+			return;
+		}
+		// 是否选择头像
+		if (!catId.value && (!selectedTempFiles.value || selectedTempFiles.value.length === 0)) {
+			// 新增猫咪时必须上传头像
+			uni.showToast({
+				title: '请选择头像',
+				icon: 'none'
+			});
+			return;
+		}
 
-			// 只有在选择了新头像时才处理头像上传
-			if (selectedTempFiles.value && selectedTempFiles.value.length > 0) {
-				// 获取上传凭证
-				const response = await uni.request({  
-					url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,  
-					method: 'GET',  
-					header: {  
-						'Authorization': `Bearer ${token}`  
-					}  
-				});  
-				
-				if (response.statusCode !== 200 || response.data.code !== '2000') {  
-					throw new Error('获取上传凭证失败');  
-				}  
-				
-				const uploadToken = response.data.data.qiniuToken;  
-				
-				// 上传文件到七牛云  
-				const uploadRes = await new Promise((resolve, reject) => {  
-					uni.uploadFile({  
-						url: 'https://upload-z2.qiniup.com',  
-						filePath: selectedTempFiles.value[0].path,  
-						name: 'file',  
-						formData: {  
-							token: uploadToken,  
-							key: `catcat/cat_avatar/${selectedTempFiles.value[0].name}`  
-						},  
-						success: (res) => {  
-							if (res.statusCode === 200) {  
-								resolve(res);  
-							} else {  
-								reject(new Error('图片上传失败'));  
-							}  
-						},  
-						fail: reject
-					});  
-				});
-
-				// 添加头像信息到请求数据
-				postData.avatar = selectedTempFiles.value[0].name;
-			}
-
-			// 提交请求
+		let postData = {
+			'catname': catBaseFormData.value.catname,
+			'gender': catBaseFormData.value.gender,
+			'age': catBaseFormData.value.age,
+			'food': catBaseFormData.value.food,
+			'taboo': catBaseFormData.value.taboo,
+			'catCharacter': catBaseFormData.value.catCharacter,
+			'healthStatus': catBaseFormData.value.healthStatus,
+			'sterilizationStatus': catBaseFormData.value.sterilizationStatus,
+			'vaccinationStatus': catBaseFormData.value.vaccinationStatus,
+			'badRecord': catBaseFormData.value.badRecord,
+			'catGuide': catBaseFormData.value.catGuide
+		};
+		if (catId.value) {
+			postData.catId = catId.value;
+		}
+		
+		// 只有在选择了新头像时才更新头像信息
+		if (selectedTempFiles.value && selectedTempFiles.value.length > 0) {
+			postData.avatar = selectedTempFiles.value[0].name;
+		}
+		
+		// 服务器持久化数据
+		try {
 			const postResponse = await uni.request({  
 				url: `${API_general_request_url.value}/api/cat`,  
 				method: catId.value ? 'PUT' : 'POST',  // 根据是否有catId决定是更新还是新增
@@ -370,31 +380,88 @@
 				data: postData
 			});  
 			
-			if (postResponse.statusCode === 200 && postResponse.data.code === '2000') {  
-				// 先显示提示
-				await new Promise((resolve) => {
-					uni.showToast({  
-						title: catId.value ? '更新成功' : '添加成功',  
-						icon: 'success',
-						duration: 600,
-						success: () => {
-							setTimeout(resolve, 600); // 等待提示显示完成
-						}
-					});  
+			if (postResponse.statusCode === 200 && postResponse.data.code === '2000') {
+				console.log("持久化完成")  
+			} else {
+				console.log(postResponse.data)
+				uni.showToast({
+					title: postResponse.data.msg || '提交失败',
+					icon: 'none'
 				});
-				
-				// 提示完成后再返回
-				uni.navigateBack();
-			} else {  
-				throw new Error(postResponse.data.msg || '提交失败');
+				return;
 			}
-		} catch (error) {  
-			console.error('提交过程中发生错误:', error);  
+
+			// 如果选择了新头像，则上传到七牛云
+			if (selectedTempFiles.value && selectedTempFiles.value.length > 0) {
+				// 获取上传凭证
+				const response = await uni.request({  
+					url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,  
+					method: 'GET',  
+					header: {  
+						'Authorization': `Bearer ${token}`  
+					}  
+				});  
+				
+				if (response.statusCode == 200 && response.data.code == '2000') {  
+					const uploadToken = response.data.data.qiniuToken;  
+					try {
+						// 上传文件到七牛云  
+						const uploadRes = await new Promise((resolve, reject) => {  
+							uni.uploadFile({  
+								url: 'https://upload-z2.qiniup.com',  
+								filePath: selectedTempFiles.value[0].path,  
+								name: 'file',  
+								formData: {  
+									token: uploadToken,  
+									key: `catcat/cat_avatar/${selectedTempFiles.value[0].name}`  
+								},  
+								success: (res) => {  
+									if (res.statusCode === 200) {  
+										resolve(res);  
+									} else {  
+										reject(new Error(`图片上传失败: ${res.data || '未知错误'}`));  
+									}  
+								},  
+								fail: (error) => reject(new Error(`上传请求失败: ${error.errMsg || '未知错误'}`))
+							});  
+						});
+					} catch (error) {
+						uni.showToast({
+							title: `头像上传失败: ${error.message}`,
+							icon: 'none',
+							duration: 2000
+						});
+						return;
+					}
+				} else {
+					uni.showToast({
+						title: '获取上传凭证失败',
+						icon: 'none',
+						duration: 2000
+					});
+					return;
+				}
+			}
+			
+			// 全部操作成功后显示成功提示并返回
 			uni.showToast({  
-				title: error.message || '提交失败',  
-				icon: 'error'  
+				title: catId.value ? '更新成功' : '添加成功',  
+				icon: 'success',
+				duration: 1500
 			});  
-		}  
+			
+			// 延迟返回，确保用户能看到成功提示
+			setTimeout(() => {
+				uni.navigateBack();
+			}, 1500);
+			
+		} catch (error) {
+			uni.showToast({
+				title: `操作失败: ${error.message || '未知错误'}`,
+				icon: 'none',
+				duration: 2000
+			});
+		}
 	};
 
 	// 返回
@@ -463,11 +530,32 @@
 		}
 		
 		.avatar-item {
+			:deep(.uni-file-picker__container) {
+				width: 180rpx !important;
+				height: 180rpx !important;
+			}
+			
+			:deep(.uni-file-picker__box) {
+				border-radius: 90rpx !important;
+				overflow: hidden;
+				border: 2rpx solid #e0e0e0;
+			}
+			
+			// 隐藏文件名信息
+			:deep(.file-picker__progress) {
+				display: none !important;
+			}
+			
+			:deep(.uni-file-picker__lists) {
+				display: none !important;
+			}
+			
 			.avatar-preview {
 				width: 180rpx;
 				height: 180rpx;
 				border-radius: 90rpx;
 				object-fit: cover;
+				border: 2rpx solid #e0e0e0;
 			}
 			
 			.avatar-placeholder {
@@ -475,22 +563,29 @@
 				height: 180rpx;
 				border-radius: 90rpx;
 				background-color: #f8f9fa;
-				border: 2rpx dashed #ced4da;
+				border: 2rpx solid #e0e0e0;
 				display: flex;
 				flex-direction: column;
 				align-items: center;
 				justify-content: center;
 				gap: 8rpx;
-			}
-			
-			.placeholder-text {
-				font-size: 24rpx;
-				color: #6c757d;
+				
+				.default-avatar {
+					width: 80rpx;
+					height: 80rpx;
+					opacity: 0.5;
+				}
+				
+				.placeholder-text {
+					font-size: 24rpx;
+					color: #999;
+					margin-top: 8rpx;
+				}
 			}
 			
 			.upload-tip {
 				font-size: 24rpx;
-				color: #6c757d;
+				color: #999;
 				margin-top: 8rpx;
 			}
 		}
@@ -539,6 +634,32 @@
 	to {
 		opacity: 1;
 		transform: translateY(0);
+	}
+}
+
+.avatar-preview-container {
+	position: relative;
+	width: 180rpx;
+	height: 180rpx;
+	border-radius: 90rpx;
+	overflow: hidden;
+	
+	.avatar-hover-mask {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.3);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		
+		.hover-text {
+			color: #fff;
+			font-size: 24rpx;
+			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+		}
 	}
 }
 </style>

@@ -44,10 +44,13 @@
             "ios" : {
                 "privacyDescription" : {
                     "NSPhotoLibraryAddUsageDescription" : ""
-                }
+                },
+                "dSYMs" : false
             },
             /* SDK配置 */
-            "sdkConfigs" : {}
+            "sdkConfigs" : {
+                "ad" : {}
+            }
         }
     },
     /* 快应用特有相关 */
@@ -80,23 +83,25 @@
                     "key" : "aada17cf2848387456285d0e1b5c74c6",
                     "securityJsCode" : "d099747db9129b84ab6ce834d56e9573",
                     "serviceHost" : "webapi.amap.com/v4/map/styles"
-                    // "serviceHost": "webapi.amap.com"
                 }
             }
         },
+        // "serviceHost": "webapi.amap.com"
         "router" : {
             "base" : "./",
             "mode" : "history"
         },
         "title" : "校猫日记",
-		"env": {
-			"NODE_ENV": "prod",
-			"dev": {
-				"API_URL": "http://dev-api.example.com"
-			},
-			"prod": {
-				"API_URL": "https://api.example.com"
-			}
-		}
-    }
+        "env" : {
+            "NODE_ENV" : "prod",
+            "dev" : {
+                "API_URL" : "http://dev-api.example.com"
+            },
+            "prod" : {
+                "API_URL" : "https://api.example.com"
+            }
+        }
+    },
+    "locale" : "zh-Hans",
+    "fallbackLocale" : "zh-Hans"
 }

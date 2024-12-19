@@ -56,7 +56,6 @@
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
 	import NavBar1001 from '@/src/components/common/NavBar1001.vue'
 
-	
 	const selectedTempFilePaths = ref([]); // 存储已选择的图片的路径
 	const selectedTempFiles = ref([]); // 存储已选择的图片信息
 	const uploadTitle = ref(''); // 标题
@@ -90,6 +89,8 @@
 	
 	// 处理发布逻辑
 	const uploadImages = async () => {  
+
+
 	    console.log('标题：', uploadTitle.value);  
 	    console.log('内容：', uploadArticle.value);  
 	    if (selectedTempFiles.value.length === 0) {  
@@ -100,22 +101,45 @@
 	        return;  
 	    }  
 	  
-	    const token = uni.getStorageSync('token');  
-	    if (!token) {  
-	        uni.showToast({  
-	            title: '未找到有效的登录令牌',  
-	            icon: 'error'  
-	        });  
-	        return;  
-	    }  
+	    if (!checkLogin()) {
+			return;
+		}
 	  
-	    try {  
+	    try {
+			// 服务器持久化帖子  
+	        const names = selectedTempFiles.value.map(file => file.name);
+			console.log(names)
+	        const postResponse = await uni.request({  
+	            url: `${API_general_request_url.value}/api/post/addpost`,  
+	            method: 'POST',  
+	            header: {  
+	                'Authorization': `Bearer ${uni.getStorageSync('token')}`,
+					'Content-Type': 'application/json'  // 添加 Content-Type 声明
+	            },  
+	            data: {  
+	                'title': uploadTitle.value,  
+	                'article': uploadArticle.value,  
+	                'pictrueList': names  
+	            }  
+	        });  
+	        if (postResponse.statusCode === 200 && postResponse.data.code === '2000') {  
+	            console.log('已完成持久化帖子', postResponse);  
+	            
+	        } else {  
+	            console.log('无法持久化', postResponse);  
+	            uni.showToast({  
+	                title: '发布失败',  
+	                icon: 'error'  
+	            });  
+				return;
+	        } 
+
 	        // 获取上传凭证  
 	        const response = await uni.request({  
 	            url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,  
 	            method: 'GET',  
 	            header: {  
-	                'Authorization': `Bearer ${token}`  
+	                'Authorization': `Bearer ${uni.getStorageSync('token')}`  
 	            }  
 	        });  
 	  
@@ -153,38 +177,13 @@
 	        // 等待所有文件上传完成  
 	        const uploadResults = await Promise.all(uploadPromises);  
 	        console.log('所有图片上传成功:', uploadResults);  
-	  
-	        // 完成服务持久化记录  
-	        const names = selectedTempFiles.value.map(file => file.name);
-			console.log(names)
-	        const postResponse = await uni.request({  
-	            url: `${API_general_request_url.value}/api/post/addpost`,  
-	            method: 'POST',  
-	            header: {  
-	                'Authorization': `Bearer ${token}`,
-					'Content-Type': 'application/json'  // 添加 Content-Type 声明
-	            },  
-	            data: {  
-	                'title': uploadTitle.value,  
-	                'article': uploadArticle.value,  
-	                'pictrueList': names  
-	            }  
-	        });  
-	  
-	        if (postResponse.statusCode === 200 && postResponse.data.code === '2000') {  
-	            console.log('已完成持久化帖子', postResponse);  
-	            uni.showToast({  
+			
+			uni.showToast({  
 	                title: '发布成功',  
 	                icon: 'success'  
 	            });  
 				uni.navigateBack()
-	        } else {  
-	            console.log('无法持久化', postResponse);  
-	            uni.showToast({  
-	                title: '发布失败',  
-	                icon: 'error'  
-	            });  
-	        }  
+	         
 	    } catch (error) {  
 	        console.error('发布过程中发生错误:', error);  
 	        uni.showToast({  

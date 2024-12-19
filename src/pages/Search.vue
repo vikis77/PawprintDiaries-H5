@@ -7,7 +7,7 @@
 			<!-- 顶部搜索区 -->
 			<view class="search-header">
 				<view class="back-btn" @click="handlerGoback">
-					<img src="../../static/返回.png" class="back-icon"/>
+					<img src="../../static/goback.png" class="back-icon"/>
 				</view>
 				<view class="search-bar">
 					<uni-search-bar
@@ -50,7 +50,7 @@
 			<!-- 热门搜索 -->
 			<view class="hot-search">
 				<view class="hot-header">
-					<text class="title">热门搜索</text>
+					<text class="title">热门搜索（待开发）</text>
 				</view>
 				<view class="hot-tags">
 					<view class="tag" v-for="(item, index) in hotSearchList" :key="index" @click="handleHistoryClick(item.keyword)">
@@ -157,7 +157,7 @@
 	// 使用 onLoad 生命周期钩子
 	onLoad((options) => {
 		// 检查登录状态
-		checkLoginStatus();
+		checkLogin();
 		
 	    // 确保 options 存在且包含 searchWords
 	    if (options && options.searchValue) {
@@ -228,6 +228,9 @@
 	}
 	
 	const handleSearch = () => {
+        if (!checkLogin()) {
+            return;
+        }
 		if (!searchValue.value.trim()) {
 			uni.showToast({
 				title: '请输入搜索内容',

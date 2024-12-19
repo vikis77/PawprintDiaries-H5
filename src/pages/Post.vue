@@ -14,7 +14,7 @@
 			<view class="box-head">
 				<view class="left1">
 					<button class="btn-back" plain="true" @click="handlerClickBack">
-						<img class="img1" src="../../static/返回 (1).png" alt="" />
+						<img class="img1" src="../../static/goback001.png" alt="" />
 					</button>
 					<view class="text001">
 						发现
@@ -29,9 +29,9 @@
 					<text class="text1">{{ currentPost.authorNickname }}</text>
 				</view>
 				<view class="bb-right" >
-					<button class="btn1" :class="{'btn1-followed': currentPost.isFollowed}" 
+					<button class="btn1" :class="{'btn1-followed': currentPost.followed}" 
 						plain="true" @click="handleFollow">
-						{{ currentPost.isFollowed ? '已关注' : '关注' }}
+						{{ currentPost.followed ? '已关注' : '关注' }}
 					</button>
 					<view class="heart">
 						<uni-icons type="download" size="26" @click="showToast('下载功能开发中')"></uni-icons>
@@ -68,18 +68,18 @@
 				<!-- 互动区域 -->
 				<view class="operate">
 					<view class="heart" @click="handleLike">
-						<uni-icons :type="currentPost.isLiked ? 'heart-filled' : 'heart'" 
+						<uni-icons :type="currentPost.liked ? 'heart-filled' : 'heart'" 
 							:class="{'heart-animate': isLikeAnimating}"
 							size="26" 
-							:color="currentPost.isLiked ? '#ff4d4f' : '#666'">
+							:color="currentPost.liked ? '#ff4d4f' : '#666'">
 						</uni-icons>
-						<text class="count" :class="{'active': currentPost.isLiked}">{{currentPost.likeCount}}</text>
+						<text class="count" :class="{'active': currentPost.liked}">{{currentPost.likeCount}}</text>
 					</view>
 					<view class="star" @click="handleCollect">
-						<uni-icons :type="currentPost.isCollected ? 'star-filled' : 'star'" 
+						<uni-icons :type="currentPost.collected ? 'star-filled' : 'star'" 
 							:class="{'star-animate': isCollectAnimating}"
 							size="26" 
-							:color="currentPost.isCollected ? '#faad14' : '#666'">
+							:color="currentPost.collected ? '#faad14' : '#666'">
 						</uni-icons>
 					</view>
 					<view class="chatbubble" @click="handleComment">
@@ -94,24 +94,24 @@
 				<!-- 评论区域 -->
 				<view class="comments-section">
 					<view class="comments-header">
-						<text class="title">评论 {{comments.length}}</text>
+						<text class="title">评论（已通过审核）</text>
 					</view>
 					<view class="comment-list">
 						<view v-for="(comment, index) in comments" :key="index" class="comment-item">
-							<image class="comment-avatar" :src="`${pic_general_request_url}/user_avatar/${comment.userAvatar}`"></image>
+							<image class="comment-avatar" :src="`${pic_general_request_url}/user_avatar/${comment.avatar}`"></image>
 							<view class="comment-content">
 								<view class="comment-info">
-									<text class="comment-username">{{ comment.userName }}</text>
-									<text class="comment-time">{{ formatDate(comment.createTime) }}</text>
+									<text class="comment-username">{{ comment.nickname }}</text>
+									<text class="comment-time">{{ comment.createTime }}</text>
 								</view>
-								<text class="comment-text">{{ comment.content }}</text>
+								<text class="comment-text">{{ comment.commentContext }}</text>
 								<view class="comment-actions">
 									<view class="action-item" @click="likeComment(index)">
-										<uni-icons :type="comment.isLiked ? 'heart-filled' : 'heart'" 
+										<uni-icons :type="comment.liked ? 'heart-filled' : 'heart'" 
 											size="14" 
-											:color="comment.isLiked ? '#ff4d4f' : '#999'">
+											:color="comment.liked ? '#ff4d4f' : '#999'">
 										</uni-icons>
-										<text :class="{'active': comment.isLiked}">{{comment.likes}}</text>
+										<text :class="{'active': comment.liked}">{{comment.likes}}</text>
 									</view>
 								</view>
 							</view>
@@ -129,25 +129,25 @@
 					<view class="drag-bar-inner"></view>
 				</view>
 				<view class="popup-header">
-					<text class="title">评论 ({{comments.length}})</text>
+					<text class="title">评论</text>
 					<uni-icons type="closeempty" size="24" @click="closeComments"></uni-icons>
 				</view>
 				<scroll-view scroll-y="true" class="comments-container">
 					<view class="comment-item" v-for="(comment, index) in comments" :key="index">
-						<image class="commenter-avatar" :src="`${pic_general_request_url.value}/user_avatar/${comment.userAvatar}`" mode="aspectFill"></image>
+						<img class="commenter-avatar" :src="`${pic_general_request_url}/user_avatar/${comment.avatar}`" mode="aspectFill"></img>
 						<view class="comment-content">
 							<view class="comment-header">
-								<text class="commenter-name">{{comment.userName}}</text>
-								<text class="comment-time">{{formatDate(comment.createTime)}}</text>
+								<text class="commenter-name">{{comment.nickname}}</text>
+								<text class="comment-time">{{comment.createTime}}</text>
 							</view>
-							<text class="comment-text">{{comment.content}}</text>
+							<text class="comment-text">{{comment.commentContext}}</text>
 							<view class="comment-actions">
 								<view class="action-item" @click="likeComment(index)">
-									<uni-icons :type="comment.isLiked ? 'heart-filled' : 'heart'" 
+									<uni-icons :type="comment.liked ? 'heart-filled' : 'heart'" 
 										size="14" 
-										:color="comment.isLiked ? '#ff4d4f' : '#999'">
+										:color="comment.liked ? '#ff4d4f' : '#999'">
 									</uni-icons>
-									<text :class="{'active': comment.isLiked}">{{comment.likes}}</text>
+									<text :class="{'active': comment.liked}">{{comment.likeCount}}</text>
 								</view>
 								<view class="action-item" @click="replyComment(index)">
 									<uni-icons type="chat" size="14" color="#999"></uni-icons>
@@ -174,6 +174,7 @@
 	import { ref, onMounted } from 'vue';
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
 	import { toBeDeveloped, showToast } from '@/src/utils/toast'
+
 	
 	const post_authorId = ref('');
 	const userId = ref('');
@@ -183,6 +184,7 @@
 	const touchStartY = ref(0);
 	const touchMoveY = ref(0);
 	const popupTranslateY = ref(0);
+    const comments = ref()
 	
 	// 创建响应式的当前帖子对象
 	const currentPost = ref({
@@ -198,33 +200,33 @@
 		updateTime: '',
 		title: '',
 		postId: 0,
-		isLiked: false,
-		isCollected: false,
-		isFollowed: false
+		liked: false,
+		collected: false,
+		followed: false
 	});
 	
 	// 新增响应式数据
-	const comments = ref([
-		{
-			id: 1,
-			userName: '猫咪爱好者',
-			userAvatar: 'default.jpg',
-			content: '好可爱的猫猫！',
-			createTime: '2024-01-20',
-			likes: 12,
-			isLiked: false
-		},
-		{
-			id: 2,
-			userName: '铲屎官',
-			userAvatar: 'default.jpg',
-			content: '这只猫很亲人，经常在教学楼附近晒太阳',
-			createTime: '2024-01-19',
-			likes: 8,
-			isLiked: false
-		}
-	]);
-	const newComment = ref('');
+	// const comments = ref([
+	// 	{
+	// 		id: 1,
+	// 		userName: '猫咪爱好者',
+	// 		userAvatar: 'default.jpg',
+	// 		content: '好可爱的猫猫！',
+	// 		createTime: '2024-01-20',
+	// 		likes: 12,
+	// 		liked: false
+	// 	},
+	// 	{
+	// 		id: 2,
+	// 		userName: '铲屎官',
+	// 		userAvatar: 'default.jpg',
+	// 		content: '这只猫很亲人，经常在教学楼附近晒太阳',
+	// 		createTime: '2024-01-19',
+	// 		likes: 8,
+	// 		liked: false
+	// 	}
+	// ]);
+const newComment = ref('');
 	const isLikeAnimating = ref(false);
 	const isCollectAnimating = ref(false);
 	
@@ -232,17 +234,19 @@
 		userId.value = uni.getStorageSync('tokenDetail').userId;
 		const options = getCurrentPages().pop().options;
 		const postId = options.postId; // 获取当前帖子的ID
+		// 获取当前帖子数据
 		uni.request({
-			url: `${API_general_request_url.value}/api/post/getPostByPostid?postId=${postId}`,
+			url: `${API_general_request_url.value}/api/post/getPostByPostId?postId=${postId}`,
 			method: 'GET',
+			header: {
+				'Authorization': `Bearer ${uni.getStorageSync('token')}`
+			},
 			success: (res) => {
 				if (res.statusCode === 200 && res.data.code === '2000') {
 					const post = res.data.data;
+					console.log(post)
 					currentPost.value = {
-						...post,
-						isLiked: false,
-						isCollected: false,
-						isFollowed: false
+						...post
 					};
 					post_authorId.value = currentPost.value.authorId;
 				} else {
@@ -259,27 +263,115 @@
 				})
 			}
 		})
+        // 获取评论列表
+        console.log('获取帖子评论列表')
+        console.log(postId)
+        uni.request({
+            url: `${API_general_request_url.value}/api/comment/getCommentByPostidByDescLikecount?postId=${postId}&page=1&size=10`,
+            method: 'GET',
+            header: {
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
+            },
+            success: (res) => {
+                console.log(res)
+                if (res.statusCode === 200 && res.data.code === '2000') {
+                    comments.value = res.data.data;
+                    // commentCount.value = res.data.data.length || 0;
+                    console.log('获取帖子评论列表成功')
+                } else {
+                    uni.showToast({
+                        title: res.data.msg || '获取评论列表失败',
+                        icon: 'none'
+                    })
+                }
+            }
+        })
 	})
 	
 	// 点赞功能
 	const handleLike = () => {
-		isLikeAnimating.value = true;
-		currentPost.value.isLiked = !currentPost.value.isLiked;
-		currentPost.value.likeCount += currentPost.value.isLiked ? 1 : -1;
-		showToast(currentPost.value.isLiked ? '点赞成功' : '取消点赞');
-		setTimeout(() => {
-			isLikeAnimating.value = false;
-		}, 500);
+		// 如果没有点赞，则点赞
+		if (!currentPost.value.liked) {
+			uni.request({
+				url: `${API_general_request_url.value}/api/post/likePost?postId=${currentPost.value.postId}`,
+				method: 'POST',
+				header: {
+				'Authorization': `Bearer ${uni.getStorageSync('token')}`
+			},
+			success: (res) => {
+				if (res.statusCode === 200 && res.data.code === '2000') {
+					isLikeAnimating.value = true;
+					currentPost.value.liked = !currentPost.value.liked;
+					currentPost.value.likeCount += currentPost.value.liked ? 1 : -1;
+					showToast(currentPost.value.liked ? '点赞成功' : '取消点赞');
+					setTimeout(() => {
+						isLikeAnimating.value = false;
+					}, 500);
+				} else {
+					showToast(res.data.msg || '点赞失败');
+				}
+			}
+		})
+		// 如果已经点赞，则取消点赞
+		} else {
+			uni.request({
+				url: `${API_general_request_url.value}/api/post/unLikePost?postId=${currentPost.value.postId}`,
+				method: 'POST',
+				header: {
+					'Authorization': `Bearer ${uni.getStorageSync('token')}`
+				},
+				success: (res) => {
+					if (res.statusCode === 200 && res.data.code === '2000') {
+						isLikeAnimating.value = true;
+						currentPost.value.liked = !currentPost.value.liked;
+						currentPost.value.likeCount += currentPost.value.liked ? 1 : -1;
+						showToast(currentPost.value.liked ? '点赞成功' : '取消点赞');
+					}
+				}
+			})
+		}
 	};
 	
 	// 收藏功能
 	const handleCollect = () => {
-		isCollectAnimating.value = true;
-		currentPost.value.isCollected = !currentPost.value.isCollected;
-		showToast(currentPost.value.isCollected ? '收藏成功' : '取消收藏');
-		setTimeout(() => {
-			isCollectAnimating.value = false;
-		}, 500);
+		// 如果没有收藏，则收藏
+		if (!currentPost.value.collected) {
+			uni.request({
+				url: `${API_general_request_url.value}/api/post/collectPost?postId=${currentPost.value.postId}`,
+				method: 'POST',
+				header: {	
+				'Authorization': `Bearer ${uni.getStorageSync('token')}`
+			},
+			success: (res) => {
+				if (res.statusCode === 200 && res.data.code === '2000') {
+					isCollectAnimating.value = true;
+					currentPost.value.collected = !currentPost.value.collected;
+					showToast(currentPost.value.collected ? '收藏成功' : '取消收藏');
+					setTimeout(() => {
+						isCollectAnimating.value = false;
+					}, 500);
+				} else {
+					showToast(res.data.msg || '收藏失败');
+				}
+			}
+		})
+		// 如果已经收藏，则取消收藏
+		} else {
+			uni.request({
+				url: `${API_general_request_url.value}/api/post/unCollectPost?postId=${currentPost.value.postId}`,
+				method: 'POST',
+				header: {
+					'Authorization': `Bearer ${uni.getStorageSync('token')}`
+				},
+				success: (res) => {
+					if (res.statusCode === 200 && res.data.code === '2000') {
+						isCollectAnimating.value = true;
+						currentPost.value.collected = !currentPost.value.collected;
+						showToast(currentPost.value.collected ? '收藏成功' : '取消收藏');
+					}
+				}
+			})
+		}
 	};
 	
 	// 评论功能
@@ -289,39 +381,89 @@
 	
 	// 提交评论
 	const submitComment = () => {
+        if (!checkLogin()) {
+            return;
+        }
 		if (!newComment.value.trim()) {
 			showToast('评论内容不能为空');
 			return;
 		}
-		
-		const comment = {
-			id: comments.value.length + 1,
-			userName: '当前用户',
-			userAvatar: 'default.jpg',
-			content: newComment.value,
-			createTime: new Date().toISOString().split('T')[0],
-			likes: 0,
-			isLiked: false
-		};
-		
-		comments.value.unshift(comment);
-		newComment.value = '';
-		showToast('评论成功');
-		closeComments();
+        const comment = {
+            commentContext: newComment.value,
+            postId: currentPost.value.postId,
+            type: 20
+        }   
+        uni.request({
+            url: `${API_general_request_url.value}/api/comment/add`,
+            method: 'POST',
+            data: comment,
+            header: {
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
+            },
+            success: (res) => {
+                if (res.statusCode === 200 && res.data.code === '2000') {
+                    console.log(res.data.data)
+                    console.log('评论成功')
+                    // 将评论添加到评论列表中
+                    comments.value.unshift(comment);
+                    newComment.value = '';
+                    showToast('评论成功');
+                    closeComments();
+                } else {
+                    uni.showToast({
+                        title: res.data.msg || '评论失败',
+                        icon: 'none'
+                    })
+                }
+            }
+        })
 	};
 	
 	// 点赞评论
 	const likeComment = (index) => {
 		const comment = comments.value[index];
-		comment.isLiked = !comment.isLiked;
-		comment.likes += comment.isLiked ? 1 : -1;
-		showToast(comment.isLiked ? '点赞成功' : '取消点赞');
+		comment.liked = !comment.liked;
+		comment.likes += comment.liked ? 1 : -1;
+		showToast(comment.liked ? '点赞成功' : '取消点赞');
 	};
 	
-	// 关注功能
+	// 关注
 	const handleFollow = () => {
-		currentPost.value.isFollowed = !currentPost.value.isFollowed;
-		showToast(currentPost.value.isFollowed ? '关注成功' : '取消关注');
+		// 如果已经关注，则取消关注
+		if (currentPost.value.followed) {
+			uni.request({
+				url: `${API_general_request_url.value}/api/user/unfollowUser?userId=${currentPost.value.authorId}`,
+				method: 'POST',
+				header: {
+					'Authorization': `Bearer ${uni.getStorageSync('token')}`
+				},
+				success: (res) => {
+					if (res.statusCode === 200 && res.data.code === '2000') {
+						currentPost.value.followed = !currentPost.value.followed;
+						showToast(currentPost.value.followed ? '关注成功' : '取消关注');
+					} else {
+						showToast(res.data.msg || '取消关注失败');
+					}
+				}
+			}) 
+		// 如果未关注，则关注
+		} else {
+			uni.request({
+				url: `${API_general_request_url.value}/api/user/followUser?userId=${currentPost.value.authorId}`,
+				method: 'POST',
+				header: {
+					'Authorization': `Bearer ${uni.getStorageSync('token')}`
+				},
+				success: (res) => {
+					if (res.statusCode === 200 && res.data.code === '2000') {
+						currentPost.value.followed = !currentPost.value.followed;
+						showToast(currentPost.value.followed ? '关注成功' : '取消关注');
+					} else {
+						showToast(res.data.msg || '关注失败');
+					}
+				}
+			})
+		}
 	};
 	
 	// 分享功能
@@ -354,8 +496,19 @@
 	
 	// 确认删除
 	const dialogConfirmDelete = () => {
-		showToast('删除成功');
-		uni.navigateBack();
+		console.log("当前帖子ID：", currentPost.value.postId)
+		uni.request({
+			url: `${API_general_request_url.value}/api/post/deletepost?postId=${currentPost.value.postId}`,
+			method: 'DELETE',
+			success: (res) => {
+				if (res.statusCode === 200 && res.data.code === '2000') {
+					showToast('删除成功');
+					uni.navigateBack();
+				} else {
+					showToast(res.data.msg || '删除失败');
+				}
+			}
+		})
 	}
 	
 	// 预览图片
@@ -445,7 +598,7 @@
 	background-color: #fff;
 	
 	.layout {
-		padding-top: 40rpx;
+		// padding-top: 40rpx;
 		
 		.box-head {
 			width: 100vw;
