@@ -12,7 +12,7 @@ onLaunch(async () => {
     console.log("当前运行环境：", process.env.NODE_ENV)
 
     // 预加载首页帖子数据
-    await getPosts(undefined, undefined, true)
+    await getPosts(undefined, undefined, true, true)
     // console.log("当前页码：", appStore.pagination.page)
     // console.log("每页帖子数量：", appStore.pagination.size)
     // console.log("帖子总数：", appStore.pagination.total)

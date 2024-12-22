@@ -19,7 +19,7 @@
           <input 
             class="input" 
             v-model="email" 
-            placeholder="邮箱/账号/用户ID"
+            placeholder="邮箱/用户名/用户ID/手机号"
             @focus="handleInputFocus('email')"
             @blur="handleInputBlur('email')"
             :class="{ 'input-focus': focusState.email }"

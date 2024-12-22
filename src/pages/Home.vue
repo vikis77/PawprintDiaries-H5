@@ -204,6 +204,8 @@
 			}).exec();
 		}
 	  
+        // 初始化帖子数据
+        posts.value = appStore.postList
 	});
 	
 
@@ -211,11 +213,12 @@
 	// 发送请求获取帖子数据，包括加载初始数据和分页加载更多数据
     // 目前只用到到上拉刷新，即isRefresh为true
 	const fetchMorePosts = async (isRefresh = false) => {
+        
         if (isRefresh) {
             loadMoreStatus.value = 'more'
         }
 		// 调用全局获取帖子数据的方法
-		await getPosts(undefined, undefined, isRefresh)
+		await getPosts(undefined, undefined, isRefresh, false)
 		posts.value = appStore.postList
         console.log(`"完成获取新帖子，是否全新刷新：${isRefresh}"`)
         console.log(posts.value)
@@ -362,7 +365,12 @@
 		console.log('下拉刷新触发');
 	}
 
+    // 下拉刷新
 	const onRefresh = async () => {
+        // 未登录用户不能上拉获取新帖子
+        if (!checkLogin()) {
+            return;
+        }
 		console.log('正在刷新');
 		isTriggered.value = true;
 		
@@ -399,7 +407,7 @@
 		console.log('开始加载更多数据');
 		
 		try {
-			await getPosts(undefined, undefined, false);
+			await getPosts(undefined, undefined, false, false);
 			console.log(appStore.pagination)
 			// 检查是否还有更多数据
 			if (appStore.pagination.page > appStore.pagination.total) {
@@ -521,69 +529,108 @@
             position: fixed;
             top: 180rpx;
 			height: 1350rpx;
-			// padding-top: 200rpx;
-            // margin-top: 200rpx;
-			background-color: #ebebeb;
+			background-color: #f8f9fa;
 			position: relative;
 			overflow-y: auto;
-			transition: all 0.3s ease-out; // 添加过渡效果
-			scroll-behavior: smooth; /* 添加平滑滚动效果 */
+			transition: all 0.3s ease-out;
+			scroll-behavior: smooth;
+			
 			.content{
 				display: flex;
 				flex-wrap: wrap;
-				justify-content: space-between;
-				padding-bottom: 20rpx;
-				// padding-top: 205rpx;
+				padding: 8rpx;
+				box-sizing: border-box;
+				
 				.box{ // 每个帖子盒子
-					width: 363rpx; /* 每个box占据父容器的 370/750，出间距 */
-					height: 550rpx;
+					flex: 0 0 calc(50% - 16rpx); // 确保两列布局
+					margin: 8rpx;
+					height: 520rpx;
 					background-color: #ffffff;
-					margin: 6rpx; //避免 box 垂直紧贴
-					border-radius: 10rpx;
-					overflow: hidden; /* 防止子元素超出边界 */
+					border-radius: 12rpx;
+					overflow: hidden;
+					box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+					transition: all 0.3s ease;
+					
+					&:active {
+						transform: scale(0.97);
+					}
+					
+					&:hover {
+						box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.12);
+					}
+					
 					.pic{
-						height: 80%;
-						width: 100%; /* 确保图片宽度与box匹配 */
-						object-fit: cover; /* 确保图片按比例缩放，不超出容器 */
-						border-top-left-radius: 10rpx; /* 图片也应用圆角 */
-						border-top-right-radius: 10rpx; /* 图片也应用圆角 */
+						height: 75%;
+						width: 100%;
+						object-fit: cover;
+						transition: transform 0.3s ease;
+						
+						&:hover {
+							transform: scale(1.03);
+						}
 					}
+					
 					.text{
-						font-size: 25rpx;
-						padding-left: 13rpx;
-						padding-bottom: 2rpx;
+						font-size: 26rpx;
+						font-weight: 500;
+						color: #333;
+						line-height: 1.4;
+						padding: 12rpx 16rpx 8rpx;
 						height: 8%;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
 					}
+					
 					.info{
 						display: flex;
-						align-items: center; // 居中对齐弹性盒的各项 <div> 素
-						justify-content: space-between; /* 确保头像、昵称和点赞按钮分布 */
-						height: 9%;
-						padding-left: 15rpx;
-						padding-top: 5rpx;
-						padding-right: 15rpx;
+						align-items: center;
+						padding: 8rpx 16rpx;
+						height: 13%;
+						background: linear-gradient(to bottom, transparent, rgba(248, 249, 250, 0.5));
+						
 						.avatar {
-						    width: 40rpx;
-						    height: 40rpx;
-						    border-radius: 50%; /* 圆头像 */
-						    object-fit: cover;
+							width: 42rpx;
+							height: 42rpx;
+							border-radius: 50%;
+							object-fit: cover;
+							border: 2rpx solid #fff;
+							box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 						}
+						
 						.nickname {
-						    font-size: 20rpx;
-						    margin-left: 10rpx;
-						    flex-grow: 1; /* 让昵称占据剩余空间 */
+							font-size: 22rpx;
+							color: #666;
+							margin-left: 12rpx;
+							flex: 1;
+							overflow: hidden;
+							text-overflow: ellipsis;
+							white-space: nowrap;
 						}
+						
 						.likes {
 							display: flex;
 							align-items: center;
+							background: rgba(255, 192, 203, 0.08);
+							padding: 4rpx 12rpx;
+							border-radius: 24rpx;
+							border: 1rpx solid rgba(255, 107, 129, 0.1);
+							
 							.like-icon {
-							    width: 24rpx;
-							    height: 24rpx;
+								width: 26rpx;
+								height: 26rpx;
+								transition: transform 0.3s ease;
+								
+								&:hover {
+									transform: scale(1.2);
+								}
 							}
-				
+							
 							.like-count {
-							    font-size: 18rpx;
-							    margin-left: 5rpx;
+								font-size: 20rpx;
+								color: #ff6b81;
+								margin-left: 6rpx;
+								font-weight: 500;
 							}
 						}
 					}
@@ -591,10 +638,11 @@
 			}
 			
 			.load-more {
-				padding: 20rpx 0;
+				padding: 24rpx 0;
 				text-align: center;
-				color: #999;
+				color: #666;
 				font-size: 24rpx;
+				background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.02));
 			}
 		}
 	}

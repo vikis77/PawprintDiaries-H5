@@ -8,7 +8,7 @@ import { API_general_request_url } from '@/src/config/index.js'
 
 
 // 获取帖子数据，默认加载更多数据
-export const getPosts = async (page = undefined, pageSize = undefined, isRefresh = false) => {
+export const getPosts = async (page = undefined, pageSize = undefined, isRefresh = false, isFirstTime = false) => {
     // 创建 store 实例
     const appStore = useAppStore()
 
@@ -20,7 +20,11 @@ export const getPosts = async (page = undefined, pageSize = undefined, isRefresh
         page = 1
         console.log("开始请求第1页帖子数据")
         try {
-            const response = await axios.get(`${API_general_request_url.value}/api/post/getRandomWeightedPosts?page=${page}&pageSize=${pageSize}`);
+            const response = await axios.get(`${API_general_request_url.value}/api/post/getRandomWeightedPosts?page=${page}&pageSize=${pageSize}&firstTime=${isFirstTime}`,{
+                headers: {
+                    'Authorization': `Bearer ${uni.getStorageSync('token')}`
+                }
+            })
             if (response.status === 200 && response.data.code === "2000") {
                 console.log(response.data)
                 const newPosts = response.data.data
@@ -39,7 +43,11 @@ export const getPosts = async (page = undefined, pageSize = undefined, isRefresh
         page++
         console.log(`开始请求第${page}页帖子数据`)
         try {
-            const response = await axios.get(`${API_general_request_url.value}/api/post/getRandomWeightedPosts?page=${page}&pageSize=${pageSize}`);
+            const response = await axios.get(`${API_general_request_url.value}/api/post/getRandomWeightedPosts?page=${page}&pageSize=${pageSize}&firstTime=${isFirstTime}`,{
+                headers: {
+                    'Authorization': `Bearer ${uni.getStorageSync('token')}`
+                }
+            })
             if (response.status === 200 && response.data.code === "2000") {
                 const newPosts = response.data.data
                 appStore.setPostList([...appStore.postList, ...newPosts]);
