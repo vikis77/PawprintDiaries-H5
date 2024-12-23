@@ -29,13 +29,13 @@
             <view class="comment-item" v-for="item in commentList" :key="item.id">
                 <view class="comment-header">
                     <view class="user-info">
-                        <image class="avatar" :src="`${pic_general_request_url}/user_avatar/${item.avatar}`" mode="aspectFill" />
-                        <text class="username">{{ item.nickname }}</text>
+                        <image class="avatar" :src="`${pic_general_request_url}/user_avatar/${item.avatar}${Suffix_1001}`" mode="aspectFill" />
+                        <text class="username">{{ item.nickName }}</text>
                     </view>
                     <text class="time">{{ item.createTime ? new Date(item.createTime).toLocaleString() : '暂无时间' }}</text>
                 </view>
 
-                <view class="comment-content">
+                <view class="comment-content" @click="handleCommentClick(item)">
                     {{ item.commentContext }}
                 </view>
 
@@ -59,7 +59,7 @@ import { ref, onMounted } from 'vue'
 import NavBar1001 from '@/src/components/common/NavBar1001.vue'
 import { getPendingComments, reviewComment } from '@/src/api/comment.js'
 import { useAppStore } from '@/store/modules/app'
-import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
 
 // 创建 store 实例
 const appStore = useAppStore()
@@ -128,6 +128,20 @@ const loadComments = async () => {
         loadMoreStatus.value = 'more'
     } finally {
         isRefreshing.value = false
+    }
+}
+
+// 点击评论跳转到对应的页面
+const handleCommentClick = (item) => {
+    if (item.type === 10) { // 猫咪评论
+        uni.navigateTo({
+        url: `Card?catId=${item.catId}`
+    })
+    } 
+    else if (item.type === 20) { // 帖子评论
+        uni.navigateTo({
+			url:`Post?postId=${item.postId}`
+		})
     }
 }
 

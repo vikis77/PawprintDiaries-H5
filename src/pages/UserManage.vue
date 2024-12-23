@@ -21,7 +21,7 @@
 
             <view v-else v-for="user in users" :key="user.userId" class="user-item">
                 <view class="user-info">
-                    <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${user.avatar}`" mode="aspectFill" />
+                    <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${user.avatar}${Suffix_1001}`" mode="aspectFill" />
                     <view class="user-detail">
                         <view class="user-name">
                             <text class="nickname">{{ user.nickName }}</text>
@@ -54,7 +54,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js';
+import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js';
 import NavBar1001 from '@/src/components/common/NavBar1001.vue';
 
 // 响应式数据

@@ -22,7 +22,7 @@
             <view class="profile-section">
                 <view class="profile-header">
                     <view class="user-info">
-                        <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${appStore.userInfo.avatar}`"
+                        <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${appStore.userInfo.avatar}${Suffix_1001}`"
                             mode="aspectFill"></img>
                         <view class="info-right">
                             <view class="username">{{ appStore.userInfo.nickName || '未设置昵称' }}</view>
@@ -101,7 +101,7 @@
                 <template v-if="getActiveList.length">
                     <view class="content">
                         <view v-for="post in getActiveList" :key="post.postId" class="box">
-                            <img class="pic" :src="`${pic_general_request_url}/post_pics/${post.coverPicture}`"
+                            <img class="pic" :src="`${pic_general_request_url}/post_pics/${post.coverPicture}${Suffix_1001}`"
                                 mode="aspectFill" @click="handlerClickPost(post.postId)"></img>
                             <view class="post-info">
                                 <view class="text" @click="handlerClickPost(post.postId)">{{ post.title }}</view>
@@ -139,7 +139,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
 import { toBeDeveloped, showToast } from '@/src/utils/toast'
 import { useAppStore } from '@/store/modules/app'
 

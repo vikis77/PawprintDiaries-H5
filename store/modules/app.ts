@@ -4,6 +4,67 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+// 定义猫咪位置信息接口
+interface CatLocation {
+    id: number;
+    area: string | null;
+    catId: number | null;
+    description: string | null;
+    latitude: number | null;
+    longitude: number | null; 
+    updateTime: number | null;
+    catName: string;
+}
+
+// 定义猫咪数据分析接口
+interface CatDataAnalysis {
+    adoptionCount: number;
+    sterilizationRatio: {
+        '已绝育': number;
+        '未绝育': number;
+    };
+    vaccinationRatio: {
+        '已接种': number;
+        '未接种': number;
+    };
+    healthStatus: {
+        '健康': number;
+        '疾病': number;
+        '营养不良': number;
+        '肥胖': number;
+    };
+    monthlyNewCount: number;
+    fundBalance: number;
+    lastMonthExpense: number;
+    lastMonthIncome: number;
+    ageDistribution: {
+        "3个月以内": number;
+        "3-6个月": number;
+        "6-12个月": number;
+        "12-18个月": number;
+        "18-24个月": number;
+        "24个月以上": number;
+    };
+    areaDistribution: {
+        '北门': number;
+        '岐头': number;
+        '凤翔': number;
+        '厚德楼': number;
+        '香晖苑': number;
+    };
+}
+
+// 定义统计卡片数据接口
+interface GridItem {
+    url: string;
+    data: number;
+    text: string;
+    text2: string;
+    badge?: string;
+    type?: string;
+    chartData?: any;
+    chartOpts?: any;
+}
 
 // 评论审核类型接口
 interface AuditComment {
@@ -138,6 +199,37 @@ interface ApplyPost {
 // 使用组合式 API 风格定义 store
 export const useAppStore = defineStore('app', () => {
     /* ---------------------定义状态--------------------- */
+
+    // 定义猫咪位置数据
+    const catLocations = ref<CatLocation[]>([]);
+
+    // 数据分析相关状态
+    const catDataAnalysisData = ref<CatDataAnalysis>({
+        adoptionCount: 0,
+        sterilizationRatio: { '已绝育': 0, '未绝育': 0 },
+        vaccinationRatio: { '已接种': 0, '未接种': 0 },
+        healthStatus: { '健康': 0, '疾病': 0, '营养不良': 0, '肥胖': 0 },
+        monthlyNewCount: 0,
+        fundBalance: 0,
+        lastMonthExpense: 0,
+        lastMonthIncome: 0,
+        ageDistribution: {
+            "3个月以内": 0,
+            "3-6个月": 0,
+            "6-12个月": 0,
+            "12-18个月": 0,
+            "18-24个月": 0,
+            "24个月以上": 0
+        },
+        areaDistribution: {
+            '北门': 0,
+            '岐头': 0,
+            '凤翔': 0,
+            '厚德楼': 0,
+            '香晖苑': 0
+        }
+    })
+
     // 待审核评论列表
     const auditCommentList = ref<AuditComment | null>(null)
     // 帖子评论列表
@@ -174,6 +266,14 @@ export const useAppStore = defineStore('app', () => {
 
 
     /* ---------------------设置状态--------------------- */
+    // 设置猫咪位置数据
+    function setCatLocations(data: CatLocation[]) {
+        catLocations.value = data
+    }
+    // 设置数据分析数据
+    function setCatDataAnalysis(data: CatDataAnalysis) {
+        catDataAnalysisData.value = data
+    }
 
     // 设置帖子评论列表
     function setPostCommentList(list: PostComment[]) {
@@ -238,6 +338,13 @@ export const useAppStore = defineStore('app', () => {
 
     // 返回状态和方法
     return {
+        // 猫咪位置相关导出
+        catLocations,
+        setCatLocations,
+        // 数据分析相关导出
+        catDataAnalysisData,
+        setCatDataAnalysis,
+
         /* ---------------------状态--------------------- */
         postCommentList,
         catCommentList,

@@ -40,7 +40,7 @@
 					<!-- 左边图片区域 -->
 					<view class="tyh90p"> 
 						<view class="t87kza">
-							<image :src="`${pic_general_request_url}/cat_avatar/${cat.avatar}`" mode="aspectFill" @click="previewImage([`${pic_general_request_url}/cat_avatar/${cat.avatar}`])"></image>
+							<image :src="`${pic_general_request_url}/cat_avatar/${cat.avatar}${Suffix_1001}`" mode="aspectFill" @click="previewImage([`${pic_general_request_url}/cat_avatar/${cat.avatar}${Suffix_1001}`])"></image>
 						</view>
 						<!-- 添加互动区域 -->
 						<view class="interaction-area">
@@ -125,7 +125,7 @@
 							<view class="t9hz9">
 								<view class="t09row">
 									<view class="t9j0a" v-for="(item, index) in picUrlDatas" :key="index">
-										<image class="i23qh" :src="`${pic_general_request_url}/cat_pics/${item.url}`" mode="aspectFill" @click="previewImage(picUrlDatas.map(pic => `${pic_general_request_url}/cat_pics/${pic.url}`), index)"></image>
+										<image class="i23qh" :src="`${pic_general_request_url}/cat_pics/${item.url}${Suffix_1001}`" mode="aspectFill" @click="previewImage(picUrlDatas.map(pic => `${pic_general_request_url}/cat_pics/${pic.url}`), index)"></image>
 									</view>
 								</view>
 							</view>
@@ -249,7 +249,7 @@
 					</view>
 					<scroll-view scroll-y="true" class="comments-container" :show-scrollbar="false">
 						<view class="comment-item" v-for="(comment, index) in comments" :key="index">
-							<img class="commenter-avatar" :src="`${pic_general_request_url}/user_avatar/${comment.avatar}`" mode="aspectFill"></img>
+							<img class="commenter-avatar" :src="`${pic_general_request_url}/user_avatar/${comment.avatar}${Suffix_1001}`" mode="aspectFill"></img>
 							<view class="comment-content">
 								<view class="comment-header">
 									<text class="commenter-name">{{comment.nickName}}</text>
@@ -284,7 +284,7 @@
 
 <script setup>
 	import { ref, onMounted } from 'vue';
-	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+	import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
 	const appStore = useAppStore()
 	
 	const showMenu = ref(false);

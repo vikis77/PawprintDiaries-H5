@@ -31,6 +31,12 @@
         <view class="card-title">更新日志</view>
         <view class="card-content">
           <view class="update-item">
+            <view class="update-version">v2.0.1 (2024-12-22)</view>
+            <view class="update-list">
+              <view class="update-point">• 修复若干已知问题</view>
+              <view class="update-point">• 优化系统性能</view>
+              <view class="update-point"></view>
+            </view>
             <view class="update-version">v2.0.0 (2024-12)</view>
             <view class="update-list">
               <view class="update-point">• 全面优化界面</view>
@@ -102,13 +108,13 @@
   </view>
 </template>
 
-<script setup lang="ts">
-import NavBar1001 from '@/src/components/common/NavBar1001.vue';
+<script setup>
+import NavBar1001 from '@/src/components/common/NavBar1001.vue'
 import { ref } from 'vue';
 
 const isDeclarationExpanded = ref(false);
 
-const handleTouchMove = (e: TouchEvent) => {
+const handleTouchMove = (e) => {
   e.preventDefault();
 };
 
@@ -116,7 +122,7 @@ const toggleDeclaration = () => {
   isDeclarationExpanded.value = !isDeclarationExpanded.value;
 };
 
-const openUrl = (url: string) => {
+const openUrl = (url) => {
   if (url.startsWith('mailto:')) {
     // 处理邮件链接
     window.location.href = url;

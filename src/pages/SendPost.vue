@@ -11,11 +11,24 @@
 				<uni-easyinput 
 					:inputBorder="false" 
 					v-model="uploadTitle"  
-					type="textarea" 
-					maxlength="30" 
+					type="textarea"
+					autoHeight
+					:styles="{
+						minHeight: '80rpx',
+						maxHeight: '160rpx'
+					}"
 					placeholder="添加标题" 
 					class="title-input"
-				></uni-easyinput>
+					@input="handleTitleInput"
+					@keydown="handleTitleKeydown"
+					:maxlength="30"
+					trim="true"
+					confirmType="done"
+				>
+					<template #right>
+						<text class="word-count" :class="{ 'word-count--limit': titleLength >= 30 }">{{titleLength}}/30</text>
+					</template>
+				</uni-easyinput>
 				<uni-easyinput 
 					:inputBorder="false" 
 					type="textarea" 
@@ -24,7 +37,15 @@
 					maxlength="800"
 					placeholder="添加内容"
 					class="content-input"
-				></uni-easyinput>
+					@input="handleArticleInput"
+					@keydown="handleArticleKeydown"
+					trim="true"
+					confirmType="done"
+				>
+					<template #right>
+						<text class="word-count" :class="{ 'word-count--limit': articleLength >= 800 }">{{articleLength}}/800</text>
+					</template>
+				</uni-easyinput>
 			</view>
 			<!-- 图片上传区 -->
 			<view class="upload-section">
@@ -52,7 +73,7 @@
 </template>
 
 <script setup>
-	import { ref } from 'vue';
+	import { ref, computed } from 'vue';
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
 	import NavBar1001 from '@/src/components/common/NavBar1001.vue'
 
@@ -61,6 +82,56 @@
 	const uploadTitle = ref(''); // 标题
 	const uploadArticle = ref(''); //内容
 	const uploadToken = ref(''); // 上传凭证
+	
+	// 计算标题字数
+	const titleLength = computed(() => {
+		return uploadTitle.value.length;
+	});
+	
+	// 计算内容字数
+	const articleLength = computed(() => {
+		return uploadArticle.value.length;
+	});
+	
+	// 监听标题输入前
+	const handleTitleKeydown = (e) => {
+		// 如果已经达到字数限制，且不是删除键或方向键
+		if (uploadTitle.value.length >= 30 && 
+			!['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+			e.preventDefault(); // 阻止输入
+			uni.showToast({
+				title: '标题最多30个字',
+				icon: 'none'
+			});
+			return false;
+		}
+	};
+	
+	// 监听内容输入前
+	const handleArticleKeydown = (e) => {
+		// 如果已经达到字数限制，且不是删除键或方向键
+		if (uploadArticle.value.length >= 800 && 
+			!['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+			e.preventDefault(); // 阻止输入
+			uni.showToast({
+				title: '内容最多800个字',
+				icon: 'none'
+			});
+			return false;
+		}
+	};
+	
+	// 监听标题输入（作为备用验证）
+	const handleTitleInput = (e) => {
+		const value = e;
+		uploadTitle.value = value.slice(0, 30);
+	};
+	
+	// 监听内容输入（作为备用验证）
+	const handleArticleInput = (e) => {
+		const value = e;
+		uploadArticle.value = value.slice(0, 800);
+	};
 	
 	// 新增选择图片
 	const select = (files) => {
@@ -315,12 +386,33 @@
 			background-color: #fff;
 			border-bottom: 2rpx solid #e9ecef;
 			margin-bottom: 20rpx;
-			height: 80rpx !important;
-			padding: 10rpx 24rpx !important;
+			padding: 20rpx 24rpx !important;
 			
 			&:focus-within {
 				border-bottom-color: #9370db;
 			}
+
+			.uni-easyinput__content-textarea {
+				min-height: 60rpx;
+				max-height: 120rpx;
+				line-height: 1.5;
+			}
+		}
+	}
+
+	.word-count {
+		font-size: 24rpx;
+		color: #999;
+		margin-right: 20rpx;
+		position: absolute;
+		right: 0;
+		bottom: 10rpx;
+		transition: all 0.3s ease;
+		
+		&--limit {
+			color: #ff6b6b;
+			font-weight: 500;
+			transform: scale(1.05);
 		}
 	}
 

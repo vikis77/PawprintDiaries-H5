@@ -47,7 +47,7 @@
 									</view>
 									<view v-else-if="catBaseFormData.avatar" class="avatar-preview-container" @click="handleReselect">
 										<image 
-											:src="`${pic_general_request_url}/cat_avatar/${catBaseFormData.avatar}`" 
+											:src="`${pic_general_request_url}/cat_avatar/${catBaseFormData.avatar}${Suffix_1001}`" 
 											mode="aspectFill" 
 											class="avatar-preview"
 										/>
@@ -171,7 +171,7 @@
 
 <script setup>
 	import { ref, onMounted, nextTick } from 'vue';
-	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+	import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
 	import NavBar1001 from '@/src/components/common/NavBar1001.vue'
 	
 	const catId = ref(null);
@@ -385,7 +385,7 @@
 			} else {
 				console.log(postResponse.data)
 				uni.showToast({
-					title: postResponse.data.msg || '提交失败',
+					title: postResponse.data || '提交失败',
 					icon: 'none'
 				});
 				return;

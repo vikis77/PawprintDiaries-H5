@@ -100,10 +100,10 @@
 		>
 			<view class="content" id="top">
 				<view v-for="post in posts" :key="post.postId"  class="box">
-					<image class="pic" :src="`${pic_general_request_url}/post_pics/${post.coverPicture}`" mode="aspectFill" @click="handlerClickPost(post.postId)"></image>
+					<image class="pic" :src="`${pic_general_request_url}/post_pics/${post.coverPicture}${Suffix_1001}`" mode="aspectFill" @click="handlerClickPost(post.postId)"></image>
 					<view class="text" @click="handlerClickPost(post.postId)">{{ post.title }}</view>
 					<view class="info">
-						<image class="avatar" :src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}`" mode="aspectFill"></image>
+						<image class="avatar" :src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}${Suffix_1001}`" mode="aspectFill"></image>
 						<text class="nickname">{{ post.authorNickname }}</text>
 						<view class="likes">
 						<image class="like-icon" src="../../static/love.svg"></image>
@@ -126,7 +126,7 @@
 <script setup>
 	import { ref, onMounted, nextTick } from 'vue';
 	import axios from 'axios';
-	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+	import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
 	import { toBeDeveloped, showToast } from '@/src/utils/toast'
 	import { useAppStore } from '@/store/modules/app'
 	import { storeToRefs } from 'pinia'
@@ -575,7 +575,7 @@
 						font-weight: 500;
 						color: #333;
 						line-height: 1.4;
-						padding: 12rpx 16rpx 8rpx;
+						padding: 12rpx 16rpx 2rpx;
 						height: 8%;
 						overflow: hidden;
 						text-overflow: ellipsis;
@@ -585,7 +585,7 @@
 					.info{
 						display: flex;
 						align-items: center;
-						padding: 8rpx 16rpx;
+						padding: 0rpx 16rpx;
 						height: 13%;
 						background: linear-gradient(to bottom, transparent, rgba(248, 249, 250, 0.5));
 						

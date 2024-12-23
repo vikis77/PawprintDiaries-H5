@@ -48,7 +48,9 @@
 </template>
 
 <script setup>
-import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+import { useAppStore } from '@/store/modules/app'
+const appStore = useAppStore()
 
 const gridList = ref([
 	{
@@ -62,7 +64,10 @@ const gridList = ref([
 
 onShow(() => {
 	uni.showLoading({ title: '加载中...' });
-	const catList = uni.getStorageSync('catList') != null ? uni.getStorageSync('catList') : [];
+	// const catList = uni.getStorageSync('catList') != null ? uni.getStorageSync('catList') : [];
+    // 调用全局方法：获取猫猫列表
+    getCatInfoDetail()
+    const catList = appStore.catList
 	console.log(catList);
 
 	if (catList.length > 0) {
@@ -72,7 +77,7 @@ onShow(() => {
 		// 遍历 catList，将每只猫的信息加入 gridList
 		catList.forEach((cat) => {
 			gridList.value.push({
-				url: `${pic_general_request_url.value}/cat_avatar/${cat.avatar}`,
+				url: `${pic_general_request_url.value}/cat_avatar/${cat.avatar}${Suffix_1001}`,
 				data: '',
 				text: cat.catname,
 				text2: cat.area,

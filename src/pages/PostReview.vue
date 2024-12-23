@@ -10,7 +10,7 @@
 
             <view v-else v-for="post in posts" :key="post.postId" class="post-item">
                 <view class="post-header">
-                    <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}`"
+                    <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}${Suffix_1001}`"
                         mode="aspectFill" />
                     <text class="nickname">{{ post.authorNickname }}</text>
                     <text class="time">{{ formatTime(post.send_time) }}</text>
@@ -51,7 +51,7 @@
                                 indicator-active-color="#07c160">
                                 <swiper-item v-for="(image, index) in selectedPost.images" :key="index"
                                     class="swiper-item">
-                                    <image :src="`${pic_general_request_url}/post_pics/${image}`" mode="aspectFit"
+                                    <image :src="`${pic_general_request_url}/post_pics/${image}${Suffix_1001}`" mode="aspectFit"
                                         class="detail-image" />
                                 </swiper-item>
                             </swiper>
@@ -70,7 +70,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
 import NavBar1001 from '@/src/components/common/NavBar1001.vue';
 
 const appStore = useAppStore()
@@ -257,7 +257,7 @@ onMounted(async () => {
 }
 
 .post-article {
-    height: 250rpx;
+    max-height: 250rpx;
     font-size: 28rpx;
     color: #333;
     line-height: 1.6;

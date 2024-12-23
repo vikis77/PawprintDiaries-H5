@@ -46,7 +46,7 @@
 				>
 				  <image 
 					class="cat-avatar"
-					:src="`${pic_general_request_url}/cat_avatar/${cat.avatar}`"
+					:src="`${pic_general_request_url}/cat_avatar/${cat.avatar}${Suffix_1001}`"
 					mode="aspectFill"
 				  />
 				  <view class="cat-info">
@@ -70,7 +70,7 @@
 			  >
 				<image 
 				  class="post-cover"
-				  :src="`${pic_general_request_url}/post_pics/${post.coverPicture}`"
+				  :src="`${pic_general_request_url}/post_pics/${post.coverPicture}${Suffix_1001}`"
 				  mode="aspectFill"
 				/>
 				<view class="post-content">
@@ -79,7 +79,7 @@
 					<view class="author">
 					  <image 
 						class="author-avatar"
-						:src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}`"
+						:src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}${Suffix_1001}`"
 						mode="aspectFill"
 					  />
 					  <text class="author-name">{{ post.authorNickname }}</text>
@@ -107,7 +107,7 @@
 <script setup>
 	import { ref, onMounted } from 'vue';
 	import { onLoad } from '@dcloudio/uni-app';
-	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+	import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
 
 	
 	const catList = ref([]);

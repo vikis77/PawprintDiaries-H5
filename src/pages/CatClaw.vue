@@ -43,7 +43,7 @@
                                                 <!-- 猫猫头像 -->
                                                 <view class="t7908f">
                                                     <image class="img32r"
-                                                        :src="`${pic_general_request_url}/cat_avatar/${cat.avatar}`"
+                                                        :src="`${pic_general_request_url}/cat_avatar/${cat.avatar}${Suffix_1001}`"
                                                         mode="aspectFill"></image>
                                                 </view>
                                                 <!-- 猫猫信息  -->
@@ -273,7 +273,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
 import { toBeDeveloped, showToast } from '@/src/utils/toast'
 // import { getCatInfoDetail, getCatAnalyseData } from '@/src/api/post'
 import { useAppStore } from '@/store/modules/app'
@@ -659,175 +659,150 @@ const ensureNumber = (value) => {
 
 // 获取猫爪页面数据分析数据
 const fetchDataAnalysis = async () => {
-    const appStore = useAppStore()
-    await uni.request({
-        url: `${API_general_request_url.value}/api/cat/analysis`,
-        method: 'GET',
-        success: (res) => {
-            console.log(res)
-            if (res.statusCode === 200 && res.data.code === '2000') {
-                const newData = res.data.data;
-
-                // 为每个统计数据添加动画效果
-                gridList.value.forEach((item, index) => {
-                    let targetValue = 0;
-
-                    switch (index) {
-                        case 0:
-                            targetValue = ensureNumber(catList.value?.length);
-                            break;
-                        case 1:
-                            targetValue = ensureNumber(newData?.adoptionCount);
-                            break;
-                        case 2:
-                            targetValue = ensureNumber(newData?.sterilizationRatio?.['已绝育']);
-                            break;
-                        case 3:
-                            targetValue = ensureNumber(newData?.vaccinationRatio?.['已接种']);
-                            break;
-                        case 4:
-                            targetValue = ensureNumber(newData?.healthStatus?.['健康']);
-                            break;
-                        case 5:
-                            targetValue = ensureNumber(newData?.monthlyNewCount);
-                            break;
-                        case 6:
-                            targetValue = ensureNumber(newData?.fundBalance);
-                            break;
-                        case 7:
-                            targetValue = ensureNumber(newData?.lastMonthExpense);
-                            break;
-                        case 8:
-                            targetValue = ensureNumber(newData?.lastMonthIncome);
-                            break;
-                    }
-
-                    // 执行动画，从0到目标值
-                    animateValue(0, targetValue, 1000, (value) => {
-                        gridList.value[index].data = Math.floor(value);
-                    });
-                });
-
-                // 更新其他图表数据
-                catDataAnalysisData.value = {
-                    adoptionCount: ensureNumber(newData?.adoptionCount),
-                    sterilizationRatio: {
-                        '已绝育': ensureNumber(newData?.sterilizationRatio?.['已绝育']),
-                        '未绝育': ensureNumber(newData?.sterilizationRatio?.['未绝育'])
-                    },
-                    vaccinationRatio: {
-                        '已接种': ensureNumber(newData?.vaccinationRatio?.['已接种']),
-                        '未接种': ensureNumber(newData?.vaccinationRatio?.['未接种'])
-                    },
-                    healthStatus: {
-                        '健康': ensureNumber(newData?.healthStatus?.['健康']),
-                        '疾病': ensureNumber(newData?.healthStatus?.['疾病']),
-                        '营养不良': ensureNumber(newData?.healthStatus?.['营养不良']),
-                        '肥胖': ensureNumber(newData?.healthStatus?.['肥胖'])
-                    },
-                    monthlyNewCount: ensureNumber(newData?.monthlyNewCount),
-                    fundBalance: ensureNumber(newData?.fundBalance),
-                    lastMonthExpense: ensureNumber(newData?.lastMonthExpense),
-                    lastMonthIncome: ensureNumber(newData?.lastMonthIncome),
-                    ageDistribution: {
-                        "3个月以内": ensureNumber(newData?.ageDistribution?.["3个月以内"]),
-                        "3-6个月": ensureNumber(newData?.ageDistribution?.["3-6个月"]),
-                        "6-12个月": ensureNumber(newData?.ageDistribution?.["6-12个月"]),
-                        "12-18个月": ensureNumber(newData?.ageDistribution?.["12-18个月"]),
-                        "18-24个月": ensureNumber(newData?.ageDistribution?.["18-24个月"]),
-                        "24个月以上": ensureNumber(newData?.ageDistribution?.["24个月以上"])
-                    },
-                    areaDistribution: {
-                        '北门': ensureNumber(newData?.areaDistribution?.['北门']),
-                        '岐头': ensureNumber(newData?.areaDistribution?.['岐头']),
-                        '凤翔': ensureNumber(newData?.areaDistribution?.['凤翔']),
-                        '厚德楼': ensureNumber(newData?.areaDistribution?.['厚德楼']),
-                        '香晖苑': ensureNumber(newData?.areaDistribution?.['香晖苑'])
-                    }
-                };
-
-                // 更新年龄分布数据
-                let tripDiagramDataDetail = {
-                    categories: ["3个月以内", "3-6个月", "6-12个月", "12-18个月", "18-24个月", "24个月以上"],
-                    series: [{
-                        name: "校内小猫年龄分布",
-                        data: [
-                            ensureNumber(newData?.ageDistribution?.["3个月以内"]),
-                            ensureNumber(newData?.ageDistribution?.["3-6个月"]),
-                            ensureNumber(newData?.ageDistribution?.["6-12个月"]),
-                            ensureNumber(newData?.ageDistribution?.["12-18个月"]),
-                            ensureNumber(newData?.ageDistribution?.["18-24个月"]),
-                            ensureNumber(newData?.ageDistribution?.["24个月以上"])
-                        ]
-                    }]
-                };
-                StripDiagramData.value = JSON.parse(JSON.stringify(tripDiagramDataDetail));
-
-                // 更新健康状态数据
-                let CakeDataDetail = {
-                    series: [{
-                        data: [
-                            { "name": "健康", "value": ensureNumber(newData?.healthStatus?.['健康']), "labelText": `健康:${ensureNumber(newData?.healthStatus?.['健康'])}只` },
-                            { "name": "疾病", "value": ensureNumber(newData?.healthStatus?.['疾病']), "labelText": `疾病:${ensureNumber(newData?.healthStatus?.['疾病'])}只` },
-                            { "name": "营养不良", "value": ensureNumber(newData?.healthStatus?.['营养不良']), "labelText": `营养不良:${ensureNumber(newData?.healthStatus?.['营养不良'])}只` },
-                            { "name": "肥胖", "value": ensureNumber(newData?.healthStatus?.['肥胖']), "labelText": `肥胖:${ensureNumber(newData?.healthStatus?.['肥胖'])}只` }
-                        ]
-                    }]
-                };
-                CakeData.value = JSON.parse(JSON.stringify(CakeDataDetail));
-
-                // 更新区域分布数据
-                let PeakMapDataDetail = {
-                    series: [{
-                        data: [
-                            { "name": "北门", "value": ensureNumber(newData?.areaDistribution?.['北门']) },
-                            { "name": "岐头", "value": ensureNumber(newData?.areaDistribution?.['岐头']) },
-                            { "name": "凤翔", "value": ensureNumber(newData?.areaDistribution?.['凤翔']) },
-                            { "name": "厚德楼", "value": ensureNumber(newData?.areaDistribution?.['厚德楼']) },
-                            { "name": "香晖苑", "value": ensureNumber(newData?.areaDistribution?.['香晖苑']) }
-                        ]
-                    }]
-                };
-                PeakMapData.value = JSON.parse(JSON.stringify(PeakMapDataDetail));
-
-                // 更新其他数据图表
-                let chartsDataDetail = {
-                    categories: ["性别", "", "是否绝育", "", "是否打疫苗", ""],
-                    series: [
-                        {
-                            name: "公猫/已绝育/已打疫苗",
-                            data: [
-                                ensureNumber(newData?.genderRatio?.['公猫']), ,
-                                ensureNumber(newData?.sterilizationRatio?.['已绝育']), ,
-                                ensureNumber(newData?.vaccinationRatio?.['已接种']),
-                            ]
-                        },
-                        {
-                            name: "雌性/未绝育/未打疫苗",
-                            data: [
-                                ensureNumber(newData?.genderRatio?.['母猫']), ,
-                                ensureNumber(newData?.sterilizationRatio?.['未绝育']), ,
-                                ensureNumber(newData?.vaccinationRatio?.['未接种']),
-                            ]
-                        }
-                    ]
-                };
-                chartData.value = JSON.parse(JSON.stringify(chartsDataDetail));
-
-            } else {
-                uni.showToast({
-                    title: res.data.msg,
-                    icon: 'none'
-                });
-            }
-        },
-        fail: (err) => {
-            uni.showToast({
-                title: '获取数据分析数据失败 ' + err,
-                icon: 'none'
-            });
+    const newData = appStore.catDataAnalysisData;
+    // 为每个统计数据添加动画效果
+    gridList.value.forEach((item, index) => {
+        let targetValue = 0;
+        switch (index) {
+            case 0:
+                targetValue = ensureNumber(catList.value?.length);
+                break;
+            case 1:
+                targetValue = ensureNumber(newData?.adoptionCount);
+                break;
+            case 2:
+                targetValue = ensureNumber(newData?.sterilizationRatio?.['已绝育']);
+                break;
+            case 3:
+                targetValue = ensureNumber(newData?.vaccinationRatio?.['已接种']);
+                break;
+            case 4:
+                targetValue = ensureNumber(newData?.healthStatus?.['健康']);
+                break;
+            case 5:
+                targetValue = ensureNumber(newData?.monthlyNewCount);
+                break;
+            case 6:
+                targetValue = ensureNumber(newData?.fundBalance);
+                break;
+            case 7:
+                targetValue = ensureNumber(newData?.lastMonthExpense);
+                break;
+            case 8:
+                targetValue = ensureNumber(newData?.lastMonthIncome);
+                break;
         }
+        // 执行动画，从0到目标值
+        animateValue(0, targetValue, 1000, (value) => {
+            gridList.value[index].data = Math.floor(value);
+        });
     });
+
+    // 更新其他图表数据
+    catDataAnalysisData.value = {
+        adoptionCount: ensureNumber(newData?.adoptionCount),
+        sterilizationRatio: {
+            '已绝育': ensureNumber(newData?.sterilizationRatio?.['已绝育']),
+            '未绝育': ensureNumber(newData?.sterilizationRatio?.['未绝育'])
+        },
+        vaccinationRatio: {
+            '已接种': ensureNumber(newData?.vaccinationRatio?.['已接种']),
+            '未接种': ensureNumber(newData?.vaccinationRatio?.['未接种'])
+        },
+        healthStatus: {
+            '健康': ensureNumber(newData?.healthStatus?.['健康']),
+            '疾病': ensureNumber(newData?.healthStatus?.['疾病']),
+            '营养不良': ensureNumber(newData?.healthStatus?.['营养不良']),
+            '肥胖': ensureNumber(newData?.healthStatus?.['肥胖'])
+        },
+        monthlyNewCount: ensureNumber(newData?.monthlyNewCount),
+        fundBalance: ensureNumber(newData?.fundBalance),
+        lastMonthExpense: ensureNumber(newData?.lastMonthExpense),
+        lastMonthIncome: ensureNumber(newData?.lastMonthIncome),
+        ageDistribution: {
+            "3个月以内": ensureNumber(newData?.ageDistribution?.["3个月以内"]),
+            "3-6个月": ensureNumber(newData?.ageDistribution?.["3-6个月"]),
+            "6-12个月": ensureNumber(newData?.ageDistribution?.["6-12个月"]),
+            "12-18个月": ensureNumber(newData?.ageDistribution?.["12-18个月"]),
+            "18-24个月": ensureNumber(newData?.ageDistribution?.["18-24个月"]),
+            "24个月以上": ensureNumber(newData?.ageDistribution?.["24个月以上"])
+        },
+        areaDistribution: {
+            '北门': ensureNumber(newData?.areaDistribution?.['北门']),
+            '岐头': ensureNumber(newData?.areaDistribution?.['岐头']),
+            '凤翔': ensureNumber(newData?.areaDistribution?.['凤翔']),
+            '厚德楼': ensureNumber(newData?.areaDistribution?.['厚德楼']),
+            '香晖苑': ensureNumber(newData?.areaDistribution?.['香晖苑'])
+        }
+    };
+
+    // 更新年龄分布数据
+    let tripDiagramDataDetail = {
+        categories: ["3个月以内", "3-6个月", "6-12个月", "12-18个月", "18-24个月", "24个月以上"],
+        series: [{
+            name: "校内小猫年龄分布",
+            data: [
+                ensureNumber(newData?.ageDistribution?.["3个月以内"]),
+                ensureNumber(newData?.ageDistribution?.["3-6个月"]),
+                ensureNumber(newData?.ageDistribution?.["6-12个月"]),
+                ensureNumber(newData?.ageDistribution?.["12-18个月"]),
+                ensureNumber(newData?.ageDistribution?.["18-24个月"]),
+                ensureNumber(newData?.ageDistribution?.["24个月以上"])
+            ]
+        }]
+    };
+    StripDiagramData.value = JSON.parse(JSON.stringify(tripDiagramDataDetail));
+
+    // 更新健康状态数据
+    let CakeDataDetail = {
+        series: [{
+            data: [
+                { "name": "健康", "value": ensureNumber(newData?.healthStatus?.['健康']), "labelText": `健康:${ensureNumber(newData?.healthStatus?.['健康'])}只` },
+                { "name": "疾病", "value": ensureNumber(newData?.healthStatus?.['疾病']), "labelText": `疾病:${ensureNumber(newData?.healthStatus?.['疾病'])}只` },
+                { "name": "营养不良", "value": ensureNumber(newData?.healthStatus?.['营养不良']), "labelText": `营养不良:${ensureNumber(newData?.healthStatus?.['营养不良'])}只` },
+                { "name": "肥胖", "value": ensureNumber(newData?.healthStatus?.['肥胖']), "labelText": `肥胖:${ensureNumber(newData?.healthStatus?.['肥胖'])}只` }
+            ]
+        }]
+    };
+    CakeData.value = JSON.parse(JSON.stringify(CakeDataDetail));
+
+    // 更新区域分布数据
+    let PeakMapDataDetail = {
+        series: [{
+            data: [
+                { "name": "北门", "value": ensureNumber(newData?.areaDistribution?.['北门']) },
+                { "name": "岐头", "value": ensureNumber(newData?.areaDistribution?.['岐头']) },
+                { "name": "凤翔", "value": ensureNumber(newData?.areaDistribution?.['凤翔']) },
+                { "name": "厚德楼", "value": ensureNumber(newData?.areaDistribution?.['厚德楼']) },
+                { "name": "香晖苑", "value": ensureNumber(newData?.areaDistribution?.['香晖苑']) }
+            ]
+        }]
+    };
+    PeakMapData.value = JSON.parse(JSON.stringify(PeakMapDataDetail));
+
+    // 更新其他数据图表
+    let chartsDataDetail = {
+        categories: ["性别", "", "是否绝育", "", "是否打疫苗", ""],
+        series: [
+            {
+                name: "公猫/已绝育/已打疫苗",
+                data: [
+                    ensureNumber(newData?.genderRatio?.['公猫']), ,
+                    ensureNumber(newData?.sterilizationRatio?.['已绝育']), ,
+                    ensureNumber(newData?.vaccinationRatio?.['已接种']),
+                ]
+            },
+            {
+                name: "雌性/未绝育/未打疫苗",
+                data: [
+                    ensureNumber(newData?.genderRatio?.['母猫']), ,
+                    ensureNumber(newData?.sterilizationRatio?.['未绝育']), ,
+                    ensureNumber(newData?.vaccinationRatio?.['未接种']),
+                ]
+            }
+        ]
+    };
+    chartData.value = JSON.parse(JSON.stringify(chartsDataDetail));
 }
 
 
@@ -910,6 +885,7 @@ const closeDonatePopup = () => {
 
 // 提交领养表单
 const submitAdoptForm = () => {
+    console.log(adoptFormsData.value)
     // 验证表单是否填写完整
     if (!adoptFormsData.value.catName) {
         uni.showToast({
@@ -945,6 +921,12 @@ const submitAdoptForm = () => {
             icon: 'none'
         })
         return
+    } else if (!/^1[3-9]\d{9}$/.test(adoptFormsData.value.phone)) {
+        uni.showToast({
+                title: '请填写正确的手机号',
+                icon: 'none'
+            })
+        return
     }
     if (!adoptFormsData.value.wechat) { // 领养人微信
         uni.showToast({
@@ -956,10 +938,11 @@ const submitAdoptForm = () => {
     // 将小猫名字映射为catId
     // adoptFormsData.value.catId = adoptFormsData.value.catName;
     console.log(adoptFormsData.value)
-
+    
     uni.showToast({
         title: '提交成功，申请会尽快处理！',
-        icon: 'success'
+        icon: 'success',
+        duration: 1500 // 弹窗提示时间1.5秒
     })
     closeAdoptPopup()
     // TODO 发送领养申请

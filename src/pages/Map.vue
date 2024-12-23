@@ -179,6 +179,47 @@
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
 	import { toBeDeveloped, showToast } from '@/src/utils/toast'
 	import AMapLoader from "@amap/amap-jsapi-loader";
+	import { useAppStore } from '@/store/modules/app'
+	const appStore = useAppStore()
+
+	// 弹出层状态变化处理函数
+	const change = (e) => {
+		console.log('弹出层状态变化:', e);
+		// 可以在这里处理弹出层打开或关闭时的逻辑
+	}
+	
+	// 添加悬浮uni-fab组件所需的配置
+	const pattern = ref({
+		color: '#7A7E83',
+		backgroundColor: '#fff',
+		selectedColor: '#ff6b81',
+		buttonColor: '#37a3f0',
+		iconColor: '#fff'
+	})
+	
+	const horizontal = ref('left')
+	const vertical = ref('bottom')
+	const direction = ref('horizontal')
+	const content = ref([
+		{
+			iconPath: new URL('../../static/tempStatic/V1_report.png', import.meta.url).href,
+			selectedIconPath: new URL('../../static/tempStatic/V1_report.png', import.meta.url).href,
+			text: '发现小猫',
+			active: false,
+		},
+		{
+			iconPath: new URL('../../static/tempStatic/aichong32.png', import.meta.url).href,
+			selectedIconPath: new URL('../../static/tempStatic/aichong32.png', import.meta.url).href,
+			text: '拍猫识别',
+			active: false
+		},
+		{
+			iconPath: new URL('../../static/tempStatic/photo009.png', import.meta.url).href,
+			selectedIconPath: new URL('../../static/tempStatic/photo009.png', import.meta.url).href,
+			text: '校猫识别',
+			active: false
+		}
+	])
 	
 	const token = ref(`${uni.getStorageSync("token")}`);
 
@@ -211,26 +252,6 @@
 			trigger: 'blur',
 		}
 	})
-	const content = ref(
-		[{
-			iconPath: new URL('../../static/tempStatic/V1_report.png', import.meta.url).href,
-			selectedIconPath: new URL('../../static/tempStatic/V1_report.png', import.meta.url).href,
-			text: '发现小猫',
-			active: false,
-		},
-		{
-			iconPath: new URL('../../static/tempStatic/aichong32.png', import.meta.url).href,
-			selectedIconPath: new URL('../../static/tempStatic/aichong32.png', import.meta.url).href,
-			text: '拍猫识别',
-			active: false
-		},
-		{
-			iconPath: new URL('../../static/tempStatic/photo009.png', import.meta.url).href,
-			selectedIconPath: new URL('../../static/tempStatic/photo009.png', import.meta.url).href,
-			text: '校猫识别',
-			active: false
-		}]
-	);	
 	
 	function trigger(e) {
 		// 点击第一项（表单上传）
@@ -309,7 +330,7 @@
 	            parseFloat((item.latitude || 0).toFixed(6)),
 	            item.catName || '未知猫咪'
 	          ]);
-			  console.log("path",path.value)
+			//   console.log("path",path.value)
 	          map1.clearMap();
 	          map2.clearMap();
 	          mapDraw();
@@ -403,70 +424,35 @@
 	  });
 	};
 	
-	onShow(() => {
-		// 查询全部小猫信息
-		uni.request({
-		  url: `${API_general_request_url.value}/api/cat/list`,  // 后端API地址
-		  method: 'GET',
-		  success: (res) => {
-					console.log(res.data.data)
-					if (res.statusCode === 200 && res.data.code === '2000') {
-						// 添加"全部"选项为第一个选项
-						dataListCat.value = [{
-							text: '全部',
-							value: 'all'
-						}];
-						
-						// 将API返回的数据添加到列表中
-						dataListCat.value.push(...res.data.data.map(item =>({
-							text: item.catname,
-							value: item.catId
-						})));
-						console.log(dataListCat.value)
-						uni.setStorageSync("catList",res.data.data); // 同步存储整个猫猫列信息
-					}
-				},
-		  fail: (err) => {
-					uni.showToast({
-					title: '获取小猫数据失败 ' + err,
-					icon: 'none'
-					})
-				}
-		});
+	onShow(async () => {
+		// 调用全局方法：查询全部小猫信息
+        await getCatInfoDetail()
+        // 添加"全部"选项为第一个选项
+        dataListCat.value = [{
+            text: '全部',
+            value: 'all'
+        }];
+        // 将API返回的数据添加到列表中
+        dataListCat.value.push(...appStore.catList.map(item =>({
+            text: item.catname,
+            value: item.catId
+        })));
+        uni.setStorageSync("catList",appStore.catList); // 同步存储整个猫猫列信息
 		
-		// 请求全部小猫最新坐标
-		console.log("请求全部小猫最新坐标")
-		uni.request({
-			url: `${API_general_request_url.value}/api/cat/location/latest`,
-				method: "GET",
-				success: (response) => {
-					if (response.statusCode === 200 && response.data.code === "2000") {
-						responseData.value = response.data.data;
-						console.log(responseData.value);
-						mapDrawMode.value = 'point';
-						// 添加数据验证和空值处理
-						path.value = responseData.value
-							.filter(item => item.longitude != null && item.latitude != null) // 过滤掉无效坐标
-							.map(item => [
-								parseFloat((item.longitude || 0).toFixed(6)), // 添加默认值
-								parseFloat((item.latitude || 0).toFixed(6)),  
-								item.catName || '未知猫咪'  // 添加默认名称
-							]);
-						console.log(path.value);
-					} else {
-						uni.showToast({
-							title: response.data.msg || '获取小猫坐标失败',
-							icon: 'none'
-						});
-					}
-				},
-				fail: () => {
-					uni.showToast({
-						title: '请求小猫坐标失败，请重试',
-						icon: 'none'
-					});
-				}
-		})
+		// 调用全局方法：请求全部小猫最新坐标
+        await getCatLocationLatest();
+		responseData.value = appStore.catLocations;
+		// console.log(responseData.value);
+		mapDrawMode.value = 'point';
+		// 添加数据验证和空值处理
+		path.value = responseData.value
+            .filter(item => item.longitude != null && item.latitude != null) // 过滤掉无效坐标
+            .map(item => [
+                parseFloat((item.longitude || 0).toFixed(6)), // 添加默认值
+                parseFloat((item.latitude || 0).toFixed(6)),  
+                item.catName || '未知猫咪'  // 添加默认名称
+            ]);
+        // console.log(path.value);
 		
 		// 设置高德地图安密钥
 		window._AMapSecurityConfig = {
@@ -491,15 +477,23 @@
 				rotation: 0, // 置旋转角度，0表示北方在上，90表示地图顺时针旋转90度
 				rotateEnable: true, //是否开启地图旋转交互 鼠标右 + 鼠标画圈移动 或 键盘Ctrl + 鼠标左键画圈动
 				pitchEnable: true, //是否开启地图倾斜交互 鼠标右键 + 鼠标上下移动或键盘Ctrl + 鼠标左键上下移动
-				features: ['bg', 'road','name'] // 显示背景、道路和建筑物，但显示地名
+				features: ['bg', 'road','name'], // 显示背景、道路和建筑物，但显示地名
+				canvasRender: true, // 使用Canvas渲染
+				willReadFrequently: true // 优化Canvas性能
 			});
 			// 添加比例尺控件
 			map1.addControl(new AMap.Scale());
 			// 添加地理定位控件
 			map1.addControl(new AMap.Geolocation());
 			// 添加自定义图片叠加层
+            let url = ''
+            if(process.env.NODE_ENV === 'development'){
+                url = "../../static/realmap.jpg"
+            }else{
+                url = `${pic_general_request_url.value}/static_image/realmap.jpg`
+            }
 			const imageLayer = new AMap.ImageLayer({
-			  url: "../../static/realmap.jpg",
+                url: url,
 			  bounds: new AMap.Bounds(
 				[113.386036, 22.523024], // 左下角坐标  经度：左右（越大越右） 纬：上下（越大越上）
 				[113.396039, 22.532817]  // 右上坐标  
@@ -515,6 +509,8 @@
 				viewMode: "2D", // 是否为3D地图模式
 				zoom: 16, // 初始化地图级别
 				center: [113.390166, 22.527103], // 初始化地图中心点位置
+				canvasRender: true, // 使用Canvas渲染
+				willReadFrequently: true // 优化Canvas性能
 			});
 			// 添加比例尺控件
 			map2.addControl(new AMap.Scale());

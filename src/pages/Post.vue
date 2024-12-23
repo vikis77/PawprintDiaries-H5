@@ -23,7 +23,7 @@
             <!-- 博主相关 -->
             <view class="box-blogger">
                 <view class="bb-left">
-                    <img class="img2" :src="`${pic_general_request_url}/user_avatar/${currentPost.authorAvatar}`" alt=""
+                    <img class="img2" :src="`${pic_general_request_url}/user_avatar/${currentPost.authorAvatar}${Suffix_1001}`" alt=""
                         @click="showToast('主页功能开发中')" />
                     <text class="text1">{{ currentPost.authorNickname }}</text>
                 </view>
@@ -45,10 +45,14 @@
             <view class="box-body">
                 <!-- 图片轮播 -->
                 <view class="uni-swiper">
-                    <swiper indicator-dots indicator-color="#e9e9e9" indicator-active-color="#007aff">
-                        <swiper-item v-for="(item, index) in currentPost.images" :key="index">
-                            <image :src="`${pic_general_request_url}/post_pics/${item.picture}`" mode="aspectFit"
-                                @click="previewImage"></image>
+                    <swiper class="swiper" indicator-dots indicator-color="#e9e9e9" indicator-active-color="#007aff">
+                        <swiper-item v-for="(item, index) in currentPost.images" :key="item.id" class="swiper-item">
+                            <image 
+                                :src="`${pic_general_request_url}/post_pics/${item.picture}${Suffix_1001}`" 
+                                mode="aspectFit" 
+                                @click="previewImage(index)"
+                                class="swiper-image"
+                            ></image>
                         </swiper-item>
                     </swiper>
                 </view>
@@ -97,7 +101,7 @@
                     <view class="comment-list">
                         <view v-for="(comment, index) in comments" :key="index" class="comment-item">
                             <image class="comment-avatar"
-                                :src="`${pic_general_request_url}/user_avatar/${comment.avatar}`"></image>
+                                :src="`${pic_general_request_url}/user_avatar/${comment.avatar}${Suffix_1001}`"></image>
                             <view class="comment-content">
                                 <view class="comment-info">
                                     <text class="comment-username">{{ comment.nickname }}</text>
@@ -135,7 +139,7 @@
                 </view>
                 <scroll-view scroll-y="true" class="comments-container" :show-scrollbar="false">
                     <view class="comment-item" v-for="(comment, index) in comments" :key="index">
-                        <img class="commenter-avatar" :src="`${pic_general_request_url}/user_avatar/${comment.avatar}`" mode="aspectFill"></img>
+                        <img class="commenter-avatar" :src="`${pic_general_request_url}/user_avatar/${comment.avatar}${Suffix_1001}`" mode="aspectFill"></img>
                         <view class="comment-content">
                             <view class="comment-header">
                                 <text class="commenter-name">{{comment.nickName}}</text>
@@ -166,7 +170,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
 import { toBeDeveloped, showToast } from '@/src/utils/toast'
 import { useAppStore } from '@/store/modules/app'
 const appStore = useAppStore()
@@ -201,27 +205,6 @@ const currentPost = ref({
     followed: false
 });
 
-// 新增响应式数据
-// const comments = ref([
-// 	{
-// 		id: 1,
-// 		userName: '猫咪爱好者',
-// 		userAvatar: 'default.jpg',
-// 		content: '好可爱的猫猫！',
-// 		createTime: '2024-01-20',
-// 		likes: 12,
-// 		liked: false
-// 	},
-// 	{
-// 		id: 2,
-// 		userName: '铲屎官',
-// 		userAvatar: 'default.jpg',
-// 		content: '这只猫很亲人，经常在教学楼附近晒太阳',
-// 		createTime: '2024-01-19',
-// 		likes: 8,
-// 		liked: false
-// 	}
-// ]);
 const newComment = ref('');
 const isLikeAnimating = ref(false);
 const isCollectAnimating = ref(false);
@@ -261,7 +244,7 @@ onShow(() => {
             })
         }
     })
-    // ���取评论列表
+    // 获取评论列表
     console.log('获取帖子评论列表')
     console.log(postId)
     uni.request({
@@ -274,7 +257,7 @@ onShow(() => {
             console.log(res)
             if (res.statusCode === 200 && res.data.code === '2000') {
                 comments.value = Array.isArray(res.data.data) ? res.data.data : [];
-                console.log('获取帖子评��列表成功')
+                console.log('获取帖子评论列表成功')
             } else {
                 uni.showToast({
                     title: res.data.msg || '获取评论列表失败',
@@ -296,6 +279,9 @@ onShow(() => {
 
 // 点赞功能
 const handleLike = () => {
+    if (!checkLogin()) {
+        return;
+    }
     // 如果没有点赞，则点赞
     if (!currentPost.value.liked) {
         uni.request({
@@ -340,6 +326,9 @@ const handleLike = () => {
 
 // 收藏功能
 const handleCollect = () => {
+    if (!checkLogin()) {
+        return;
+    }
     // 如果没有收藏，则收藏
     if (!currentPost.value.collected) {
         uni.request({
@@ -451,6 +440,9 @@ const likeComment = (index) => {
 
 // 关注
 const handleFollow = () => {
+    if (!checkLogin()) {
+        return;
+    }
     // 如果已经关注，则取消关注
     if (currentPost.value.followed) {
         uni.request({
@@ -534,7 +526,7 @@ const dialogConfirmDelete = () => {
 }
 
 // 预览图片
-const previewImage = () => {
+const previewImage = (index) => {
     if (!currentPost.value.images || currentPost.value.images.length === 0) {
         showToast('暂无图片');
         return;
@@ -547,7 +539,7 @@ const previewImage = () => {
         );
 
         uni.previewImage({
-            current: 0,
+            current: urls[index], // 传入当前图片的url
             urls: urls,
             longPressActions: {
                 itemList: ['发送给朋友', '保存图片', '收藏'],
@@ -658,7 +650,7 @@ const touchEnd = () => {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 20rpx 30rpx;
+            padding: 0rpx 30rpx;
 
             .bb-left {
                 display: flex;
@@ -733,21 +725,26 @@ const touchEnd = () => {
 
         .box-body {
             .uni-swiper {
-                width: 750rpx;
+                width: 100%;
                 height: 1000rpx;
+                background-color: #f8f8f8;
 
-                swiper {
+                .swiper {
                     width: 100%;
                     height: 100%;
 
-                    image {
+                    .swiper-item {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
                         width: 100%;
                         height: 100%;
-                        object-fit: contain;
+                    }
 
-                        &:active {
-                            opacity: 0.8;
-                        }
+                    .swiper-image {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
                     }
                 }
             }

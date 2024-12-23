@@ -33,7 +33,7 @@
               </view>
               <view v-else-if="userInfo.avatar" class="avatar-preview-container" @click="handleReselect">
                 <image 
-                  :src="`${pic_general_request_url}/user_avatar/${userInfo.avatar}`" 
+                  :src="`${pic_general_request_url}/user_avatar/${userInfo.avatar}${Suffix_1001}`" 
                   mode="aspectFill" 
                   class="avatar-preview"
                 />
@@ -49,15 +49,15 @@
           </uni-file-picker>
         </uni-forms-item>
         
-        <uni-forms-item label="用户名" name="username">
+        <uni-forms-item label="用户名" name="username" required>
           <uni-easyinput v-model="userInfo.username" placeholder="请输入用户名"/>
         </uni-forms-item>
         
-        <uni-forms-item label="昵称" name="nickName">
+        <uni-forms-item label="昵称" name="nickName" required>
           <uni-easyinput v-model="userInfo.nickName" placeholder="请输入昵称"/>
         </uni-forms-item>
         
-        <uni-forms-item label="邮箱" name="email">
+        <uni-forms-item label="邮箱" name="email" required>
           <uni-easyinput v-model="userInfo.email" placeholder="请输入邮箱"/>
         </uni-forms-item>
         
@@ -91,15 +91,15 @@
     <!-- 用户统计信息 -->
     <view class="user-stats">
       <view class="stat-item">
-        <text class="stat-value">{{userInfo.postCount}}</text>
+        <text class="stat-value">{{userInfo.postCount || 0}}</text>
         <text class="stat-label">帖子</text>
       </view>
       <view class="stat-item">
-        <text class="stat-value">{{userInfo.fansCount}}</text>
+        <text class="stat-value">{{userInfo.fansCount || 0}}</text>
         <text class="stat-label">粉丝</text>
       </view>
       <view class="stat-item">
-        <text class="stat-value">{{userInfo.followCount}}</text>
+        <text class="stat-value">{{userInfo.followCount || 0}}</text>
         <text class="stat-label">关注</text>
       </view>
     </view>
@@ -109,7 +109,7 @@
       <text class="section-title">我的帖子</text>
       <view class="post-list">
         <view v-for="post in userInfo.postList" :key="post.postId" class="post-item">
-          <img :src="`${pic_general_request_url}/post_pics/${post.coverPicture}`" class="post-cover" mode="aspectFit"></img>
+          <img :src="`${pic_general_request_url}/post_pics/${post.coverPicture}${Suffix_1001}`" class="post-cover" mode="aspectFit"></img>
           <view class="post-info">
             <text class="post-title">{{post.title}}</text>
             <text class="post-content">{{post.article}}</text>
@@ -128,7 +128,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, nextTick } from 'vue';
-import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
 import NavBar1001 from '@/src/components/common/NavBar1001.vue'
 import { useAppStore } from '@/store/modules/app'
 
@@ -151,7 +151,7 @@ const rules = {
     rules: [{required: true, message: '请输入邮箱'}, {format: 'email', message: '邮箱格式不正确'}]
   },
   phoneNumber: {
-    rules: [{required: true, message: '请输入手机号'}, {pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确'}]
+    rules: [{message: '请输入手机号'}, {pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确'}]
   }
 };
 
