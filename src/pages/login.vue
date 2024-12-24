@@ -192,6 +192,10 @@ const handleLogin = async () => {
           url: 'Home'
         })
       }, 1500)
+
+      // 调用全局方法：请求用户个人资料
+      getUserProfile()
+      console.log("请求用户个人资料成功")
     } else {
       uni.showToast({
         title: res.data.msg || '登录失败',

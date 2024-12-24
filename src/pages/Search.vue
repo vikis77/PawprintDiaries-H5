@@ -50,7 +50,7 @@
 			<!-- 热门搜索 -->
 			<view class="hot-search">
 				<view class="hot-header">
-					<text class="title">热门搜索（待开发）</text>
+					<text class="title">推荐搜索</text>
 				</view>
 				<view class="hot-tags">
 					<view class="tag" v-for="(item, index) in hotSearchList" :key="index" @click="handleHistoryClick(item.keyword)">
@@ -187,6 +187,8 @@
 	
 	// 返回首页事件
 	function handlerGoback(){
+        // 先收起键盘
+        uni.hideKeyboard()
 		uni.switchTab({
 			url: 'Home'
 		})

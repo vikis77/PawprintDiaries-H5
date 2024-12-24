@@ -1,54 +1,35 @@
-import { get, post, put } from '@/utils/request';
+import { useAppStore } from '@/store/modules/app'
+import { storeToRefs } from 'pinia'
+import axios from 'axios'
+import { API_general_request_url } from '@/src/config/index.js'
 
-// 用户信息相关接口
-export const getUserInfo = (userId) => {
-  return get(`/api/user/${userId}`);
-};
+// 请求用户个人资料
+export const getUserProfile = async (params) => {
+    // 创建 store 实例
+    const appStore = useAppStore()
+    try {
+        const res = await uni.request({
+            url: `${API_general_request_url.value}/api/user/profile`,
+            method: 'GET',
+            header: {
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
+            }
+        })
 
-export const updateUserInfo = (userId, data) => {
-  return put(`/api/user/${userId}`, data);
-};
-
-export const updateUserAvatar = (userId, avatarFile) => {
-  return new Promise((resolve, reject) => {
-    uni.uploadFile({
-      url: `${process.env.VUE_APP_API_URL}/api/user/${userId}/avatar`,
-      filePath: avatarFile,
-      name: 'avatar',
-      success: (res) => {
-        if (res.statusCode === 200) {
-          resolve(JSON.parse(res.data));
+        if (res.statusCode === 200 && res.data.code === '2000') {
+            console.log("打印user:")
+            console.log(res.data.data)
+            await appStore.setUserInfo(res.data.data)
+            return res.data.data;
         } else {
-          reject(res);
+            uni.removeStorageSync('token')
+            uni.showToast({
+                title: res.data.msg || '获取用户数据失败',
+                icon: 'none'
+            })
         }
-      },
-      fail: reject
-    });
-  });
-};
-
-// 用户关系相关接口
-export const getUserFollowers = (userId, params) => {
-  return get(`/api/user/${userId}/followers`, params);
-};
-
-export const getUserFollowing = (userId, params) => {
-  return get(`/api/user/${userId}/following`, params);
-};
-
-export const followUser = (userId) => {
-  return post(`/api/user/follow/${userId}`);
-};
-
-export const unfollowUser = (userId) => {
-  return post(`/api/user/unfollow/${userId}`);
-};
-
-// 用户帖子相关接口
-export const getUserPosts = (userId, params) => {
-  return get(`/api/user/${userId}/posts`, params);
-};
-
-export const getUserLikedPosts = (userId, params) => {
-  return get(`/api/user/${userId}/liked-posts`, params);
-}; 
+    } catch (error) {
+        console.error('获取用户个人资料失败:', error);
+        throw error;
+    }
+}

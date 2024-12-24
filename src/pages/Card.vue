@@ -46,6 +46,7 @@
 						<view class="interaction-area">
 							<!-- 点赞 -->
 							<view class="interaction-item" @click="handleLike">
+                                <!-- <text>为小猫点赞（每次一次）：</text> -->
 								<uni-icons :type="isLiked ? 'heart-filled' : 'heart'" size="24" :color="isLiked ? '#ff4d4f' : '#666'"></uni-icons>
 								<text :class="{'liked': isLiked}">{{cat.likeCount}}</text>
 							</view>
@@ -73,14 +74,6 @@
 							<view class="tzv88">
 								<text>性别：{{ cat.gender === 1 ? '雄性' : '雌性' }}</text>
 							</view>
-							<view class="tzv88">
-								<text>种类：</text>
-							</view>
-							<!-- <view class="tzv8u">
-								<image class="tz8888" src="../../static/catbag.png" mode=""></image>
-								<image class="tz8888" src="../../static/catbag.png" mode=""></image>
-								<image class="tz8888" src="../../static/catbag.png" mode=""></image>
-							</view> -->
 							
 						</view>
 					</view>
@@ -89,31 +82,34 @@
 				<view class="t3">
 					<view class="th80hj0">
 						<view class="tzv8mkm">
-							<text class="tzv00">是否已绝育：{{ cat.sterilizationStatus }}</text>
+							<text class="lefttzv00">是否已绝育：{{ cat.sterilizationStatus }}</text>
 						</view>
 						<view class="tzv8mkm">
-							<text class="tzv00">是否接种疫苗：{{ cat.vaccinationStatus }}</text>
+							<text class="righttzv00">是否接种疫苗：{{ cat.vaccinationStatus }}</text>
 						</view>
 						<view class="tzv8mkm">
-							<text class="tzv00">健康状况：{{ cat.healthStatus }}</text>
+							<text class="lefttzv00">健康状况：{{ cat.healthStatus }}</text>
 						</view>
 						<view class="tzv8mkm">
-							<text class="tzv00">性格：{{ cat.catCharacter }}</text>
+							<text class="righttzv00">性格：{{ cat.catCharacter }}</text>
 						</view>
 						<view class="tzv8mkm">
-							<text class="tzv00">食物偏好：{{ cat.food }}</text>
+							<text class="lefttzv00">食物偏好：{{ cat.food }}</text>
 						</view>
 						<view class="tzv8mkm">
-							<text class="tzv00">忌讳：{{ cat.taboo }}</text>
+							<text class="righttzv00">忌讳：{{ cat.taboo }}</text>
 						</view>
 						<view class="tzv8mkm">
-							<text class="tzv00">不良行为记录：{{ cat.badRecord }}</text>
+							<text class="lefttzv00">品种：</text>
 						</view>
 						<view class="tzv8mkm">
-							<text class="tzv00">常住地：{{cat.area}}</text>
+							<text class="righttzv00">常住地：{{cat.area}}</text>
 						</view>
 						<view class="tzv8mkm">
-							<text class="tzv00">撸猫指南：</text>
+							<text class="lefttzv00">撸猫指南：</text>
+						</view>
+                        <view class="tzv8mkm">
+							<text class="righttzv00">不良行为记录：{{ cat.badRecord }}</text>
 						</view>
 					</view>
 				</view>
@@ -598,6 +594,7 @@
 			},
 			success: (res) => {	
 				if (res.statusCode === 200 && res.data.code === '2000') {
+                    console.log(res.data)
 					// 更新本地状态
 					isLiked.value = true;
 					likeCount.value += 1;
@@ -883,6 +880,7 @@
 						width: 100%;
 						height: 100%;
 						flex-direction: column;
+                        padding-top: 60rpx;
 						.tzv88{ //文字
 							width: 100%;
 							height: 74rpx;
@@ -907,7 +905,7 @@
 			}
 			.t3{ //<!-- 详细信息 -->
 				width: 100%;
-				height: 450rpx;
+				height: 400rpx;
 				background-color: #f3f7fd;
 				// display: flex;
 				// align-items: center;
@@ -916,6 +914,7 @@
 				border-radius: 50rpx 50rpx 0rpx 0rpx;
 				border: 2rpx solid #dbdbdb;
 				box-shadow: 0rpx -10rpx 40rpx rgba(0, 0, 0, 0.1);
+                padding: 20rpx 0rpx;
 				.th80hj0{
 					width: 100%;
 					height: 100%;
@@ -930,12 +929,22 @@
 						width: 50%;
 						// height: 70rpx;
 						// flex-direction: column;
-						.tzv00{ //文字
+						.lefttzv00{ //文字
 							width: 100%;
 							height: 100%;
 							display: flex;
 							align-items: center;
-							padding-left: 60rpx;
+							padding: 0rpx 20rpx 0rpx 60rpx;
+							// justify-content: center;
+							font-size: 30rpx;
+							font-weight: bold;
+						}
+						.righttzv00{ //文字
+							width: 100%;
+							height: 100%;
+							display: flex;
+							align-items: center;
+							padding: 0rpx 60rpx 0rpx 20rpx;
 							// justify-content: center;
 							font-size: 30rpx;
 							font-weight: bold;
@@ -1240,7 +1249,8 @@
 	
 	.interaction-area {
 		display: flex;
-		justify-content: space-around;
+		// justify-content: space-around;
+        justify-content: center;
 		padding: 20rpx 0;
 		margin-top: 20rpx;
 		
@@ -1248,7 +1258,7 @@
 			display: flex;
 			align-items: center;
 			gap: 8rpx;
-			
+            padding: 0 10rpx;
 			text {
 				font-size: 28rpx;
 				color: #666;

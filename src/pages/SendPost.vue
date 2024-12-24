@@ -183,7 +183,7 @@
 	        const postResponse = await uni.request({  
 	            url: `${API_general_request_url.value}/api/post/addpost`,  
 	            method: 'POST',  
-	            header: {  
+	            header: {
 	                'Authorization': `Bearer ${uni.getStorageSync('token')}`,
 					'Content-Type': 'application/json'  // 添加 Content-Type 声明
 	            },  
@@ -193,10 +193,22 @@
 	                'pictrueList': names  
 	            }  
 	        });  
-	        if (postResponse.statusCode === 200 && postResponse.data.code === '2000') {  
-	            console.log('已完成持久化帖子', postResponse);  
-	            
-	        } else {  
+	        if (postResponse.statusCode === 200 && postResponse.data.code === '2000') {
+                // 后端返回的fileNameConvertMap是Map<String,String>类型
+                // 需要将其转换为JavaScript对象
+                const fileNameConvertMap = postResponse.data.data.fileNameConvertMap;
+                let originNameList = selectedTempFiles.value;
+                let convertedNameList = [];
+                for (let originName in originNameList) {
+                    convertedNameList.push(Object.entries(fileNameConvertMap)[originName][1])
+                }
+                console.log(convertedNameList)
+                console.log('源文件名:', originNameList)
+                console.log('文件名映射后:', convertedNameList);
+                selectedTempFiles.value = convertedNameList;
+	            console.log('------------------已完成持久化帖子---------------');
+                uni.navigateBack()
+	        } else {
 	            console.log('无法持久化', postResponse);  
 	            uni.showToast({  
 	                title: '发布失败',  
@@ -253,7 +265,7 @@
 	                title: '发布成功',  
 	                icon: 'success'  
 	            });  
-				uni.navigateBack()
+				
 	         
 	    } catch (error) {  
 	        console.error('发布过程中发生错误:', error);  

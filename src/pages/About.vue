@@ -31,6 +31,12 @@
         <view class="card-title">更新日志</view>
         <view class="card-content">
           <view class="update-item">
+            <view class="update-version">v2.0.2 (2024-12-24)</view>
+            <view class="update-list">
+              <view class="update-point">• 新增帖子图片下载功能</view>
+              <view class="update-point">• </view>
+              <view class="update-point"></view>
+            </view>
             <view class="update-version">v2.0.1 (2024-12-22)</view>
             <view class="update-list">
               <view class="update-point">• 修复若干已知问题</view>

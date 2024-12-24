@@ -1309,7 +1309,7 @@ scroll-view ::-webkit-scrollbar {
 
         .showCardBox {
             width: 675rpx;
-            height: 680rpx;
+            height: 650rpx;
             margin-left: 20rpx;
             margin-top: 20rpx;
             padding: 20rpx;
@@ -1331,7 +1331,7 @@ scroll-view ::-webkit-scrollbar {
                     display: flex;
                     align-items: center;
                     background-color: #a0a0f0;
-                    padding: 20rpx;
+                    padding: 5rpx;
                     overflow: hidden;
 
                     .t89hmm {

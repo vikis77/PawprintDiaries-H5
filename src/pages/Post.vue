@@ -5,6 +5,32 @@
                 <uni-popup-dialog type="error" cancelText="取消" confirmText="删除" title="确认删除吗？"
                     @confirm="dialogConfirmDelete"></uni-popup-dialog>
             </uni-popup>
+            
+            <!-- 添加下载选择弹窗 -->
+            <uni-popup ref="downloadPopup" type="bottom" background-color="#fff">
+                <view class="download-popup">
+                    <view class="download-header">
+                        <text class="title">选择要下载的图片</text>
+                        <view class="close-btn" @click="closeDownloadPopup">
+                            <uni-icons type="closeempty" size="24" color="#666"></uni-icons>
+                        </view>
+                    </view>
+                    <scroll-view scroll-y="true" class="image-list">
+                        <view v-for="(item, index) in currentPost.images" 
+                              :key="index"
+                              class="image-item"
+                              @click="downloadImage(index)">
+                            <image :src="`${pic_general_request_url}/post_pics/${item.picture}${Suffix_1001}`" 
+                                   mode="aspectFill" 
+                                   class="preview-image"></image>
+                            <view class="image-info">
+                                <text class="image-name">图片 {{index + 1}}</text>
+                                <uni-icons type="download" size="20" color="#8d5da3"></uni-icons>
+                            </view>
+                        </view>
+                    </scroll-view>
+                </view>
+            </uni-popup>
         </view>
 
         <view class="layout">
@@ -33,7 +59,7 @@
                         {{ currentPost.followed ? '已关注' : '关注' }}
                     </button>
                     <view class="heart">
-                        <uni-icons type="download" size="26" @click="showToast('下载功能开发中')"></uni-icons>
+                        <uni-icons type="download" size="26" @click="handleDownload"></uni-icons>
                     </view>
                     <view v-if="userId == post_authorId" class="heart" @click="handleDeletePost">
                         <uni-icons type="closeempty" size="26"></uni-icons>
@@ -104,7 +130,7 @@
                                 :src="`${pic_general_request_url}/user_avatar/${comment.avatar}${Suffix_1001}`"></image>
                             <view class="comment-content">
                                 <view class="comment-info">
-                                    <text class="comment-username">{{ comment.nickname }}</text>
+                                    <text class="comment-username">{{ comment.nickName }}</text>
                                     <text class="comment-time">{{ comment.createTime }}</text>
                                 </view>
                                 <text class="comment-text">{{ comment.commentContext }}</text>
@@ -185,6 +211,7 @@ const touchStartY = ref(0);
 const touchMoveY = ref(0);
 const popupTranslateY = ref(0);
 const comments = ref([]);
+const downloadPopup = ref(null);
 
 // 创建响应式的当前帖子对象
 const currentPost = ref({
@@ -292,6 +319,15 @@ const handleLike = () => {
             },
             success: (res) => {
                 if (res.statusCode === 200 && res.data.code === '2000') {
+                    // 把首页对应帖子点赞数+1
+                    let postList = appStore.postList;
+                    for (let i = 0; i < postList.length; i++) {
+                        if (postList[i].postId === currentPost.value.postId) {
+                            postList[i].likeCount += 1;
+                            break;
+                        }
+                    }
+                    appStore.setPostList(postList)
                     isLikeAnimating.value = true;
                     currentPost.value.liked = !currentPost.value.liked;
                     currentPost.value.likeCount += currentPost.value.liked ? 1 : -1;
@@ -487,8 +523,31 @@ const handleShare = () => {
 
 // 日期格式化函数
 function formatDate(dateStr) {
-    const date = new Date(dateStr);
-    return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    // 检查日期字符串是否存在
+    if (!dateStr) {
+        return '';
+    }
+
+    try {
+        const date = new Date(dateStr);
+        
+        // 检查是否为有效日期
+        if (isNaN(date.getTime())) {
+            return '日期格式错误';
+        }
+
+        // 补零函数
+        const padZero = (num) => num.toString().padStart(2, '0');
+        
+        const year = date.getFullYear();
+        const month = padZero(date.getMonth() + 1);
+        const day = padZero(date.getDate());
+        
+        return `${year}-${month}-${day}`;
+    } catch (error) {
+        console.error('日期格式化错误:', error);
+        return '日期格式错误';
+    }
 }
 
 // 返回按钮点击处理
@@ -603,6 +662,64 @@ const touchEnd = () => {
     touchMoveY.value = 0;
     popupTranslateY.value = 0;
 };
+
+// 下载图片处理函数
+const handleDownload = () => {
+    if (!currentPost.value.images || currentPost.value.images.length === 0) {
+        showToast('暂无图片可下载');
+        return;
+    }
+    downloadPopup.value.open();
+};
+
+// 关闭下载弹窗
+const closeDownloadPopup = () => {
+    downloadPopup.value.close();
+};
+
+// 下载选中的图片
+const downloadImage = (index) => {
+    const selectedImage = currentPost.value.images[index];
+    const imageUrl = `${pic_general_request_url.value}/post_pics/${selectedImage.picture}`;
+    
+    // 显示下载进度
+    uni.showLoading({
+        title: '下载中...'
+    });
+    
+    // 下载图片
+    uni.downloadFile({
+        url: imageUrl,
+        success: (res) => {
+            if (res.statusCode === 200) {
+                // 保存图片到相册
+                uni.saveImageToPhotosAlbum({
+                    filePath: res.tempFilePath,
+                    success: function () {
+                        uni.hideLoading();
+                        showToast('图片已保存到相册');
+                        closeDownloadPopup();
+                    },
+                    fail: function (err) {
+                        uni.hideLoading();
+                        if (err.errMsg.includes('auth deny')) {
+                            showToast('请授权保存图片到相册的权限');
+                        } else {
+                            showToast('保存图片失败');
+                        }
+                    }
+                });
+            } else {
+                uni.hideLoading();
+                showToast('下载图片失败');
+            }
+        },
+        fail: () => {
+            uni.hideLoading();
+            showToast('下载图片失败');
+        }
+    });
+};
 </script>
 
 <style lang="scss" scoped>
@@ -650,7 +767,7 @@ const touchEnd = () => {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0rpx 30rpx;
+            padding: 0rpx 30rpx 12rpx 30rpx;
 
             .bb-left {
                 display: flex;
@@ -1059,6 +1176,64 @@ const touchEnd = () => {
 
     100% {
         transform: scale(1);
+    }
+}
+
+.download-popup {
+    padding: 30rpx;
+    max-height: 70vh;
+    
+    .download-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 20rpx;
+        border-bottom: 1px solid #f0f0f0;
+        
+        .title {
+            font-size: 32rpx;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .close-btn {
+            padding: 10rpx;
+        }
+    }
+    
+    .image-list {
+        max-height: calc(70vh - 100rpx);
+        
+        .image-item {
+            display: flex;
+            align-items: center;
+            padding: 20rpx 0;
+            border-bottom: 1px solid #f5f5f5;
+            
+            .preview-image {
+                width: 120rpx;
+                height: 120rpx;
+                border-radius: 12rpx;
+                margin-right: 20rpx;
+                background-color: #f5f5f5;
+            }
+            
+            .image-info {
+                flex: 1;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                
+                .image-name {
+                    font-size: 28rpx;
+                    color: #333;
+                }
+            }
+            
+            &:active {
+                background-color: #f9f9f9;
+            }
+        }
     }
 }
 </style>

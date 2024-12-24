@@ -212,29 +212,11 @@ onShow(async () => {
         appStore.setUserInfoNull()
         return;
     }
-    const token = uni.getStorageSync('token')
     if (checkLogin()) {
-        console.log(token)
         try {
-            const res = await uni.request({
-                url: `${API_general_request_url.value}/api/user/profile`,
-                method: 'GET',
-                header: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-
-            if (res.statusCode === 200 && res.data.code === '2000') {
-                console.log("打印user:")
-                console.log(res.data.data)
-                await appStore.setUserInfo(res.data.data)
-            } else {
-                uni.removeStorageSync('token')
-                uni.showToast({
-                    title: res.data.msg || '获取用户数据失败',
-                    icon: 'none'
-                })
-            }
+            // 调用全局方法：请求用户个人资料
+            getUserProfile()
+            console.log("请求用户个人资料成功")
         } catch (error) {
             uni.showToast({
                 title: '请求失败，请重试',
