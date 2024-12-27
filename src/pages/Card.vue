@@ -6,7 +6,7 @@
 		<scroll-view scroll-y="true" class="scroll-container">
 			<view class="layout">
 				<!-- 头部导航 -->
-				<view class="header">
+				<view class="header animate-slide-in">
 					<uni-row class="header-row" :width="750">
 						<uni-col :span="8" class="header-left">
 							<img src="../../static/goback.png" @click="handleGoback" class="header-icon"/>
@@ -36,7 +36,7 @@
 					</uni-row>
 				</view>
 				<!-- 主题信息展示 -->
-				<view class="t2">
+				<view class="t2 animate-fade-in">
 					<!-- 左边图片区域 -->
 					<view class="tyh90p"> 
 						<view class="t87kza">
@@ -48,17 +48,17 @@
 							<view class="interaction-item" @click="handleLike">
                                 <!-- <text>为小猫点赞（每次一次）：</text> -->
 								<uni-icons :type="isLiked ? 'heart-filled' : 'heart'" size="24" :color="isLiked ? '#ff4d4f' : '#666'"></uni-icons>
-								<text :class="{'liked': isLiked}">{{cat.likeCount}}</text>
+								<text :class="{'liked': isLiked}" class="like-count">{{cat.likeCount}}</text>
 							</view>
 							<!-- 热度 -->
 							<view class="interaction-item">
 								<uni-icons type="fire" size="24" color="#ff9c6e"></uni-icons>
-								<text>{{cat.trending || 0}}</text>
+								<text class="trending-count">{{cat.trending || 0}}</text>
 							</view>
 							<!-- 评论 -->
 							<view class="interaction-item" @click="showComments">
 								<uni-icons type="chat" size="24" color="#666"></uni-icons>
-								<text>{{commentCount}}</text>
+								<text class="comment-count">{{commentCount}}</text>
 							</view>
 						</view>
 					</view>
@@ -66,55 +66,95 @@
 					<view class="tz8ue">
 						<view class="t79zqw">
 							<view class="tzv88">
-								<text>名字：{{ cat.catname }}</text>
+								<text class="cat-name">名字：{{ cat.catname }}</text>
 							</view>
 							<view class="tzv88">
-								<text>年龄：{{ cat.age }}月</text>
+								<text class="cat-age">年龄：{{ cat.age }}月</text>
 							</view>
 							<view class="tzv88">
-								<text>性别：{{ cat.gender === 1 ? '雄性' : '雌性' }}</text>
+								<text class="cat-gender">性别：{{ cat.gender === 1 ? '雄性' : '雌性' }}</text>
 							</view>
-							
+							<view class="timeline-btn" @click="showTimeline">
+								<uni-icons type="flag" size="24" color="#666"></uni-icons>
+								<text>小猫时间轴</text>
+							</view>
+							<view class="search-btn" @click="handleSearch">
+								<uni-icons type="search" size="20" color="#666"></uni-icons>
+								<text>查找相关内容</text>
+							</view>
 						</view>
 					</view>
 				</view>
 				<!-- 详细信息 -->
-				<view class="t3">
+				<view class="t3 animate-slide-up">
+					<view class="section-title">
+						<text>详细信息</text>
+					</view>
 					<view class="th80hj0">
 						<view class="tzv8mkm">
-							<text class="lefttzv00">是否已绝育：{{ cat.sterilizationStatus }}</text>
+							<view class="lefttzv00">
+								<text class="info-label">是否已绝育</text>
+								<text class="info-value">{{ cat.sterilizationStatus }}</text>
+							</view>
 						</view>
 						<view class="tzv8mkm">
-							<text class="righttzv00">是否接种疫苗：{{ cat.vaccinationStatus }}</text>
+							<view class="righttzv00">
+								<text class="info-label">是否接种疫苗</text>
+								<text class="info-value">{{ cat.vaccinationStatus }}</text>
+							</view>
 						</view>
 						<view class="tzv8mkm">
-							<text class="lefttzv00">健康状况：{{ cat.healthStatus }}</text>
+							<view class="lefttzv00">
+								<text class="info-label">健康状况</text>
+								<text class="info-value">{{ cat.healthStatus }}</text>
+							</view>
 						</view>
 						<view class="tzv8mkm">
-							<text class="righttzv00">性格：{{ cat.catCharacter }}</text>
+							<view class="righttzv00">
+								<text class="info-label">性格</text>
+								<text class="info-value">{{ cat.catCharacter }}</text>
+							</view>
 						</view>
 						<view class="tzv8mkm">
-							<text class="lefttzv00">食物偏好：{{ cat.food }}</text>
+							<view class="lefttzv00">
+								<text class="info-label">食物偏好</text>
+								<text class="info-value">{{ cat.food }}</text>
+							</view>
 						</view>
 						<view class="tzv8mkm">
-							<text class="righttzv00">忌讳：{{ cat.taboo }}</text>
+							<view class="righttzv00">
+								<text class="info-label">忌讳</text>
+								<text class="info-value">{{ cat.taboo }}</text>
+							</view>
 						</view>
 						<view class="tzv8mkm">
-							<text class="lefttzv00">品种：</text>
+							<view class="lefttzv00">
+								<text class="info-label">品种</text>
+								<text class="info-value">{{ cat.breed || '暂无' }}</text>
+							</view>
 						</view>
 						<view class="tzv8mkm">
-							<text class="righttzv00">常住地：{{cat.area}}</text>
+							<view class="righttzv00">
+								<text class="info-label">常住地</text>
+								<text class="info-value">{{ cat.area }}</text>
+							</view>
 						</view>
 						<view class="tzv8mkm">
-							<text class="lefttzv00">撸猫指南：</text>
+							<view class="lefttzv00">
+								<text class="info-label">撸猫指南</text>
+								<text class="info-value">{{ cat.guide || '暂无' }}</text>
+							</view>
 						</view>
-                        <view class="tzv8mkm">
-							<text class="righttzv00">不良行为记录：{{ cat.badRecord }}</text>
+						<view class="tzv8mkm">
+							<view class="righttzv00">
+								<text class="info-label">不良行为记录</text>
+								<text class="info-value">{{ cat.badRecord }}</text>
+							</view>
 						</view>
 					</view>
 				</view>
 				<!-- 照片墙 -->
-				<view class="t4">
+				<view class="t4 animate-fade-in">
 					<view class="t00zc">
 						<view class="t23rx">
 							<uni-section class="t8qfv" title="照片" type="square" ></uni-section>
@@ -274,6 +314,64 @@
 					</view>
 				</view>
 			</uni-popup>
+			
+			<!-- 时间轴弹窗 -->
+			<uni-popup ref="timelinePopup" type="center">
+				<view class="timeline-popup">
+					<view class="timeline-header">
+						<text class="title">时间轴记录</text>
+						<view class="header-actions">
+							<button class="add-btn" @click="showAddEventForm" v-if="isAdmin">添加记录</button>
+							<uni-icons type="closeempty" size="24" @click="closeTimeline"></uni-icons>
+						</view>
+					</view>
+					<scroll-view scroll-y="true" class="timeline-content">
+						<view class="timeline-list">
+							<view class="timeline-item" v-for="(event, index) in timelineEvents" :key="index">
+								<view class="timeline-dot"></view>
+								<view class="timeline-card">
+									<view class="event-header">
+										<text class="event-time">{{event.date}}</text>
+										<view class="event-actions" v-if="isAdmin">
+											<uni-icons type="compose" size="20" color="#666" @click="editEvent(index)"></uni-icons>
+											<uni-icons type="trash" size="20" color="#666" @click="deleteEvent(index)"></uni-icons>
+										</view>
+									</view>
+									<text class="event-title">{{event.title}}</text>
+									<text class="event-desc">{{event.description}}</text>
+								</view>
+							</view>
+						</view>
+					</scroll-view>
+				</view>
+			</uni-popup>
+			
+			<!-- 添加/编辑事件弹窗 -->
+			<uni-popup ref="eventFormPopup" type="center">
+				<view class="event-form">
+					<view class="form-header">
+						<text class="title">{{isEditingEvent ? '编辑记录' : '添加记录'}}</text>
+						<uni-icons type="closeempty" size="24" @click="closeEventForm"></uni-icons>
+					</view>
+					<view class="form-content">
+						<uni-forms :model="eventForm">
+							<uni-forms-item label="日期" required>
+								<uni-datetime-picker v-model="eventForm.date" type="date" />
+							</uni-forms-item>
+							<uni-forms-item label="标题" required>
+								<uni-easyinput v-model="eventForm.title" placeholder="请输入事件标题" />
+							</uni-forms-item>
+							<uni-forms-item label="描述" required>
+								<uni-easyinput v-model="eventForm.description" type="textarea" placeholder="请输入事件描述" />
+							</uni-forms-item>
+						</uni-forms>
+					</view>
+					<view class="form-footer">
+						<button class="cancel-btn" @click="closeEventForm">取消</button>
+						<button class="submit-btn" @click="submitEvent">确定</button>
+					</view>
+				</view>
+			</uni-popup>
 		</scroll-view>
 	</view>
 </template>
@@ -316,6 +414,43 @@
 	const isPopupOpen = ref(false);
 	const lastMoveTime = ref(0);
 	const moveSpeed = ref(0);
+	
+	// 时间轴相关
+	const timelinePopup = ref(null);
+	const eventFormPopup = ref(null);
+	const isEditingEvent = ref(false);
+	const currentEditIndex = ref(-1);
+	const isAdmin = ref(true); // 这里应该根据实际用户权限来设置
+	
+	// 模拟的时间轴数据
+	const timelineEvents = ref([
+		{
+            id: 1,
+			date: '2024-01-15',
+			title: '首次发现',
+			description: '在图书馆门口第一次发现这只小猫'
+		},
+		{
+            id: 2,
+			date: '2024-01-20',
+			title: '绝育手术',
+			description: '完成绝育手术，恢复状况良好'
+		},
+		{
+            id: 3,
+			date: '2024-02-01',
+			title: '疫苗接种',
+			description: '完成第一针疫苗接种'
+		}
+	]);
+	
+	// 事件表单数据
+	const eventForm = ref({
+        catId: '',
+		date: '',
+		title: '',
+		description: ''
+	});
 	
 	onShow(() => {
 		const options = getCurrentPages().pop().options; // 获取页面传递的参数
@@ -761,6 +896,217 @@
 		touchMoveY.value = 0;
 		popupTranslateY.value = 0;
 	};
+	
+	function handleSearch() {
+		// uni.navigateTo({
+		// 	url: `/src/pages/Search?keyword=${cat.value.catname}`
+		// });
+        // 调用全局方法：搜索
+        globalSearch(cat.value.catname)
+        uni.navigateTo({
+			url: `SearchResultPage?searchWords=${cat.value.catname}`
+		});
+	}
+	
+	// 显示时间轴
+	function showTimeline() {
+        uni.request({
+            url: `${API_general_request_url.value}/api/cat/timeline/${cat.value.catId}`,
+            method: 'GET',
+            success: (res) => {
+                if(res.statusCode === 200 && res.data.code === '2000'){
+                    timelineEvents.value = res.data.data
+                    console.log('获取小猫时间轴数据成功')
+                    console.log(timelineEvents.value)
+                }
+                else{
+                    console.log(res.data)
+                    uni.showToast({
+                        title: res.data.msg || '获取小猫时间轴数据失败',
+                        icon: 'none'
+                    });
+                }
+            },
+            fail: (err) => {
+                console.log('获取小猫时间轴数据失败')
+                console.log(err)
+            }
+        })
+		timelinePopup.value.open();
+	}
+	
+	// 关闭时间轴
+	function closeTimeline() {
+		timelinePopup.value.close();
+	}
+	
+	// 显示添加事件表单
+	function showAddEventForm() {
+		isEditingEvent.value = false;
+		eventForm.value = {
+			date: new Date().toISOString().split('T')[0],
+			title: '',
+			description: ''
+		};
+		eventFormPopup.value.open();
+	}
+	
+	// 显示编辑事件表单
+	function editEvent(index) {
+		isEditingEvent.value = true;
+		currentEditIndex.value = index;
+		const event = timelineEvents.value[index];
+		eventForm.value = { ...event };
+		eventFormPopup.value.open();
+	}
+	
+	// 删除事件
+	function deleteEvent(index) {
+		uni.showModal({
+			title: '确认删除',
+			content: '确定要删除这条记录吗？',
+			success: function (res) {
+				if (res.confirm) {
+                    uni.request({
+                        url: `${API_general_request_url.value}/api/cat/timeline/delete/${timelineEvents.value[index].id}`,
+                        method: 'DELETE',
+                        header: {
+                            'Authorization': `Bearer ${uni.getStorageSync('token')}`
+                        },
+                        success: (res) => {
+                            if(res.statusCode === 200 && res.data.code === '2000'){
+                                console.log('删除事件成功')
+                                console.log(res.data)
+                                timelineEvents.value.splice(index, 1);
+                                uni.showToast({
+                                    title: '删除成功',
+                                    icon: 'success'
+                                });
+                            }
+                            else{
+                                console.log('删除事件失败')
+                                console.log(res.data)
+                                uni.showToast({
+                                    title: res.data.message || '删除失败',
+                                    icon: 'none'
+                                });
+                            }
+                        },
+                        fail: (err) => {
+                            console.log('删除事件失败')
+                            console.log(err)
+                        }
+                    })
+				}
+			}
+		});
+	}
+	
+	// 关闭事件表单
+	function closeEventForm() {
+		eventFormPopup.value.close();
+		eventForm.value = {
+			date: '',
+			title: '',
+			description: ''
+		};
+		currentEditIndex.value = -1;
+	}
+	
+	// 提交事件
+	function submitEvent() {
+        if (!checkLogin()) {
+            return;
+        }
+		if (!eventForm.value.date || !eventForm.value.title || !eventForm.value.description) {
+			uni.showToast({
+				title: '请填写完整信息',
+				icon: 'none'
+			});
+			return;
+		}
+		if (isEditingEvent.value) {
+            console.log('更新现有事件')
+            console.log(eventForm.value)
+            eventForm.value.id = timelineEvents.value[currentEditIndex.value].id // 添加当前事件的ID到表单数据中
+            uni.request({
+                url: `${API_general_request_url.value}/api/cat/timeline/update`,
+                method: 'PUT',
+                data: eventForm.value,
+                header: {
+                    'Authorization': `Bearer ${uni.getStorageSync('token')}`
+                },
+                success: (res) => {
+                    if(res.statusCode === 200 && res.data.code === '2000'){
+                        console.log('更新现有事件成功')
+                        console.log(res.data)
+                        closeEventForm();
+                        uni.showToast({
+                            title: '编辑成功',
+                            icon: 'success'
+                        });
+                    }
+                    else{
+                        console.log('更新现有事件失败')
+                        console.log(res.data)
+                        uni.showToast({
+                            title: res.data.msg || '编辑失败',
+                            icon: 'none'
+                        });
+                    }
+                },
+                fail: (err) => {
+                    console.log('更新现有事件失败')
+                    console.log(err)
+                }
+            })
+			// 更新现有事件
+			timelineEvents.value[currentEditIndex.value] = { ...eventForm.value };
+		} else {
+            console.log('添加新事件')
+            console.log(eventForm.value)
+            eventForm.value.catId = cat.value.catId // 添加当前猫咪的ID到表单数据中
+            uni.request({
+                url: `${API_general_request_url.value}/api/cat/timeline/add`,
+                method: 'POST',
+                data: eventForm.value,
+                header: {
+                    'Authorization': `Bearer ${uni.getStorageSync('token')}`
+                },
+                success: (res) => {
+                    if(res.statusCode === 200 && res.data.code === '2000'){
+                        console.log('添加新事件成功')
+                        console.log(res.data)
+                        closeEventForm();
+                        uni.showToast({
+                            title: '添加成功',
+                            icon: 'success'
+                        });
+                    }
+                    else{
+                        console.log('添加新事件失败')
+                        console.log(res.data)
+                        uni.showToast({
+                            title: res.data.message || '添加失败',
+                            icon: 'none'
+                        });
+                    }
+                },
+                fail: (err) => {
+                    console.log('添加新事件失败')
+                    console.log(err)
+                }
+
+            })
+			// 添加新事件
+			timelineEvents.value.push({ ...eventForm.value });
+		}
+		
+		// 按日期排序
+		timelineEvents.value.sort((a, b) => new Date(b.date) - new Date(a.date));
+		
+		
+	}
 </script>
 
 <style lang="scss" scoped>
@@ -768,12 +1114,13 @@
 		width: 750rpx;
 		height: 100vh;
 		position: relative;
-		overflow-x: hidden;
+		
 		.layout{
 			width: 100%;
 			min-height: 100%;
 			background-color: #f1f4f7;
 			background: linear-gradient(to right, #fdeda9, #fffce2);
+			
 			.header {
 				position: sticky;
 				top: 0;
@@ -880,24 +1227,74 @@
 						width: 100%;
 						height: 100%;
 						flex-direction: column;
-                        padding-top: 60rpx;
-						.tzv88{ //文字
+						// padding-top: 60rpx;
+						.tzv88{ //文字view
 							width: 100%;
 							height: 74rpx;
 							display: flex;
 							align-items: center;
-							// justify-content: center;
 							padding-left: 80rpx;
 							font-size: 30rpx;
 							font-weight: 700;
+                            .cat-name{
+                                font-size: 32rpx;
+                                font-weight: 700;
+                            }
+                            .cat-age{
+                                font-size: 32rpx;
+                                font-weight: 700;
+                            }
+                            .cat-gender{
+                                font-size: 32rpx;
+                                font-weight: 700;
+                            }
 						}
-						.tzv8u{ //猫包
-							width: 100%;
-							height: 100%;
-							margin-left: 60rpx;
-							.tz8888{ //image
-								width: 100rpx;
-								height: 100rpx;
+						.timeline-btn {
+							width: calc(100% - 100rpx);
+							height: 70rpx;
+							margin: 20rpx auto 10rpx;
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							gap: 10rpx;
+							background: linear-gradient(135deg, #8d5da3, #a679c7);
+							border-radius: 35rpx;
+							box-shadow: 0 4rpx 12rpx rgba(141, 93, 163, 0.2);
+							transition: all 0.3s ease;
+							
+							text {
+								color: #FFFFFF;
+								font-size: 26rpx;
+								font-weight: normal;
+							}
+							
+							&:active {
+								transform: scale(0.98);
+								box-shadow: 0 2rpx 8rpx rgba(141, 93, 163, 0.15);
+							}
+						}
+						.search-btn {
+							width: calc(100% - 100rpx);
+							height: 70rpx;
+							margin: 20rpx auto 0;
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							gap: 10rpx;
+							background: linear-gradient(135deg, #C13584, #E1306C);
+							border-radius: 35rpx;
+							box-shadow: 0 4rpx 12rpx rgba(193, 53, 132, 0.2);
+							transition: all 0.3s ease;
+							
+							text {
+								color: #FFFFFF;
+								font-size: 26rpx;
+								font-weight: normal;
+							}
+							
+							&:active {
+								transform: scale(0.98);
+								box-shadow: 0 2rpx 8rpx rgba(193, 53, 132, 0.15);
 							}
 						}
 					}
@@ -905,49 +1302,134 @@
 			}
 			.t3{ //<!-- 详细信息 -->
 				width: 100%;
-				height: 400rpx;
-				background-color: #f3f7fd;
-				// display: flex;
-				// align-items: center;
-				// justify-content: center;
-				// flex-direction: column;
-				border-radius: 50rpx 50rpx 0rpx 0rpx;
-				border: 2rpx solid #dbdbdb;
-				box-shadow: 0rpx -10rpx 40rpx rgba(0, 0, 0, 0.1);
-                padding: 20rpx 0rpx;
-				.th80hj0{
-					width: 100%;
-					height: 100%;
-					// align-items: center;
-					// justify-content: center;
-					// flex-direction: column;
+				min-height: 400rpx;
+				background: linear-gradient(135deg, #FAFAFA 0%, #FFFFFF 100%);
+				border-radius: 40rpx 40rpx 0 0;
+				padding: 20rpx 0;
+				margin-top: 15rpx;
+				position: relative;
+
+				&::before {
+					content: '';
+					position: absolute;
+					top: 0;
+					left: 50%;
+					transform: translateX(-50%);
+					width: 80rpx;
+					height: 4rpx;
+					background: linear-gradient(90deg, #C13584, #E1306C, #F56040);
+					border-radius: 2rpx;
+				}
+
+				.section-title {
+					text-align: center;
+					margin-bottom: 15rpx;
+					font-size: 40rpx;
+					font-weight: 600;
+					background: linear-gradient(90deg, #C13584, #E1306C);
+					-webkit-background-clip: text;
+					color: transparent;
+					letter-spacing: 6rpx;
+					position: relative;
 					display: flex;
-					flex-wrap: wrap;
-					// align-items: center;
+					align-items: center;
 					justify-content: center;
+					
+					&::before,
+					&::after {
+						content: "";
+						position: absolute;
+						height: 2rpx;
+						width: 100rpx;
+						background: linear-gradient(90deg, transparent, rgba(193, 53, 132, 0.2));
+						top: 50%;
+					}
+					
+					&::before {
+						right: calc(50% + 100rpx);
+					}
+					
+					&::after {
+						left: calc(50% + 100rpx);
+						transform: rotate(180deg);
+					}
+				}
+
+				.th80hj0{
+					width: 90%;
+					margin: 0 auto;
+					display: grid;
+					grid-template-columns: repeat(2, 1fr);
+					gap: 15rpx 30rpx;
+					padding: 0 0rpx;
+					
 					.tzv8mkm{
-						width: 50%;
-						// height: 70rpx;
-						// flex-direction: column;
-						.lefttzv00{ //文字
-							width: 100%;
-							height: 100%;
+						width: 100%;
+						position: relative;
+						
+						.lefttzv00,
+						.righttzv00 { 
+							width: 90%;
+							min-height: 80rpx;
 							display: flex;
-							align-items: center;
-							padding: 0rpx 20rpx 0rpx 60rpx;
-							// justify-content: center;
-							font-size: 30rpx;
-							font-weight: bold;
+							flex-direction: column;
+							justify-content: center;
+							gap: 2rpx;
+							font-size: 28rpx;
+							color: #262626;
+							background: #FFFFFF;
+							border-radius: 16rpx;
+							padding: 8rpx 16rpx;
+							margin: 0;
+							box-shadow: 
+								0 4rpx 24rpx rgba(0, 0, 0, 0.06),
+								0 1rpx 2rpx rgba(0, 0, 0, 0.04);
+							position: relative;
+							overflow: hidden;
+							transition: all 0.3s ease;
+							
+							&::before {
+								content: '';
+								position: absolute;
+								top: 0;
+								left: 0;
+								width: 4rpx;
+								height: 100%;
+								opacity: 0.9;
+							}
+							
+							.info-label {
+								font-size: 24rpx;
+								color: #666;
+								font-weight: normal;
+							}
+							
+							.info-value {
+								font-size: 30rpx;
+								color: #262626;
+								font-weight: 600;
+							}
+							
+							&:hover {
+								transform: translateY(-2rpx);
+								box-shadow: 
+									0 8rpx 30rpx rgba(0, 0, 0, 0.08),
+									0 2rpx 4rpx rgba(0, 0, 0, 0.06);
+							}
 						}
-						.righttzv00{ //文字
-							width: 100%;
-							height: 100%;
-							display: flex;
-							align-items: center;
-							padding: 0rpx 60rpx 0rpx 20rpx;
-							// justify-content: center;
-							font-size: 30rpx;
-							font-weight: bold;
+						
+						.lefttzv00 {
+							background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+							&::before {
+								background: linear-gradient(180deg, #C13584, #E1306C);
+							}
+						}
+						
+						.righttzv00 {
+							background: linear-gradient(135deg, #FFFFFF 0%, #FAFAFA 100%);
+							&::before {
+								background: linear-gradient(180deg, #F56040, #E1306C);
+							}
 						}
 					}
 				}
@@ -1267,6 +1749,7 @@
 					color: #ff4d4f;
 				}
 			}
+            
 		}
 	}
 	
@@ -1524,6 +2007,345 @@
 	// 为了防止底部内容被提示条遮挡，给容器添加底部内边距
 	.container {
 		padding-bottom: 100rpx;
+	}
+	
+	// 时间轴弹窗样式
+	.timeline-popup {
+		width: 680rpx;
+		height: 800rpx;
+		background-color: #fff;
+		border-radius: 20rpx;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		
+		.timeline-header {
+			padding: 30rpx;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			border-bottom: 1px solid #f0f0f0;
+			
+			.title {
+				font-size: 32rpx;
+				font-weight: bold;
+				color: #333;
+			}
+			
+			.header-actions {
+				display: flex;
+				align-items: center;
+				gap: 20rpx;
+				
+				.add-btn {
+					background: linear-gradient(135deg, #8d5da3, #a679c7);
+					color: #fff;
+					font-size: 26rpx;
+					padding: 10rpx 30rpx;
+					border-radius: 30rpx;
+					border: none;
+					
+					&:active {
+						opacity: 0.9;
+					}
+				}
+			}
+		}
+		
+		.timeline-content {
+			flex: 1;
+			padding: 30rpx;
+			overflow-y: auto;
+			
+			.timeline-list {
+				position: relative;
+				
+				&::before {
+					content: '';
+					position: absolute;
+					left: 15rpx;
+					top: 0;
+					bottom: 0;
+					width: 2rpx;
+					background-color: #e0e0e0;
+				}
+				
+				.timeline-item {
+					position: relative;
+					padding-left: 50rpx;
+					margin-bottom: 30rpx;
+					padding-right: 20rpx; // 添加右边距
+					
+					.timeline-dot {
+						position: absolute;
+						left: 8rpx;
+						top: 20rpx;
+						width: 16rpx;
+						height: 16rpx;
+						background-color: #8d5da3;
+						border-radius: 50%;
+						z-index: 1;
+					}
+					
+					.timeline-card {
+						background-color: #f8f9fa;
+						border-radius: 12rpx;
+						padding: 20rpx;
+						box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+						width: 95%; // 设置宽度为100%
+						box-sizing: border-box; // 确保padding不会增加总宽度
+						
+						.event-header {
+							display: flex;
+							justify-content: space-between;
+							align-items: center;
+							margin-bottom: 10rpx;
+							
+							.event-time {
+								font-size: 24rpx;
+								color: #666;
+								flex-shrink: 0; // 防止日期被压缩
+							}
+							
+							.event-actions {
+								display: flex;
+								gap: 20rpx;
+								flex-shrink: 0; // 防止操作按钮被压缩
+							}
+						}
+						
+						.event-title {
+							font-size: 28rpx;
+							font-weight: bold;
+							color: #333;
+							margin-bottom: 8rpx;
+							word-break: break-all; // 允许在任意字符间断行
+							overflow-wrap: break-word; // 允许长单词断行
+						}
+						
+						.event-desc {
+							font-size: 26rpx;
+							color: #666;
+							line-height: 1.5;
+							word-break: break-all; // 允许在任意字符间断行
+							overflow-wrap: break-word; // 允许长单词断行
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	// 事件表单弹窗样式
+	.event-form {
+		width: 600rpx;
+		background-color: #fff;
+		border-radius: 20rpx;
+		overflow: hidden;
+		
+		.form-header {
+			padding: 30rpx;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			border-bottom: 1px solid #f0f0f0;
+			
+			.title {
+				font-size: 32rpx;
+				font-weight: bold;
+				color: #333;
+			}
+		}
+		
+		.form-content {
+			padding: 30rpx;
+			
+			:deep(.uni-forms-item) {
+				margin-bottom: 20rpx;
+				
+				.uni-forms-item__label {
+					font-size: 28rpx;
+					color: #333;
+				}
+				
+				.uni-easyinput__content {
+					background-color: #f8f9fa;
+					border-radius: 12rpx;
+				}
+			}
+		}
+		
+		.form-footer {
+			padding: 20rpx 30rpx;
+			display: flex;
+			justify-content: flex-end;
+			gap: 20rpx;
+			border-top: 1px solid #f0f0f0;
+			
+			button {
+				width: 160rpx;
+				height: 70rpx;
+				line-height: 70rpx;
+				text-align: center;
+				border-radius: 35rpx;
+				font-size: 28rpx;
+				
+				&.cancel-btn {
+					background-color: #f5f5f5;
+					color: #666;
+				}
+				
+				&.submit-btn {
+					background: linear-gradient(135deg, #8d5da3, #a679c7);
+					color: #fff;
+				}
+			}
+		}
+	}
+    /* 添加新的样式规则 */
+    :deep(.interaction-item text) {
+        font-size: 35rpx !important;
+        color: #ff6b81 !important;
+        margin-left: 6rpx !important;
+        font-weight: 500 !important;
+    }
+
+	// 添加动画相关样式
+	@keyframes slideIn {
+		from {
+			transform: translateX(-30px);
+			opacity: 0;
+		}
+		to {
+			transform: translateX(0);
+			opacity: 1;
+		}
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes slideUp {
+		from {
+			transform: translateY(30px);
+			opacity: 0;
+		}
+		to {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+
+	.animate-slide-in {
+		animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+		animation-fill-mode: both;
+	}
+
+	.animate-fade-in {
+		animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+		animation-fill-mode: both;
+		animation-delay: 0.1s;
+	}
+
+	.animate-slide-up {
+		animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+		animation-fill-mode: both;
+		animation-delay: 0.2s;
+	}
+
+	// 为弹出层添加动画
+	.popup-box {
+		animation: popIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	@keyframes popIn {
+		from {
+			transform: scale(0.95);
+			opacity: 0;
+		}
+		to {
+			transform: scale(1);
+			opacity: 1;
+		}
+	}
+
+	// 为评论项添加动画
+	.comment-item {
+		animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+		animation-fill-mode: both;
+	}
+
+	@keyframes fadeInUp {
+		from {
+			transform: translateY(15px);
+			opacity: 0;
+		}
+		to {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+
+	// 为时间轴项添加动画
+	.timeline-item {
+		animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+		animation-fill-mode: both;
+	}
+
+	@keyframes slideInRight {
+		from {
+			transform: translateX(20px);
+			opacity: 0;
+		}
+		to {
+			transform: translateX(0);
+			opacity: 1;
+		}
+	}
+
+	// 为照片添加动画
+	.t9j0a {
+		 animation: zoomIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+		 animation-fill-mode: both;
+		 animation-delay: 0.3s;
+	}
+
+	@keyframes zoomIn {
+		from {
+			transform: scale(0.95);
+			opacity: 0;
+		}
+		to {
+			transform: scale(1);
+			opacity: 1;
+		}
+	}
+
+	// 为互动区域添加动画
+	.interaction-item {
+		animation: bounceIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+		animation-fill-mode: both;
+		animation-delay: 0.2s;
+	}
+
+	@keyframes bounceIn {
+		from {
+			transform: scale(0.8);
+			opacity: 0;
+		}
+		70% {
+			transform: scale(1.05);
+		}
+		to {
+			transform: scale(1);
+			opacity: 1;
+		}
 	}
 </style>
 </```

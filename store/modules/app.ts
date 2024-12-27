@@ -4,6 +4,12 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+// 定义搜索结果数据接口
+interface SearchResult {
+    cats: CatList[];
+    posts: PostDetail[];
+}
+
 // 定义猫咪位置信息接口
 interface CatLocation {
     id: number;
@@ -199,6 +205,8 @@ interface ApplyPost {
 // 使用组合式 API 风格定义 store
 export const useAppStore = defineStore('app', () => {
     /* ---------------------定义状态--------------------- */
+    // 搜索结果数据
+    const searchResultData = ref<SearchResult | null>(null)
 
     // 定义猫咪位置数据
     const catLocations = ref<CatLocation[]>([]);
@@ -266,6 +274,10 @@ export const useAppStore = defineStore('app', () => {
 
 
     /* ---------------------设置状态--------------------- */
+    // 设置搜索结果数据
+    function setSearchResultData(data: SearchResult) {
+        searchResultData.value = data
+    }
     // 设置猫咪位置数据
     function setCatLocations(data: CatLocation[]) {
         catLocations.value = data
@@ -338,6 +350,9 @@ export const useAppStore = defineStore('app', () => {
 
     // 返回状态和方法
     return {
+        // 搜索结果数据
+        searchResultData,
+        setSearchResultData,
         // 猫咪位置相关导出
         catLocations,
         setCatLocations,

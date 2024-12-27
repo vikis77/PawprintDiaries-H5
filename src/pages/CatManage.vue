@@ -77,7 +77,7 @@ onShow(() => {
 		// 遍历 catList，将每只猫的信息加入 gridList
 		catList.forEach((cat) => {
 			gridList.value.push({
-				url: `${pic_general_request_url.value}/cat_avatar/${cat.avatar}${Suffix_1001}`,
+				url: `${pic_general_request_url.value}/cat_avatar/${cat.avatar}${Suffix_1001.value}`,
 				data: '',
 				text: cat.catname,
 				text2: cat.area,

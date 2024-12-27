@@ -189,9 +189,10 @@
 	function handlerGoback(){
         // 先收起键盘
         uni.hideKeyboard()
-		uni.switchTab({
-			url: 'Home'
-		})
+		// uni.switchTab({
+		// 	url: 'Home'
+		// })
+        uni.navigateBack()
 	}
 	function input(res) { // 输入改变时触发事件
 		console.log('----input:', res)
@@ -215,7 +216,7 @@
 					});
 				} else {
 					uni.showToast({
-						title: res.data.msg || '获取搜索结果���败',
+						title: res.data.msg || '获取搜索结果失败',
 						icon: 'none'
 					});
 				}

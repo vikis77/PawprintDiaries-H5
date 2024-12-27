@@ -98,8 +98,28 @@
 			@scrolltolower="onScrollToLower"
 			ref="scrollViewRef"
 		>
-			<view class="content" id="top">
-				<view v-for="post in posts" :key="post.postId"  class="box">
+			<!-- 添加骨架屏 -->
+			<view v-if="loading" class="skeleton-container">
+				<view v-for="i in 6" :key="i" class="skeleton-box">
+					<view class="skeleton-image"></view>
+					<view class="skeleton-text"></view>
+					<view class="skeleton-info">
+						<view class="skeleton-avatar"></view>
+						<view class="skeleton-nickname"></view>
+						<view class="skeleton-likes"></view>
+					</view>
+				</view>
+			</view>
+
+			<view class="content" id="top" v-else>
+				<view v-for="(post, index) in posts" 
+					:key="post.postId"  
+					class="box"
+					:style="{ 
+						animation: `fadeInUp 0.5s ease-out forwards`,
+						animationDelay: `${index * 0.1}s`
+					}"
+				>
 					<image class="pic" :src="`${pic_general_request_url}/post_pics/${post.coverPicture}${Suffix_1001}`" mode="aspectFill" @click="handlerClickPost(post.postId)"></image>
 					<view class="text" @click="handlerClickPost(post.postId)">{{ post.title }}</view>
 					<view class="info">
@@ -206,6 +226,11 @@
 	  
         // 初始化帖子数据
         posts.value = appStore.postList
+        
+        // 模拟加载延迟，提供更好的视觉体验
+        setTimeout(() => {
+            loading.value = false
+        }, 1000)
 	});
 	
 
@@ -213,17 +238,21 @@
 	// 发送请求获取帖子数据，包括加载初始数据和分页加载更多数据
     // 目前只用到到上拉刷新，即isRefresh为true
 	const fetchMorePosts = async (isRefresh = false) => {
-        
         if (isRefresh) {
             loadMoreStatus.value = 'more'
+            loading.value = true // 刷新时显示骨架屏
         }
-		// 调用全局获取帖子数据的方法
-		await getPosts(undefined, undefined, isRefresh, false)
-		posts.value = appStore.postList
-        console.log(`"完成获取新帖子，是否全新刷新：${isRefresh}"`)
-        console.log(posts.value)
-		return []
-	};
+        
+        try {
+            await getPosts(undefined, undefined, isRefresh, false)
+            posts.value = appStore.postList
+            console.log(`"完成获取新帖子，是否全新刷新：${isRefresh}"`)
+            console.log(posts.value)
+        } finally {
+            loading.value = false // 无论成功失败都关闭骨架屏
+        }
+        return []
+    };
 	
 	// 点击查看更多-查看声明帮助
 	const getMore = ()=> {
@@ -437,6 +466,9 @@
 		console.log('触发触底事件');
 		loadMore();
 	}
+
+	// 添加loading状态
+	const loading = ref(true)
 </script>
 
 <style lang="scss" scoped>
@@ -698,6 +730,95 @@
 					}
 				}
 			}
+		}
+	}
+
+	// 添加骨架屏样式
+	.skeleton-container {
+		display: flex;
+		flex-wrap: wrap;
+		padding: 8rpx;
+		box-sizing: border-box;
+		
+		.skeleton-box {
+			flex: 0 0 calc(50% - 16rpx);
+			margin: 8rpx;
+			height: 520rpx;
+			background-color: #ffffff;
+			border-radius: 12rpx;
+			overflow: hidden;
+			box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+			
+			.skeleton-image {
+				height: 75%;
+				width: 100%;
+				background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+				background-size: 200% 100%;
+				animation: shimmer 1.5s infinite;
+			}
+			
+			.skeleton-text {
+				height: 8%;
+				margin: 12rpx 16rpx 2rpx;
+				background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+				background-size: 200% 100%;
+				animation: shimmer 1.5s infinite;
+			}
+			
+			.skeleton-info {
+				display: flex;
+				align-items: center;
+				padding: 0rpx 16rpx;
+				height: 13%;
+				
+				.skeleton-avatar {
+					width: 42rpx;
+					height: 42rpx;
+					border-radius: 50%;
+					background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+					background-size: 200% 100%;
+					animation: shimmer 1.5s infinite;
+				}
+				
+				.skeleton-nickname {
+					width: 100rpx;
+					height: 22rpx;
+					margin-left: 12rpx;
+					background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+					background-size: 200% 100%;
+					animation: shimmer 1.5s infinite;
+				}
+				
+				.skeleton-likes {
+					width: 60rpx;
+					height: 26rpx;
+					margin-left: auto;
+					background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+					background-size: 200% 100%;
+					animation: shimmer 1.5s infinite;
+				}
+			}
+		}
+	}
+
+	// 添加动画关键帧
+	@keyframes shimmer {
+		0% {
+			background-position: 200% 0;
+		}
+		100% {
+			background-position: -200% 0;
+		}
+	}
+
+	@keyframes fadeInUp {
+		from {
+			opacity: 0;
+			transform: translateY(30rpx);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
 		}
 	}
 </style>

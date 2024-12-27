@@ -39,6 +39,7 @@ export const getCatAnalyseData = async () => {
             const newData = response.data.data;
             appStore.setCatDataAnalysis(newData);
             console.log("获取猫爪页面数据分析数据成功")
+            console.log(newData)
             return;
         }
         throw new Error('获取猫爪页面数据分析数据失败');

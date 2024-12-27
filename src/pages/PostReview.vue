@@ -83,84 +83,107 @@ const selectedPost = ref(null);
 
 // 审核通过
 const handleApprove = async (postId) => {
-    try {
-        await uni.request({
-            url: `${API_general_request_url.value}/api/post/passApprove`,
-            method: 'POST',
-            header: {
-                'Authorization': `Bearer ${uni.getStorageSync('token')}`
-            },
-            data: {
-                "postId": postId
-            },
-            success: (res) => {
-                if (res.statusCode === 200 && res.data.code === "2000") {
-                    console.log("审核通过：", res)
-                    uni.showToast({
-                        title: '审核通过',
-                        icon: 'success'
-                    });
-                    posts.value = posts.value.filter(post => post.postId !== postId);
-                } else {
-                    console.log("审核通过失败：", res)
-                    uni.showToast({
-                        title: res.data.message || '操作失败',
-                        icon: 'none'
-                    });
+    if (checkLogin()) {
+        uni.showModal({
+            title: '确认',
+            content: '确定通过这条帖子吗？',
+            success: async (res) => {
+                if (res.confirm) {
+                    try {
+                        await uni.request({
+                            url: `${API_general_request_url.value}/api/post/passApprove`,
+                            method: 'POST',
+                            header: {
+                                'Authorization': `Bearer ${uni.getStorageSync('token')}`
+                            },
+                            data: {
+                                "postId": postId
+                            },
+                            success: (res) => {
+                                if (res.statusCode === 200 && res.data.code === "2000") {
+                                    console.log("审核通过：", res)
+                                    uni.showToast({
+                                        title: '审核通过',
+                                        icon: 'success'
+                                    });
+                                    posts.value = posts.value.filter(post => post.postId !== postId);
+                                } else {
+                                    console.log("审核通过失败：", res)
+                                    uni.showToast({
+                                        title: res.data.message || '操作失败',
+                                        icon: 'none'
+                                    });
+                                }
+                            }
+                        })
+                    } catch (error) {
+                        console.log("审核通过失败：", error)
+                        uni.showToast({
+                            title: res.data.message || '操作失败',
+                            icon: 'none'
+                        });
+                    }
                 }
             }
         })
-
-    } catch (error) {
-        console.log("审核通过失败：", error)
-        uni.showToast({
-            title: res.data.message || '操作失败',
-            icon: 'none'
-        });
     }
+    
 };
 
 // 审核拒绝
 const handleReject = async (postId) => {
-    try {
-        await uni.request({
-            url: `${API_general_request_url.value}/api/post/refuseApprove`,
-            method: 'POST',
-            header: {
-                'Authorization': `Bearer ${uni.getStorageSync('token')}`
-            },
-            data: {
-                "postId": postId
-            },
-            success: (res) => {
-                if (res.statusCode === 200 && res.data.code === "2000") {
-                    console.log("审核拒绝成功：", res)
-                    uni.showToast({
-                        title: '已拒绝',
-                        icon: 'success'
-                    });
-                    posts.value = posts.value.filter(post => post.postId !== postId);
-                } else {
-                    console.log("审核拒绝失败：", res)
-                    uni.showToast({
-                        title: res.data.message || '操作失败',
-                        icon: 'none'
-                    });
+    if (checkLogin()) {
+        uni.showModal({
+            title: '确认',
+            content: '确定拒绝这条帖子吗？',
+            success: async (res) => {
+                if (res.confirm) {
+                    try {
+                        await uni.request({
+                            url: `${API_general_request_url.value}/api/post/refuseApprove`,
+                            method: 'POST',
+                            header: {
+                                'Authorization': `Bearer ${uni.getStorageSync('token')}`
+                            },
+                            data: {
+                                "postId": postId
+                            },
+                            success: (res) => {
+                                if (res.statusCode === 200 && res.data.code === "2000") {
+                                    console.log("审核拒绝成功：", res)
+                                    uni.showToast({
+                                        title: '已拒绝',
+                                        icon: 'success'
+                                    });
+                                    posts.value = posts.value.filter(post => post.postId !== postId);
+                                } else {
+                                    console.log("审核拒绝失败：", res)
+                                    uni.showToast({
+                                        title: res.data.message || '操作失败',
+                                        icon: 'none'
+                                    });
+                                }
+                            }
+                        })
+                    } catch (error) {
+                        uni.showToast({
+                            title: error.data.message || '操作失败',
+                            icon: 'none'
+                        });
+                    }
                 }
             }
         })
-    } catch (error) {
-        uni.showToast({
-            title: error.data.message || '操作失败',
-            icon: 'none'
-        });
     }
 };
 
 // 显示帖子详情
 const showPostDetail = (post) => {
     selectedPost.value = post;
-    postDetailPopup.value.open();
+    // postDetailPopup.value.open();
+    uni.navigateTo({
+        url:`Post?postId=${post.postId}`
+    })
 };
 
 // 关闭帖子详情

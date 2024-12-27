@@ -108,7 +108,8 @@
 	import { ref, onMounted } from 'vue';
 	import { onLoad } from '@dcloudio/uni-app';
 	import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
-
+    import { useAppStore } from '@/store/modules/app'
+    const appStore = useAppStore()
 	
 	const catList = ref([]);
 	const posts = ref([]);
@@ -134,7 +135,8 @@
 	
 	onMounted(() => {
 		try {
-			const searchResultData = uni.getStorageSync('searchResultData');
+			// const searchResultData = uni.getStorageSync('searchResultData');
+            const searchResultData = appStore.searchResultData;
 			if (searchResultData) {
 				// 先处理猫猫数据
 				if (searchResultData.cats && searchResultData.cats.length > 0) {

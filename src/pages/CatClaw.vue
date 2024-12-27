@@ -60,15 +60,15 @@
                                                     <text class="preview-text">仅预览</text>
                                                     <view class="interaction-item">
                                                         <uni-icons type="heart" size="18" color="#666"></uni-icons>
-                                                        <text>{{ cat.likeCount || 0 }}</text>
+                                                        <text class="like-count">{{ cat.likeCount || 0 }}</text>
                                                     </view>
                                                     <view class="interaction-item">
                                                         <uni-icons type="fire" size="18" color="#ff9c6e"></uni-icons>
-                                                        <text>{{ cat.trending || 0 }}</text>
+                                                        <text class="trending-count">{{ cat.trending || 0 }}</text>
                                                     </view>
                                                     <view class="interaction-item">
                                                         <uni-icons type="chat" size="18" color="#666"></uni-icons>
-                                                        <text>{{ cat.comments || 0 }}</text>
+                                                        <text class="comment-count">{{ cat.comments || 0 }}</text>
                                                     </view>
                                                 </view>
                                             </view>
@@ -85,7 +85,7 @@
             <view class="showStatisticsBox">
                 <view class="th0hzf">
                     <!-- thumbnail 图片现在只能使用网络图片，本地图片不显示 -->
-                    <uni-card class="tz0v898" margin="0" title="校猫数据统计卡片" :sub-title="nowTime" extra="" thumbnail="https://cdn.luckyiur.com/catcat/static_image/cat-copy.png">
+                    <uni-card class="tz0v898" margin="0" title="校猫数据统计卡片" :sub-title="nowTime" extra="" thumbnail="https://cdn.luckyiur.com/catcat/static_image/cat-copy.png-small35">
                         <view class="gridbody">
                             <uni-grid class="tyh08hz" :column="3" :square="false" :highlight="false">
                                 <uni-grid-item v-for="(item, index) in gridList" :index="index" :key="index"
@@ -568,7 +568,7 @@ async function fetchCatData() {
     {
         url: '/static/adopt.png',
         text: '已领养数量',
-        data: catDataAnalysisData.value.adoptionCount || 0,
+        data: appStore.catDataAnalysisData.adoptionCount || 0,
         text2: '（只）',
         badge: '1',
         type: "success"
@@ -757,7 +757,7 @@ const fetchDataAnalysis = async () => {
     let CakeDataDetail = {
         series: [{
             data: [
-                { "name": "健康", "value": ensureNumber(newData?.healthStatus?.['健康']), "labelText": `健康:${ensureNumber(newData?.healthStatus?.['健康'])}只` },
+                { "name": "健康", "value": ensureNumber(newData?.healthStatus?.['健康']), "labelText": `健康:${ensureNumber(newData?.healthStatus?.['��康'])}只` },
                 { "name": "疾病", "value": ensureNumber(newData?.healthStatus?.['疾病']), "labelText": `疾病:${ensureNumber(newData?.healthStatus?.['疾病'])}只` },
                 { "name": "营养不良", "value": ensureNumber(newData?.healthStatus?.['营养不良']), "labelText": `营养不良:${ensureNumber(newData?.healthStatus?.['营养不良'])}只` },
                 { "name": "肥胖", "value": ensureNumber(newData?.healthStatus?.['肥胖']), "labelText": `肥胖:${ensureNumber(newData?.healthStatus?.['肥胖'])}只` }
@@ -992,7 +992,7 @@ const showGridDetail = (item) => {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
                     name: "校内小猫总数量",
-                    data: [25, 28, 25, 17, 24, 20]
+                    data: [25, 28, 25, 17, 24, catList.value.length]
                 }]
             };
             selectedGrid.value.chartOpts = {
@@ -1016,7 +1016,7 @@ const showGridDetail = (item) => {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
                     name: "每月领养数量",
-                    data: [2, 3, 4, 2, 5, 3]
+                    data: [2, 1, 3, 2, 2, appStore.catDataAnalysisData.adoptionCount || 0]
                 }]
             };
             selectedGrid.value.chartOpts = {
@@ -1025,8 +1025,20 @@ const showGridDetail = (item) => {
                 enableScroll: false,
                 legend: {},
                 xAxis: { disableGrid: true },
-                yAxis: { gridType: "dash", dashLength: 2 },
-                extra: { line: { type: "curve", width: 2 } }
+                yAxis: { 
+                    gridType: "dash", 
+                    dashLength: 2,
+                    // min: Math.min(...selectedGrid.value.chartData.series[0].data) -1,
+                    // max: Math.max(...selectedGrid.value.chartData.series[0].data) +1,
+                    splitNumber: Math.max(...selectedGrid.value.chartData.series[0].data) -1
+                },
+                extra: { 
+                    line: { 
+                        type: "curve", 
+                        width: 2,
+                        activeType: "hollow"  // 添加悬停效果
+                    }
+                }
             };
             break;
         case '已绝育数量':
@@ -1034,7 +1046,7 @@ const showGridDetail = (item) => {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
                     name: "累计绝育数量",
-                    data: [8, 10, 12, 15, 18, 20]
+                    data: [11, 11, 12, 14, 14, catDataAnalysisData.value.sterilizationRatio['已绝育'] || 0]
                 }]
             };
             selectedGrid.value.chartOpts = {
@@ -1052,7 +1064,7 @@ const showGridDetail = (item) => {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
                     name: "累计接种数量",
-                    data: [5, 8, 12, 14, 16, 18]
+                    data: [3, 5, 5, 6, 6, catDataAnalysisData.value.vaccinationRatio['已接种'] || 0]
                 }]
             };
             selectedGrid.value.chartOpts = {
@@ -1070,7 +1082,7 @@ const showGridDetail = (item) => {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
                     name: "健康猫咪数量",
-                    data: [15, 18, 16, 14, 19, 17]
+                    data: [12, 16, 13, 14, 16, catDataAnalysisData.value.healthStatus['健康'] || 0]
                 }]
             };
             selectedGrid.value.chartOpts = {
@@ -1088,7 +1100,7 @@ const showGridDetail = (item) => {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
                     name: "每月新增数量",
-                    data: [3, 4, 2, 5, 3, 4]
+                    data: [0, 0, 0, 0, 0, 0]
                 }]
             };
             selectedGrid.value.chartOpts = {
@@ -1106,7 +1118,7 @@ const showGridDetail = (item) => {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
                     name: "资金余额变化",
-                    data: [5000, 4500, 6000, 5500, 7000, 6500]
+                    data: [0, 0, 0, 0, 0, 0]
                 }]
             };
             selectedGrid.value.chartOpts = {
@@ -1124,7 +1136,7 @@ const showGridDetail = (item) => {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
                     name: "月度支出",
-                    data: [1200, 1500, 1000, 1800, 1300, 1600]
+                    data: [0, 0, 0, 0, 0, 0]
                 }]
             };
             selectedGrid.value.chartOpts = {
@@ -1142,7 +1154,7 @@ const showGridDetail = (item) => {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
                     name: "月度收入",
-                    data: [2000, 2500, 1800, 2800, 2300, 2600]
+                    data: [0, 0, 0, 0, 0, 0]
                 }]
             };
             selectedGrid.value.chartOpts = {
@@ -1452,7 +1464,7 @@ scroll-view ::-webkit-scrollbar {
 
                                                     text {
                                                         color: #666;
-                                                        font-size: 24rpx;
+                                                        font-size: 44rpx;
                                                     }
                                                 }
                                             }
@@ -2014,4 +2026,13 @@ scroll-view ::-webkit-scrollbar {
         transform: rotate(360deg);
     }
 }
+
+/* 添加新的样式规则 */
+:deep(.interaction-item text) {
+    font-size: 23rpx !important;
+    color: #ff6b81 !important;
+    margin-left: 6rpx !important;
+    font-weight: 500 !important;
+}
+
 </style>

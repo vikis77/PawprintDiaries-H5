@@ -1,5 +1,12 @@
 <template>
 	<view class="container">
+		<!-- 添加加载动画组件 -->
+		<view class="loading-overlay" v-if="isLoading">
+			<view class="loading-content">
+				<img class="loading-image" src="../../static/loading-cat.gif" mode="aspectFit"/>
+				<text class="loading-text">{{loadingText}}</text>
+			</view>
+		</view>
 		<view class="layout">
 			<!-- 顶部搜索区域 -->
 			<view class="header-section">
@@ -182,6 +189,10 @@
 	import { useAppStore } from '@/store/modules/app'
 	const appStore = useAppStore()
 
+	// 添加加载状态控制
+	const isLoading = ref(true);
+	const loadingText = ref('正在加载地图...');
+
 	// 弹出层状态变化处理函数
 	const change = (e) => {
 		console.log('弹出层状态变化:', e);
@@ -315,145 +326,155 @@
 	
 	// 联动筛选方法
 	const filterResults = () => {
-	  // 如果没有选择日期且猫咪选择的是all,显示所有猫咪最位置
-	  if (!selectedDate.value && (selectedValueC.value === 'all' || selectedValueC.value === '')) {
-	    uni.request({
-	      url: `${API_general_request_url.value}/api/cat/location/latest`,
-	      method: "GET",
-	      success: (response) => {
-			console.log("请求全部小猫最新坐标",response)
-	        if (response.statusCode === 200 && response.data.code === "2000") {
-	          responseData.value = response.data.data;
-	          mapDrawMode.value = 'point';
-	          path.value = responseData.value.map(item => [
-	            parseFloat((item.longitude || 0).toFixed(6)),
-	            parseFloat((item.latitude || 0).toFixed(6)),
-	            item.catName || '未知猫咪'
-	          ]);
-			//   console.log("path",path.value)
-	          map1.clearMap();
-	          map2.clearMap();
-	          mapDraw();
-	        }
-	      }
-	    });
-	    return;
-	  }
+		isLoading.value = true;
+		loadingText.value = '正在更新数据...';
+		
+		// 如果没有选择日期且猫咪选择的是all,显示所有猫咪最位置
+		if (!selectedDate.value && (selectedValueC.value === 'all' || selectedValueC.value === '')) {
+			uni.request({
+				url: `${API_general_request_url.value}/api/cat/location/latest`,
+				method: "GET",
+				success: (response) => {
+					if (response.statusCode === 200 && response.data.code === "2000") {
+						responseData.value = response.data.data;
+						mapDrawMode.value = 'point';
+						path.value = responseData.value.map(item => [
+							parseFloat((item.longitude || 0).toFixed(6)),
+							parseFloat((item.latitude || 0).toFixed(6)),
+							item.catName || '未知猫咪'
+						]);
+						map1.clearMap();
+						map2.clearMap();
+						mapDraw();
+					}
+				},
+				complete: () => {
+					isLoading.value = false;
+				}
+			});
+			return;
+		}
 
-	  // 构建请求参数
-	  let url = `${API_general_request_url.value}/api/cat/location`;
-	  let params = {};
-	  
-	  if (selectedDate.value && selectedValueC.value !== 'all' && selectedValueC.value !== '') {
-	    // 同时选择了日期和具体猫咪
-	    url += `/date/${selectedDate.value}/cat/${selectedValueC.value}`;
-	    params = {};
-	  } else if (selectedDate.value) {
-	    // 只选择了日期
-		url += `/date/${selectedDate.value}`;
-	  } else if (selectedValueC.value !== 'all' && selectedValueC.value !== '') {
-	    // 只选择了具体猫咪
-	    url += `/${selectedValueC.value}`;
-	  }
+		// 构建请求参数
+		let url = `${API_general_request_url.value}/api/cat/location`;
+		let params = {};
+		
+		if (selectedDate.value && selectedValueC.value !== 'all' && selectedValueC.value !== '') {
+			// 同时选择了日期和具体猫咪
+			url += `/date/${selectedDate.value}/cat/${selectedValueC.value}`;
+			params = {};
+		} else if (selectedDate.value) {
+			// 只选择了日期
+			url += `/date/${selectedDate.value}`;
+		} else if (selectedValueC.value !== 'all' && selectedValueC.value !== '') {
+			// 只选择了具体猫咪
+			url += `/${selectedValueC.value}`;
+		}
 
-	  uni.request({
-	    url: url,
-	    method: "GET", 
-	    data: params,
-	    success: (response) => {
-	      if (response.statusCode === 200 && response.data.code === "2000") {
-	        responseData.value = response.data.data;
-	        // 如果是查询具体猫咪的轨迹(无论是否选择日期)
-	        if (selectedValueC.value !== 'all' && selectedValueC.value !== '') {
-	            mapDrawMode.value = 'line';
-	            if(selectedDate.value) {
-	                path.value = Array.isArray(responseData.value) ?
-	                    responseData.value
-	                        .filter(item => item.longitude != null && item.latitude != null)
-	                        .map(item => [
-	                            parseFloat((item.longitude || 0).toFixed(6)),
-	                            parseFloat((item.latitude || 0).toFixed(6)),
-	                            item.catName || '未知猫咪'
-	                        ]) :
-	                    (responseData.value && responseData.value.longitude != null && responseData.value.latitude != null) ? 
-	                        [[
-	                            parseFloat((responseData.value.longitude || 0).toFixed(6)),
-	                            parseFloat((responseData.value.latitude || 0).toFixed(6)),
-	                            responseData.value.catName || '未知猫咪'
-	                        ]] : [];
-	            } else {
-	                path.value = response.data.data.records
-	                    .filter(item => item.longitude != null && item.latitude != null)
-	                    .map(item => [
-	                        parseFloat((item.longitude || 0).toFixed(6)),
-	                        parseFloat((item.latitude || 0).toFixed(6)),
-	                        item.catName || '未知猫咪'
-	                    ]);
-	            }
-	        } else {
-	            mapDrawMode.value = 'point';
-	            path.value = Array.isArray(responseData.value) ?
-	                responseData.value
-	                    .filter(item => item.longitude != null && item.latitude != null)
-	                    .map(item => [
-	                        parseFloat((item.longitude || 0).toFixed(6)),
-	                        parseFloat((item.latitude || 0).toFixed(6)),
-	                        item.catName || '未知猫咪'
-	                    ]) :
-	                (responseData.value && responseData.value.longitude != null && responseData.value.latitude != null) ?
-	                    [[
-	                        parseFloat((responseData.value.longitude || 0).toFixed(6)),
-	                        parseFloat((responseData.value.latitude || 0).toFixed(6)),
-	                        responseData.value.catName || '未知猫咪'
-	                    ]] : [];
-	        }
-	        
-	        // 只有在有有效数据时才清除和重绘地图
-	        if (path.value.length > 0) {
-	            map1.clearMap();
-	            map2.clearMap();
-	            mapDraw();
-	        } else {
-	            uni.showToast({
-	                title: '暂无有效的坐标数据',
-	                icon: 'none'
-	            });
-	        }
-	      }
-	    }
-	  });
+		uni.request({
+			url: url,
+			method: "GET", 
+			data: params,
+			success: (response) => {
+				if (response.statusCode === 200 && response.data.code === "2000") {
+					responseData.value = response.data.data;
+					// 如果是查询具体猫咪的轨迹(无论是否选择日期)
+					if (selectedValueC.value !== 'all' && selectedValueC.value !== '') {
+						mapDrawMode.value = 'line';
+						if(selectedDate.value) {
+							path.value = Array.isArray(responseData.value) ?
+								responseData.value
+									.filter(item => item.longitude != null && item.latitude != null)
+									.map(item => [
+										parseFloat((item.longitude || 0).toFixed(6)),
+										parseFloat((item.latitude || 0).toFixed(6)),
+										item.catName || '未知猫咪'
+									]) :
+								(responseData.value && responseData.value.longitude != null && responseData.value.latitude != null) ? 
+									[[
+										parseFloat((responseData.value.longitude || 0).toFixed(6)),
+										parseFloat((responseData.value.latitude || 0).toFixed(6)),
+										responseData.value.catName || '未知猫咪'
+									]] : [];
+						} else {
+							path.value = response.data.data.records
+								.filter(item => item.longitude != null && item.latitude != null)
+								.map(item => [
+									parseFloat((item.longitude || 0).toFixed(6)),
+									parseFloat((item.latitude || 0).toFixed(6)),
+									item.catName || '未知猫咪'
+								]);
+						}
+					} else {
+						mapDrawMode.value = 'point';
+						path.value = Array.isArray(responseData.value) ?
+							responseData.value
+								.filter(item => item.longitude != null && item.latitude != null)
+								.map(item => [
+									parseFloat((item.longitude || 0).toFixed(6)),
+									parseFloat((item.latitude || 0).toFixed(6)),
+									item.catName || '未知猫咪'
+								]) :
+							(responseData.value && responseData.value.longitude != null && responseData.value.latitude != null) ?
+								[[
+									parseFloat((responseData.value.longitude || 0).toFixed(6)),
+									parseFloat((responseData.value.latitude || 0).toFixed(6)),
+									responseData.value.catName || '未知猫咪'
+								]] : [];
+					}
+					
+					// 只有在有有效数据时才清除和重绘地图
+					if (path.value.length > 0) {
+						map1.clearMap();
+						map2.clearMap();
+						mapDraw();
+					} else {
+						uni.showToast({
+							title: '暂无有效的坐标数据',
+							icon: 'none'
+						});
+					}
+				}
+			},
+			complete: () => {
+				isLoading.value = false;
+			}
+		});
 	};
 	
 	onShow(async () => {
-		// 调用全局方法：查询全部小猫信息
-        await getCatInfoDetail()
-        // 添加"全部"选项为第一个选项
-        dataListCat.value = [{
-            text: '全部',
-            value: 'all'
-        }];
-        // 将API返回的数据添加到列表中
-        dataListCat.value.push(...appStore.catList.map(item =>({
-            text: item.catname,
-            value: item.catId
-        })));
-        uni.setStorageSync("catList",appStore.catList); // 同步存储整个猫猫列信息
+		isLoading.value = true;
+		loadingText.value = '正在加载数据...';
 		
+		// 调用全局方法：查询全部小猫信息
+		await getCatInfoDetail()
+		// 添加"全部"选项为第一个选项
+		dataListCat.value = [{
+			text: '全部',
+			value: 'all'
+		}];
+		// 将API返回的数据添加到列表中
+		dataListCat.value.push(...appStore.catList.map(item =>({
+			text: item.catname,
+			value: item.catId
+		})));
+		uni.setStorageSync("catList",appStore.catList); // 同步存储整个猫猫列信息
+		
+		loadingText.value = '正在获取位置信息...';
 		// 调用全局方法：请求全部小猫最新坐标
-        await getCatLocationLatest();
+		await getCatLocationLatest();
 		responseData.value = appStore.catLocations;
-		// console.log(responseData.value);
 		mapDrawMode.value = 'point';
 		// 添加数据验证和空值处理
 		path.value = responseData.value
-            .filter(item => item.longitude != null && item.latitude != null) // 过滤掉无效坐标
-            .map(item => [
-                parseFloat((item.longitude || 0).toFixed(6)), // 添加默认值
-                parseFloat((item.latitude || 0).toFixed(6)),  
-                item.catName || '未知猫咪'  // 添加默认名称
-            ]);
-        // console.log(path.value);
+			.filter(item => item.longitude != null && item.latitude != null) // 过滤掉无效坐标
+			.map(item => [
+				parseFloat((item.longitude || 0).toFixed(6)), // 添加默认值
+				parseFloat((item.latitude || 0).toFixed(6)),  
+				item.catName || '未知猫咪'  // 添加默认名称
+			]);
 		
+		loadingText.value = '正在初始化地图...';
 		// 设置高德地图安密钥
 		window._AMapSecurityConfig = {
 			securityJsCode: "d099747db9129b84ab6ce834d56e9573",
@@ -462,10 +483,9 @@
 		AMapLoader.load({
 			key: "aada17cf2848387456285d0e1b5c74c6", // 申请好的Web端开发者Key，首次调用 load 时必填
 			version: "2.0", // 指定要加载的 JSAPI 的版本，缺省时默认 1.4.15
-			// layers:[AMap.createDefaultLayer(), AMap.ImageLayer()],
 			plugins: ["AMap.Scale","AMap.Geolocation", "AMap.Marker", "AMap.Polyline"], //需要使用的的插件列表，如比例尺'AMap.Scale'，支持添加多个如：['...','...']
 		})
-	    .then((loadedAMap) => {
+		.then((loadedAMap) => {
 			AMap = loadedAMap
 			/* 创建地图实例1 */
 			map1 = new AMap.Map("mymap", {
@@ -486,19 +506,19 @@
 			// 添加地理定位控件
 			map1.addControl(new AMap.Geolocation());
 			// 添加自定义图片叠加层
-            let url = ''
-            if(process.env.NODE_ENV === 'development'){
-                url = "../../static/realmap.jpg"
-            }else{
-                url = `${pic_general_request_url.value}/static_image/realmap.jpg`
-            }
+			let url = ''
+			if(process.env.NODE_ENV === 'development'){
+				url = "../../static/realmap.jpg"
+			}else{
+				url = `${pic_general_request_url.value}/static_image/realmap.jpg`
+			}
 			const imageLayer = new AMap.ImageLayer({
-                url: url,
-			  bounds: new AMap.Bounds(
-				[113.386036, 22.523024], // 左下角坐标  经度：左右（越大越右） 纬：上下（越大越上）
-				[113.396039, 22.532817]  // 右上坐标  
-			  ),
-			  opacity: 1 ,// 设置透明度为0.5，范围是0（完全透明）到1（完全不透明）
+				url: url,
+				bounds: new AMap.Bounds(
+					[113.386036, 22.523024], // 左下角坐标  经度：左右（越大越右） 纬：上下（越大越上）
+					[113.396039, 22.532817]  // 右上坐标  
+				),
+				opacity: 1 ,// 设置透明度为0.5，范围是0（完全透明）到1（完全不透明）
 			});
 			// 将图片图层添加到地图
 			map1.add(imageLayer);
@@ -517,11 +537,17 @@
 			// 添加工具条控件
 			map2.addControl(new AMap.Geolocation());
 			
-			mapDraw() // 绘制地图
+			mapDraw(); // 绘制地图
+			isLoading.value = false; // 加载完成，隐藏加载动画
 		})
-	    .catch((e) => {
-	      console.log(e);
-	    });
+		.catch((e) => {
+			console.log(e);
+			isLoading.value = false;
+			uni.showToast({
+				title: '地图加载失败，请重试',
+				icon: 'none'
+			});
+		});
 	});
 	
 	onMounted(()=>{
@@ -698,7 +724,7 @@
 			navigator.geolocation.getCurrentPosition(
 				// 定位成功
 				(position) => {
-					console.log('浏览器定位成功���', position);
+					console.log('浏览器定位成功', position);
 					baseFormData1.value.longitude = position.coords.longitude;
 					baseFormData1.value.latitude = position.coords.latitude;
 				},
@@ -1047,7 +1073,7 @@
 
 .popup-wrapper {
 	.popup-content {
-		min-height: 60vh;
+		min-height: 65vh;
 		max-height: 85vh;
 		padding: 40rpx;
 		border-radius: 40rpx 40rpx 0 0;
@@ -1260,7 +1286,7 @@
 			align-items: center;
 			gap: 16rpx;
 			width: 100%;
-			margin-top: 20rpx;
+			margin-top: 0rpx;
 		}
 
 		.photo-btn {
@@ -1316,7 +1342,7 @@
 		background: #f8f9fa;
 		border-radius: 16rpx;
 		padding: 20rpx;
-		margin-top: 20rpx;
+		margin-top: 0rpx;
 
 		.result-title {
 			font-size: 28rpx;
@@ -1326,6 +1352,7 @@
 		}
 
 		.result-content {
+            width: 90%;
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
@@ -1416,5 +1443,37 @@
 			}
 		}
 	}
+}
+
+// 添加加载动画样式
+.loading-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(255, 255, 255, 0.9);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 9999;
+}
+
+.loading-content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 20rpx;
+}
+
+.loading-image {
+	width: 200rpx;
+	height: 200rpx;
+}
+
+.loading-text {
+	font-size: 28rpx;
+	color: #666;
+	text-align: center;
 }
 </style>

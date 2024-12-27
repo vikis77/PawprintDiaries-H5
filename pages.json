@@ -9,133 +9,133 @@
 		{
 			"path": "src/pages/Home",
 			"style": {
-				"navigationBarTitleText": "首页",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/CatClaw",
 			"style": {
-				"navigationBarTitleText": "猫爪",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/Map",
 			"style": {
-				"navigationBarTitleText": "地图",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/My",
 			"style": {
-				"navigationBarTitleText": "我的",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/login",
 			"style": {
-				"navigationBarTitleText": "登录",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/register",
 			"style": {
-				"navigationBarTitleText": "注册",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/Post",
 			"style": {
-				"navigationBarTitleText": "帖子详情",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/SendPost",
 			"style": {
-				"navigationBarTitleText": "发布帖子",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/Search",
 			"style": {
-				"navigationBarTitleText": "搜索",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/SearchResultPage",
 			"style": {
-				"navigationBarTitleText": "搜索结果",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/Card",
 			"style": {
-				"navigationBarTitleText": "猫咪档案",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/catEdit",
 			"style": {
-				"navigationBarTitleText": "编辑猫咪信息",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/ModifyCatInfo",
 			"style": {
-				"navigationBarTitleText": "修改猫咪信息",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/CatManage",
 			"style": {
-				"navigationBarTitleText": "猫咪管理",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/UserManage",
 			"style": {
-				"navigationBarTitleText": "用户管理",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/PostReview",
 			"style": {
-				"navigationBarTitleText": "帖子审核",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/About",
 			"style": {
-				"navigationBarTitleText": "关于",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/UserEdit",
 			"style": {
-				"navigationBarTitleText": "编辑资料",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "src/pages/CommentReview",
 			"style": {
-				"navigationBarTitleText": "评论审核",
+				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		}
