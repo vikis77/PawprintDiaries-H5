@@ -207,6 +207,7 @@
 	// 添加加载状态控制
 	const isLoading = ref(true);
 	const loadingText = ref('正在加载地图...');
+	const isFirstLoad = ref(true); // 添加首次加载标记
 
 	// App端地图标记数据
 	const appMarkers = ref([]);
@@ -345,9 +346,6 @@
 	
 	// 联动筛选方法
 	const filterResults = () => {
-		isLoading.value = true;
-		loadingText.value = '正在更新数据...';
-		
 		// 如果没有选择日期且猫咪选择的是all,显示所有猫咪最位置
 		if (!selectedDate.value && (selectedValueC.value === 'all' || selectedValueC.value === '')) {
 			uni.request({
@@ -366,9 +364,6 @@
 						map2.clearMap();
 						mapDraw();
 					}
-				},
-				complete: () => {
-					isLoading.value = false;
 				}
 			});
 			return;
@@ -462,8 +457,8 @@
 	};
 	
 	onShow(async () => {
-		// 只有在第一次加载或需要刷新数据时才显示加载动画
-		if (!imagePath.value) {  // 如果不是从选择图片返回，才显示加载动画
+		// 只有在第一次加载时才显示加载动画
+		if (isFirstLoad.value) {
 			isLoading.value = true;
 			loadingText.value = '正在加载数据...';
 			
@@ -549,10 +544,12 @@
 				
 				mapDraw();
 				isLoading.value = false;
+				isFirstLoad.value = false; // 标记首次加载完成
 			})
 			.catch((e) => {
 				console.log(e);
 				isLoading.value = false;
+				isFirstLoad.value = false; // 即使加载失败也标记为非首次加载
 				uni.showToast({
 					title: '地图加载失败，请重试',
 					icon: 'none'
@@ -563,6 +560,7 @@
 			// #ifdef APP-PLUS
 			initAppMapData();
 			isLoading.value = false;
+			isFirstLoad.value = false; // APP端加载完成后也标记为非首次加载
 			// #endif
 		}
 	});
