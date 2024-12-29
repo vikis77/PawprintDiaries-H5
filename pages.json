@@ -7,133 +7,134 @@
 	},
 	"pages": [
 		{
-			"path": "src/pages/Home",
+			"path": "pages/Home",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom"
+			}
+		}
+        ,
+		{
+			"path": "pages/CatClaw",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/CatClaw",
+			"path": "pages/Map",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/Map",
+			"path": "pages/My",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/My",
+			"path": "pages/login",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/login",
+			"path": "pages/register",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/register",
+			"path": "pages/Post",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/Post",
+			"path": "pages/SendPost",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/SendPost",
+			"path": "pages/Search",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/Search",
+			"path": "pages/SearchResultPage",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/SearchResultPage",
+			"path": "pages/Card",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/Card",
+			"path": "pages/catEdit",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/catEdit",
+			"path": "pages/ModifyCatInfo",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/ModifyCatInfo",
+			"path": "pages/CatManage",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/CatManage",
+			"path": "pages/UserManage",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/UserManage",
+			"path": "pages/PostReview",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/PostReview",
+			"path": "pages/About",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/About",
+			"path": "pages/UserEdit",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "src/pages/UserEdit",
-			"style": {
-				"navigationBarTitleText": "",
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "src/pages/CommentReview",
+			"path": "pages/CommentReview",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom"
@@ -151,27 +152,27 @@
 		"borderStyle": "black",
 		"list": [
 			{
-				"pagePath": "src/pages/Home",
-				"iconPath": "../../static/home.svg",
-				"selectedIconPath": "../../static/home-active.svg",
+				"pagePath": "pages/Home",
+				"iconPath": "../static/home.svg",
+				"selectedIconPath": "../static/home-active.svg",
 				"text": ""
 			},
 			{
-				"pagePath": "src/pages/CatClaw",
-				"iconPath": "../../static/paw.svg",
-				"selectedIconPath": "../../static/paw-active.svg",
+				"pagePath": "pages/CatClaw",
+				"iconPath": "../static/paw.svg",
+				"selectedIconPath": "../static/paw-active.svg",
 				"text": ""
 			},
 			{
-				"pagePath": "src/pages/Map",
-				"iconPath": "../../static/nav001.png",
-				"selectedIconPath": "../../static/nav002.png",
+				"pagePath": "pages/Map",
+				"iconPath": "../static/nav001.png",
+				"selectedIconPath": "../static/nav002.png",
 				"text": ""
 			},
 			{
-				"pagePath": "src/pages/My",
-				"iconPath": "../../static/mine.svg",
-				"selectedIconPath": "../../static/mine-active.svg",
+				"pagePath": "pages/My",
+				"iconPath": "../static/mine.svg",
+				"selectedIconPath": "../static/mine-active.svg",
 				"text": ""
 			}
 		]
@@ -179,5 +180,15 @@
 	"usingComponents": {
 		"qiun-wx-ucharts": "@qiun/wx-ucharts"
 	}
+    // "condition" : { //模式配置，仅开发期间生效
+    //     "current": 0, //当前激活的模式(list 的索引项)
+    //     "list": [
+    //         {
+    //             "name": "", //模式名称
+    //             "path": "pages/Home", //启动页面，必选
+    //             "query": "" //启动参数，在页面的onLoad函数里面得到
+    //         }
+    //     ]
+    // }
 }
 

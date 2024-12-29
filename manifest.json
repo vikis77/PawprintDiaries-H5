@@ -77,6 +77,7 @@
     },
     "vueVersion" : "3",
     "h5" : {
+        "icon": "https://cdn.luckyiur.com/catcat/static_image/webLogo.ico",
         "sdkConfigs" : {
             "maps" : {
                 "amap" : {
