@@ -996,7 +996,7 @@
                                 console.log('删除事件失败')
                                 console.log(res.data)
                                 uni.showToast({
-                                    title: res.data.message || '删除失败',
+                                    title: res.data.msg || '删除失败',
                                     icon: 'none'
                                 });
                             }
@@ -1096,7 +1096,7 @@
                         console.log('添加新事件失败')
                         console.log(res.data)
                         uni.showToast({
-                            title: res.data.message || '添加失败',
+                            title: res.data.msg || '添加失败',
                             icon: 'none'
                         });
                     }

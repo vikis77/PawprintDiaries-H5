@@ -110,7 +110,7 @@ const handleApprove = async (postId) => {
                                 } else {
                                     console.log("审核通过失败：", res)
                                     uni.showToast({
-                                        title: res.data.message || '操作失败',
+                                        title: res.data.msg || '操作失败',
                                         icon: 'none'
                                     });
                                 }
@@ -119,7 +119,7 @@ const handleApprove = async (postId) => {
                     } catch (error) {
                         console.log("审核通过失败：", error)
                         uni.showToast({
-                            title: res.data.message || '操作失败',
+                            title: res.data.msg || '操作失败',
                             icon: 'none'
                         });
                     }
@@ -159,7 +159,7 @@ const handleReject = async (postId) => {
                                 } else {
                                     console.log("审核拒绝失败：", res)
                                     uni.showToast({
-                                        title: res.data.message || '操作失败',
+                                        title: res.data.msg || '操作失败',
                                         icon: 'none'
                                     });
                                 }
@@ -167,7 +167,7 @@ const handleReject = async (postId) => {
                         })
                     } catch (error) {
                         uni.showToast({
-                            title: error.data.message || '操作失败',
+                            title: error.data.msg || '操作失败',
                             icon: 'none'
                         });
                     }

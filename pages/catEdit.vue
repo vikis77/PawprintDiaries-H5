@@ -435,7 +435,7 @@
 						});
 					} catch (error) {
 						uni.showToast({
-							title: `头像上传失败: ${error.message}`,
+							title: `头像上传失败: ${error.msg}`,
 							icon: 'none',
 							duration: 2000
 						});
@@ -465,7 +465,7 @@
 			
 		} catch (error) {
 			uni.showToast({
-				title: `操作失败: ${error.message || '未知错误'}`,
+				title: `操作失败: ${error.msg || '未知错误'}`,
 				icon: 'none',
 				duration: 2000
 			});

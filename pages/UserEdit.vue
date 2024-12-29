@@ -255,7 +255,7 @@ const handleSubmit = async () => {
                 userInfo.avatar = convertedFiles[0].name;
             } catch (error) {
                 uni.showToast({
-                    title: `头像上传失败: ${error.message}`,
+                    title: `头像上传失败: ${error.msg}`,
                     icon: 'none',
                     duration: 2000
                 });
@@ -276,7 +276,7 @@ const handleSubmit = async () => {
     
   } catch (error) {
     uni.showToast({
-      title: error.message || '表单验证失败',
+      title: error.msg || '表单验证失败',
       icon: 'none'
     });
   }

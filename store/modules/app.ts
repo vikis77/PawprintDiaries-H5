@@ -57,6 +57,7 @@ interface CatDataAnalysis {
         '凤翔': number;
         '厚德楼': number;
         '香晖苑': number;
+        '未知': number;
     };
 }
 

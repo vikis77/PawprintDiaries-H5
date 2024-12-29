@@ -271,7 +271,7 @@
 		} catch (error) {
 			console.error('发布过程中发生错误:', error);
 			uni.showToast({
-				title: error.message || '发布失败',
+				title: error.msg || '发布失败',
 				icon: 'error'
 			});
 		}

@@ -547,16 +547,66 @@ onUnmounted(() => {
     clearInterval(timer)
 })
 
-// 获取猫猫数据的方法
+// 添加首次加载标记
+const isFirstLoad = ref(true);
+
+// 修改刷新方法
+const refreshCatList = () => {
+    if (isRefreshing.value) return;
+
+    fetchCatData(); // 获取新的猫猫数据
+
+    isRefreshing.value = true;
+    uni.vibrateShort(); // 添加触感反馈
+
+    // 设置刷新时的固定位置
+    translateX.value = 60;
+
+    // 使用Fisher-Yates洗牌算法随机打乱数组
+    const shuffleArray = (array) => {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    };
+
+    // 创建数组副本并打乱顺序
+    const shuffledList = shuffleArray([...appStore.catList]);
+
+    // 延迟更新列表，让动画有时间播放
+    setTimeout(() => {
+        // 重置位置
+        translateX.value = 0;
+
+        // 更新列表
+        appStore.setCatList(shuffledList);
+
+        // 重置刷新状态
+        setTimeout(() => {
+            isRefreshing.value = false;
+        }, 500);
+    }, 800);
+};
+
+// 修改获取猫猫数据的方法
 async function fetchCatData() {
+    // 只在首次加载时显示加载动画
+    if (isFirstLoad.value) {
+        isRefreshing.value = true;
+    }
+    
     // 调用全局请求小猫方法
-    await getCatInfoDetail()
+    await getCatInfoDetail();
     catList.value = appStore.catList;  // 将API返回的数据赋值给catList
+    
     // 处理猫咪选择列表数据
     catSelectList.value = catList.value.map(cat => ({
         value: cat.catname,
         text: `${cat.catname} - ${cat.gender === 1 ? '公' : '母'} - ${cat.age}个月`
     }));
+    
+    // 更新网格列表数据
     gridList.value = [{
         url: '../static/cat.png',
         data: catList.value.length,
@@ -619,6 +669,14 @@ async function fetchCatData() {
         text: '上月收入',
         text2: '（元）'
     }]
+
+    // 如果是首次加载，重置加载状态和首次加载标记
+    if (isFirstLoad.value) {
+        setTimeout(() => {
+            isRefreshing.value = false;
+            isFirstLoad.value = false;
+        }, 500);
+    }
 }
 
 // 在 script setup 中添加动画相关的代码
@@ -757,7 +815,7 @@ const fetchDataAnalysis = async () => {
     let CakeDataDetail = {
         series: [{
             data: [
-                { "name": "健康", "value": ensureNumber(newData?.healthStatus?.['健康']), "labelText": `健康:${ensureNumber(newData?.healthStatus?.['��康'])}只` },
+                { "name": "健康", "value": ensureNumber(newData?.healthStatus?.['健康']), "labelText": `健康:${ensureNumber(newData?.healthStatus?.['健康'])}只` },
                 { "name": "疾病", "value": ensureNumber(newData?.healthStatus?.['疾病']), "labelText": `疾病:${ensureNumber(newData?.healthStatus?.['疾病'])}只` },
                 { "name": "营养不良", "value": ensureNumber(newData?.healthStatus?.['营养不良']), "labelText": `营养不良:${ensureNumber(newData?.healthStatus?.['营养不良'])}只` },
                 { "name": "肥胖", "value": ensureNumber(newData?.healthStatus?.['肥胖']), "labelText": `肥胖:${ensureNumber(newData?.healthStatus?.['肥胖'])}只` }
@@ -1185,7 +1243,7 @@ const getDetailDescription = (grid) => {
         case '已领养数量':
             return '这是通过我们平台成功找到新家的猫咪数量。每月平均有3-4只猫咪被领养。';
         case '已绝育数量':
-            return '这是已经完成绝育���术的猫咪数量。可以看到绝育数量在稳步增加，这对控制流浪猫数量很有帮助。';
+            return '这是已经完成绝育手术的猫咪数量。可以看到绝育数量在稳步增加，这对控制流浪猫数量很有帮助。';
         case '已打疫苗':
             return '这是已经接种疫苗的猫咪数量。疫苗接种率持续提升，有效预防了传染病的发生。';
         case '健康数量':
@@ -1255,52 +1313,6 @@ const handleTouchEnd = (event) => {
     }
 };
 
-// 修改刷新方法
-const refreshCatList = () => {
-    if (isRefreshing.value) return;
-
-    fetchCatData(); // 获取新的猫猫数据
-
-    isRefreshing.value = true;
-    uni.vibrateShort(); // 添加触感反馈
-
-    // 设置刷新时的固定位置
-    translateX.value = 60;
-
-    // 使用Fisher-Yates洗牌算法随机打乱数组
-    const shuffleArray = (array) => {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    };
-
-    // 创建数组副本并打乱顺序
-    const shuffledList = shuffleArray([...appStore.catList]);
-
-    // 延迟更新列表，让动画有时间播放
-    setTimeout(() => {
-        // 重置位置
-        translateX.value = 0;
-
-        // 更新列表
-        appStore.setCatList(shuffledList);
-
-        // 显示刷新提示
-        // uni.showToast({
-        // 	title: '刷新成功',
-        // 	icon: 'success',
-        // 	duration: 1500
-        // });
-
-        // 重置刷新状态
-        setTimeout(() => {
-            isRefreshing.value = false;
-        }, 500);
-    }, 800);
-};
-
 </script>
 
 <style lang="scss" scoped>
@@ -1317,6 +1329,8 @@ scroll-view ::-webkit-scrollbar {
     .layout {
         width: 100%;
         height: 100%;
+        display: flex; // 确保使用 Flexbox 布局
+        flex-direction: column; // 设置为垂直方向
         background: linear-gradient(to bottom, #e9e9fa, #e6f2ff);
 
         .showCardBox {
@@ -1479,9 +1493,9 @@ scroll-view ::-webkit-scrollbar {
         }
 
         .showStatisticsBox {
-            width: 95%;
-            height: 1750rpx;
-            margin-left: 20rpx;
+            width: 95.5%;
+            height: 1700rpx;
+            margin-left: 21rpx;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -1491,7 +1505,7 @@ scroll-view ::-webkit-scrollbar {
             .th0hzf {
                 width: 100%;
                 height: 750rpx;
-                margin-bottom: 36rpx;
+                margin-bottom: 20rpx;
                 box-shadow: rgba(0, 0, 0, 0.08) 0px 0px 3px 1px;
                 border: 0.666667rpx solid #EBEEF5;
                 .tyh08hz {
