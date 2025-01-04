@@ -16,7 +16,8 @@ if (process.env.NODE_ENV === 'development') {
 } else {
     // H5生产环境
     pic_general_request_url.value = "https://cdn.luckyiur.com/catcat"
-    API_general_request_url.value = "https://pawprintdiaries.luckyiur.com"
+    // API_general_request_url.value = "https://pawprintdiaries.luckyiur.com"
+    API_general_request_url.value = "http://localhost:8080"
     Suffix_1001.value = "-small35"
 }
 // #endif
