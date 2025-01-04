@@ -12,7 +12,7 @@
 				<uni-forms ref="baseForm" :modelValue="catBaseFormData" class="cat-form">
 					<!-- 基本信息 -->
 					<view class="form-section">
-						<view class="section-title">基本信息</view>
+						<view class="section-title">基本信息 提示：仅限管理员编辑保存</view>
 						<uni-forms-item label="猫名" required>
 							<uni-easyinput 
 								v-model="catBaseFormData.catname" 
@@ -173,6 +173,7 @@
 	import { ref, onMounted, nextTick } from 'vue';
 	import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
 	import NavBar1001 from '@/src/components/common/NavBar1001.vue'
+    import { STATUS_CODE } from '@/src/constant/constant.js'
 	
 	const catId = ref(null);
 	const catBaseFormData = ref({
@@ -262,7 +263,7 @@
 						title: res.data.msg || '身份信息过期，请重新登录',
 						icon: 'none'
 					})
-				} else if (res.statusCode === 200 && res.data.code === '2000') {
+				} else if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
 					catBaseFormData.value = res.data.data;
 					console.log(catBaseFormData.value);
 				}else{
@@ -379,12 +380,12 @@
 				},  
 				data: postData
 			});  
-			if (postResponse.statusCode === 200 && postResponse.data.code === '2000') {
+			if (postResponse.statusCode === 200 && postResponse.data.code === STATUS_CODE.SUCCESS) {
 				console.log("持久化完成")  
 			} else {
 				console.log(postResponse.data)
 				uni.showToast({
-					title: postResponse.data || '提交失败',
+					title: postResponse.data.msg || '提交失败',
 					icon: 'none'
 				});
 				return;
@@ -410,7 +411,7 @@
 					}  
 				});  
 				
-				if (response.statusCode == 200 && response.data.code == '2000') {  
+				if (response.statusCode == 200 && response.data.code == STATUS_CODE.SUCCESS) {  
 					const uploadToken = response.data.data.qiniuToken;  
 					try {
 						// 2.3、上传文件到七牛云  

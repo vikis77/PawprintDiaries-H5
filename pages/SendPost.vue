@@ -75,6 +75,7 @@
 <script setup>
 	import { ref, computed } from 'vue';
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+    import { STATUS_CODE } from '@/src/constant/constant.js'
 	import NavBar1001 from '@/src/components/common/NavBar1001.vue'
 
 	const selectedTempFilePaths = ref([]); // 存储已选择的图片的路径
@@ -158,6 +159,90 @@
 	  }
 	}
 	
+	// 异步处理上传逻辑
+	const handleAsyncUpload = async (postData) => {
+		try {
+			// 2. 服务器持久化帖子
+			const names = postData.files.map(file => file.name);
+			const postResponse = await uni.request({
+				url: `${API_general_request_url.value}/api/post/addpost`,
+				method: 'POST',
+				header: {
+					'Authorization': `Bearer ${uni.getStorageSync('token')}`,
+					'Content-Type': 'application/json'
+				},
+				data: {
+					'title': postData.title,
+					'article': postData.article,
+					'pictrueList': names
+				}
+			});
+
+			if (postResponse.statusCode !== 200 || postResponse.data.code !== STATUS_CODE.SUCCESS) {
+				throw new Error('帖子创建失败');
+			}
+
+			// 3. 处理文件名映射
+			const fileNameConvertMap = postResponse.data.data.fileNameConvertMap;
+			const convertedFiles = postData.files.map((file, index) => {
+				const convertedName = Object.values(fileNameConvertMap)[index];
+				return {
+					...file,
+					name: convertedName
+				};
+			});
+
+			// 4. 获取七牛云上传凭证
+			const tokenResponse = await uni.request({
+				url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,
+				method: 'GET',
+				header: {
+					'Authorization': `Bearer ${uni.getStorageSync('token')}`
+				}
+			});
+
+			if (tokenResponse.statusCode !== 200 || tokenResponse.data.code !== STATUS_CODE.SUCCESS) {
+				throw new Error('获取上传凭证失败');
+			}
+
+			const qiniuToken = tokenResponse.data.data.qiniuToken;
+
+			// 5. 上传文件到七牛云
+			const uploadPromises = convertedFiles.map(file => {
+				return new Promise((resolve, reject) => {
+					uni.uploadFile({
+						url: 'https://upload-z2.qiniup.com',
+						filePath: file.path,
+						name: 'file',
+						formData: {
+							token: qiniuToken,
+							key: `catcat/post_pics/${file.name}`
+						},
+						success: (res) => {
+							if (res.statusCode === 200) {
+								resolve(res);
+							} else {
+								reject(new Error('图片上传失败'));
+							}
+						},
+						fail: reject
+					});
+				});
+			});
+
+			await Promise.all(uploadPromises);
+
+			// 6. 上传成功，发送全局通知
+			uni.$emit('postUploadSuccess', {
+				message: '发布成功'
+			});
+
+		} catch (error) {
+			console.error('发布过程中发生错误:', error);
+			throw error;
+		}
+	};
+	
 	// 处理发布逻辑
 	const uploadImages = async () => {
 		// 1. 输入验证
@@ -189,92 +274,31 @@
 			return;
 		}
 
-		try {
-			// 2. 服务器持久化帖子
-			const names = selectedTempFiles.value.map(file => file.name);
-			const postResponse = await uni.request({
-				url: `${API_general_request_url.value}/api/post/addpost`,
-				method: 'POST',
-				header: {
-					'Authorization': `Bearer ${uni.getStorageSync('token')}`,
-					'Content-Type': 'application/json'
-				},
-				data: {
-					'title': uploadTitle.value,
-					'article': uploadArticle.value,
-					'pictrueList': names
-				}
+		// 立即显示发布中的提示
+		uni.showToast({
+			title: '发布中...',
+			icon: 'loading',
+			duration: 1500
+		});
+
+		// 保存当前的表单数据
+		const postData = {
+			title: uploadTitle.value,
+			article: uploadArticle.value,
+			files: [...selectedTempFiles.value]
+		};
+
+		// 立即返回上一页
+		uni.navigateBack();
+
+		// 在后台异步处理上传
+		handleAsyncUpload(postData).catch(error => {
+			console.error('后台上传失败:', error);
+			// 如果上传失败，通过全局事件通知用户
+			uni.$emit('postUploadFailed', {
+				message: '帖子上传失败，请重试'
 			});
-
-			if (postResponse.statusCode !== 200 || postResponse.data.code !== '2000') {
-				throw new Error('帖子创建失败');
-			}
-
-			// 3. 处理文件名映射
-			const fileNameConvertMap = postResponse.data.data.fileNameConvertMap;
-			const convertedFiles = selectedTempFiles.value.map((file, index) => {
-				const convertedName = Object.values(fileNameConvertMap)[index];
-				return {
-					...file,
-					name: convertedName
-				};
-			});
-
-			// 4. 获取七牛云上传凭证
-			const tokenResponse = await uni.request({
-				url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,
-				method: 'GET',
-				header: {
-					'Authorization': `Bearer ${uni.getStorageSync('token')}`
-				}
-			});
-
-			if (tokenResponse.statusCode !== 200 || tokenResponse.data.code !== '2000') {
-				throw new Error('获取上传凭证失败');
-			}
-
-			const qiniuToken = tokenResponse.data.data.qiniuToken;
-
-			// 5. 上传文件到七牛云
-			const uploadPromises = convertedFiles.map(file => {
-                console.log('文件名：', file)
-				return new Promise((resolve, reject) => {
-					uni.uploadFile({
-						url: 'https://upload-z2.qiniup.com',
-						filePath: file.path,
-						name: 'file',
-						formData: {
-							token: qiniuToken,
-							key: `catcat/post_pics/${file.name}`
-						},
-						success: (res) => {
-							if (res.statusCode === 200) {
-								resolve(res);
-							} else {
-								reject(new Error('图片上传失败'));
-							}
-						},
-						fail: reject
-					});
-				});
-			});
-
-			await Promise.all(uploadPromises);
-
-			// 6. 发布成功，返回上一页
-			uni.showToast({
-				title: '发布成功',
-				icon: 'success'
-			});
-			uni.navigateBack();
-
-		} catch (error) {
-			console.error('发布过程中发生错误:', error);
-			uni.showToast({
-				title: error.msg || '发布失败',
-				icon: 'error'
-			});
-		}
+		});
 	};
 	
 	// 返回事件

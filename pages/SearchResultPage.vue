@@ -108,6 +108,7 @@
 	import { ref, onMounted } from 'vue';
 	import { onLoad } from '@dcloudio/uni-app';
 	import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+    import { STATUS_CODE } from '@/src/constant/constant.js'
     import { useAppStore } from '@/store/modules/app'
     const appStore = useAppStore()
 	
@@ -191,7 +192,7 @@
 				'Authorization': `Bearer ${token}`
 			},
 			success: (res) => {
-				if (res.statusCode === 200 && res.data.code === '2000') {
+				if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
 					// 存储搜索结果
 					uni.setStorageSync('searchResultData', res.data.data);
 					

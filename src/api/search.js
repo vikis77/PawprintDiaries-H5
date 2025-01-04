@@ -2,6 +2,7 @@ import { useAppStore } from '@/store/modules/app'
 import { storeToRefs } from 'pinia'
 import axios from 'axios'
 import { API_general_request_url } from '@/src/config/index.js'
+import { STATUS_CODE } from '@/src/constant/constant.js'
 
 // 全局搜索功能
 export const globalSearch = async (searchWords) => {
@@ -14,7 +15,7 @@ export const globalSearch = async (searchWords) => {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.statusCode === 200 && res.data.code === '2000') {
+                if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                     appStore.setSearchResultData(res.data.data);
                     console.log("搜索结果存储到appStore成功")
                     console.log(res.data.data)

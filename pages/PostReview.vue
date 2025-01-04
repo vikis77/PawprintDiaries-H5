@@ -71,6 +71,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+import { STATUS_CODE } from '@/src/constant/constant.js'
 import NavBar1001 from '@/src/components/common/NavBar1001.vue';
 
 const appStore = useAppStore()
@@ -100,7 +101,7 @@ const handleApprove = async (postId) => {
                                 "postId": postId
                             },
                             success: (res) => {
-                                if (res.statusCode === 200 && res.data.code === "2000") {
+                                if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                                     console.log("审核通过：", res)
                                     uni.showToast({
                                         title: '审核通过',
@@ -149,7 +150,7 @@ const handleReject = async (postId) => {
                                 "postId": postId
                             },
                             success: (res) => {
-                                if (res.statusCode === 200 && res.data.code === "2000") {
+                                if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                                     console.log("审核拒绝成功：", res)
                                     uni.showToast({
                                         title: '已拒绝',

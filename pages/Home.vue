@@ -208,6 +208,9 @@
         const debug = uni.getSystemInfoSync()
         console.log('系统信息：', debug)
         // #endif
+
+        // 调用全局方法：获取猫猫数据
+        getPosts(undefined, undefined, false, true);
         
 		// 使用 `uni.createSelectorQuery` 获取 scroll-view 的实际高度
 		const query = uni.createSelectorQuery().in(this);

@@ -43,7 +43,7 @@
 <script setup>
 	import { ref } from 'vue';
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
-
+	import { STATUS_CODE } from '@/src/constant/constant.js'
 	
 	const username = ref('');
 	const email = ref('');
@@ -88,7 +88,7 @@
 	    },
 	    success: (res) => {
 			console.log(res)
-	      if (res.statusCode === 200 && res.data.code === "2000") {
+	      if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
 	        uni.showToast({
 	          title: '注册成功',
 	          icon: 'success'

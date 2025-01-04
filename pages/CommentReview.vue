@@ -120,11 +120,11 @@ const loadComments = async () => {
         loadMoreStatus.value = hasMore.value ? 'more' : 'noMore'
         
     } catch (error) {
-        console.error("加载评论数据失败：", error)
-        uni.showToast({
-            title: '加载失败',
-            icon: 'none'
-        })
+        // console.error("加载评论数据失败：", error)
+        // uni.showToast({
+        //     title: '加载失败',
+        //     icon: 'none'
+        // })
         loadMoreStatus.value = 'more'
     } finally {
         isRefreshing.value = false
@@ -186,7 +186,7 @@ const onRefresh = async () => {
 
 // 使用 onMounted 钩子在组件挂载后加载数据
 onMounted(() => {
-    loadComments()
+    // loadComments()
 })
 
 // 使用 onShow 钩子在每次页面显示时加载数据

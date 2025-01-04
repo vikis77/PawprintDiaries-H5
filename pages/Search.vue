@@ -67,6 +67,7 @@
 <script setup>
 	import { ref } from 'vue';
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
+	import { STATUS_CODE } from '@/src/constant/constant.js'
 	import { showToast } from '@/src/utils/toast'
     import { useAppStore } from '@/store/modules/app'
     const appStore = useAppStore()
@@ -98,20 +99,6 @@
 			];
 			hotSearchList.value = mockData;
 		}, 500);
-		
-		// 真实接口示例（后续替换）
-		/* uni.request({
-			url: `${API_general_request_url.value}/api/search/hot`,
-			method: 'GET',
-			success: (res) => {
-				if (res.statusCode === 200 && res.data.code === '2000') {
-					hotSearchList.value = res.data.data;
-				}
-			},
-			fail: (error) => {
-				console.error('获取热门搜索失败:', error);
-			}
-		}); */
 	}
 	
 	// 获取历史记录
@@ -211,7 +198,7 @@
 				'Authorization': `Bearer ${uni.getStorageSync('token')}`
 			},
 			success: (res) => {
-				if (res.statusCode === 200 && res.data.code === '2000') {
+				if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
 					// uni.setStorageSync('searchResultData', res.data.data);
                     appStore.setSearchResultData(res.data.data);
 					uni.redirectTo({

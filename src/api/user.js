@@ -2,6 +2,7 @@ import { useAppStore } from '@/store/modules/app'
 import { storeToRefs } from 'pinia'
 import axios from 'axios'
 import { API_general_request_url } from '@/src/config/index.js'
+import { STATUS_CODE } from '@/src/constant/constant.js'
 
 // 请求用户个人资料
 export const getUserProfile = async (params) => {
@@ -16,7 +17,7 @@ export const getUserProfile = async (params) => {
             }
         })
 
-        if (res.statusCode === 200 && res.data.code === '2000') {
+        if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
             console.log("打印user:")
             console.log(res.data.data)
             await appStore.setUserInfo(res.data.data)

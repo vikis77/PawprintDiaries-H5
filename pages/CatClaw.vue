@@ -248,22 +248,86 @@
                         <uni-icons type="closeempty" size="24" color="#666" @click="closeGridDetail"></uni-icons>
                     </view>
                     <view class="popup-content">
-                        <!-- <view class="detail-icon"> -->
-                        <!-- <image :src="selectedGrid.url" mode="aspectFit"></image> -->
-                        <!-- </view> -->
                         <view class="detail-info">
                             <view class="detail-number">
-                                <text class="number">{{ selectedGrid.data }}</text>
-                                <text class="unit">{{ selectedGrid.text2 }}</text>
+                                <view class="number-unit-container">
+                                    <text class="number">{{ selectedGrid.data }}</text>
+                                    <text class="unit">{{ selectedGrid.text2 }}</text>
+                                </view>
+                                <button v-if="selectedGrid.showManageBtn" class="manage-btn" @click="handleManageFund(selectedGrid.fundType)">本月记录</button>
                             </view>
                             <view class="detail-description">
                                 <text>{{ getDetailDescription(selectedGrid) }}</text>
                             </view>
                         </view>
                         <view class="detail-chart" v-if="selectedGrid.chartData">
-                            <qiun-data-charts type="line" :opts="selectedGrid.chartOpts"
-                                :chartData="selectedGrid.chartData" />
+                            <qiun-data-charts type="line" :opts="selectedGrid.chartOpts" :chartData="selectedGrid.chartData" />
                         </view>
+                    </view>
+                </view>
+            </uni-popup>
+
+            <!-- 添加资金记录弹窗 -->
+            <uni-popup ref="fundRecordsPopup" type="center">
+                <view class="fund-records-popup">
+                    <view class="popup-header">
+                        <text class="title">{{ currentFundType === 'fund' ? '资金记录' : currentFundType === 'expense' ? '支出记录' : '收入记录' }}</text>
+                        <view class="header-actions">
+                            <button class="add-btn" @click="showAddFundForm" v-if="isAdmin">添加记录（管理员）</button>
+                            <uni-icons type="closeempty" size="24" @click="closeFundRecords"></uni-icons>
+                        </view>
+                    </view>
+                    <scroll-view scroll-y="true" class="fund-content">
+                        <view class="fund-list">
+                            <view class="fund-item" v-for="(record, index) in fundRecords" :key="index">
+                                <view class="fund-dot"></view>
+                                <view class="fund-card">
+                                    <view class="record-header">
+                                        <text class="record-time">{{record.date}}</text>
+                                        <view class="record-actions" v-if="isAdmin">
+                                            <uni-icons type="compose" size="20" color="#666" @click="editFundRecord(index)"></uni-icons>
+                                            <uni-icons type="trash" size="20" color="#666" @click="deleteFundRecord(index)"></uni-icons>
+                                        </view>
+                                    </view>
+                                    <text class="record-amount">{{ record.type === 'expense' ? '-' : '+' }}￥{{record.amount}}</text>
+                                    <text class="record-desc">{{record.description}}</text>
+                                </view>
+                            </view>
+                        </view>
+                    </scroll-view>
+                </view>
+            </uni-popup>
+
+            <!-- 添加/编辑资金记录表单弹窗 -->
+            <uni-popup ref="fundFormPopup" type="center">
+                <view class="fund-form">
+                    <view class="form-header">
+                        <text class="title">{{isEditingFund ? '编辑记录（管理员）' : '添加记录（管理员）'}}</text>
+                        <uni-icons type="closeempty" size="24" @click="closeFundForm"></uni-icons>
+                    </view>
+                    <view class="form-content">
+                        <uni-forms :model="fundForm">
+                            <uni-forms-item label="日期" required>
+                                <uni-datetime-picker v-model="fundForm.date" type="date" />
+                            </uni-forms-item>
+                            <uni-forms-item label="金额" required>
+                                <uni-easyinput v-model="fundForm.amount" type="number" placeholder="请输入金额" />
+                            </uni-forms-item>
+                            <uni-forms-item label="类型" required>
+                                <uni-data-select
+                                    v-model="fundForm.type"
+                                    :localdata="fundTypeOptions"
+                                    :disabled="currentFundType === 'expense' || currentFundType === 'income'"
+                                />
+                            </uni-forms-item>
+                            <uni-forms-item label="描述" required>
+                                <uni-easyinput v-model="fundForm.description" type="textarea" placeholder="请输入描述" />
+                            </uni-forms-item>
+                        </uni-forms>
+                    </view>
+                    <view class="form-footer">
+                        <button class="cancel-btn" @click="closeFundForm">取消</button>
+                        <button class="submit-btn" @click="submitFundRecord">确定</button>
                     </view>
                 </view>
             </uni-popup>
@@ -519,13 +583,17 @@ function getNowTimeDate() {
 
 let timer = null
 
-// 首次页面加载时开始更新时间
+// 首次页面加载时开始更新时间（只有首次加载时会调用）
 onMounted(() => {
+    console.log("onMounted")
     timer = getNowTimeDate()
+    // fetchCatData(); // 获取猫猫数据（里面会调用全局方法）
+    // fetchDataAnalysis(); // 获取数据分析数据（里面会调用全局方法）
 })
 
-// 每次页面加载时
+// 每次页面加载时（包括首次加载）
 onShow(() => {
+    console.log("onShow")
     // 确保每次显示页面时分段器都在推荐状态
     currentArea.value = 0;
 
@@ -537,9 +605,9 @@ onShow(() => {
     }
 
     // 其他情况，获取猫猫数据
-    console.log('不是从Card页面返回，获取猫猫数据');
-    fetchCatData(); // 获取猫猫数据（全局方法）
-    fetchDataAnalysis(); // 获取数据分析数据
+    console.log('不是从Card页面返回，获取新的猫猫数据');
+    fetchCatData(); // 获取猫猫数据（里面会调用全局方法）
+    fetchDataAnalysis(); // 获取数据分析数据（里面会调用全局方法）
 })
 
 // 页面卸载时清除定时器
@@ -590,92 +658,101 @@ const refreshCatList = () => {
 };
 
 // 修改获取猫猫数据的方法
-async function fetchCatData() {
+const fetchCatData = async () => {
     // 只在首次加载时显示加载动画
     if (isFirstLoad.value) {
         isRefreshing.value = true;
     }
     
-    // 调用全局请求小猫方法
-    await getCatInfoDetail();
-    catList.value = appStore.catList;  // 将API返回的数据赋值给catList
-    
-    // 处理猫咪选择列表数据
-    catSelectList.value = catList.value.map(cat => ({
-        value: cat.catname,
-        text: `${cat.catname} - ${cat.gender === 1 ? '公' : '母'} - ${cat.age}个月`
-    }));
-    
-    // 更新网格列表数据
-    gridList.value = [{
-        url: '../static/cat.png',
-        data: catList.value.length,
-        text: '在校小猫数量',
-        text2: '（只）',
-        badge: '0',
-        type: "primary"
-    },
-    {
-        url: '/static/adopt.png',
-        text: '已领养数量',
-        data: appStore.catDataAnalysisData.adoptionCount || 0,
-        text2: '（只）',
-        badge: '1',
-        type: "success"
-    },
-    {
-        url: '/static/default-avatar-1.png',
-        text: '已绝育数量',
-        data: catDataAnalysisData.value.sterilizationRatio['已绝育'] || 0,
-        text2: '（只）',
-        badge: '99',
-        type: "warning"
-    },
-    {
-        url: '/static/syringe.png',
-        text: '已打疫苗',
-        data: catDataAnalysisData.value.vaccinationRatio['已接种'] || 0,
-        text2: '（只）',
-        badge: '2',
-        type: "error"
-    },
-    {
-        url: '/static/left1-copy.png',
-        text: '健康数量',
-        data: catDataAnalysisData.value.healthStatus['健康'] || 0,
-        text2: '（只）'
-    },
-    {
-        url: '/static/bell.png',
-        text: '本月新增',
-        data: catDataAnalysisData.value.monthlyNewCount || 0,
-        text2: '（只）'
-    },
-    {
-        url: '../static/fund.png',
-        data: catDataAnalysisData.value.fundBalance || 0,
-        text: '救助资金剩余',
-        text2: '（元）'
-    },
-    {
-        url: '../static/expense.png',
-        data: catDataAnalysisData.value.lastMonthExpense || 0,
-        text: '上月支出',
-        text2: '（元）'
-    },
-    {
-        url: '../static/income.png',
-        data: catDataAnalysisData.value.lastMonthIncome || 0,
-        text: '上月收入',
-        text2: '（元）'
-    }]
-
-    // 如果是首次加载，重置加载状态和首次加载标记
-    if (isFirstLoad.value) {
-        setTimeout(() => {
-            isRefreshing.value = false;
-            isFirstLoad.value = false;
-        }, 500);
+    try {
+        // 调用API获取数据
+        await getCatInfoDetail();
+        // 从appStore获取数据
+        catList.value = appStore.catList;
+        
+        // 处理猫咪选择列表数据
+        catSelectList.value = catList.value.map(cat => ({
+            value: cat.catname,
+            text: `${cat.catname} - ${cat.gender === 1 ? '公' : '母'} - ${cat.age}个月`
+        }));
+        
+        // 更新网格列表数据
+        gridList.value = [{
+            url: '../static/cat.png',
+            data: catList.value.length,
+            text: '在校小猫数量',
+            text2: '（只）',
+            badge: '0',
+            type: "primary"
+        },
+        {
+            url: '/static/adopt.png',
+            text: '已领养数量',
+            data: appStore.catDataAnalysisData.adoptionCount || 0,
+            text2: '（只）',
+            badge: '1',
+            type: "success"
+        },
+        {
+            url: '/static/default-avatar-1.png',
+            text: '已绝育数量',
+            data: catDataAnalysisData.value.sterilizationRatio['已绝育'] || 0,
+            text2: '（只）',
+            badge: '99',
+            type: "warning"
+        },
+        {
+            url: '/static/syringe.png',
+            text: '已打疫苗',
+            data: catDataAnalysisData.value.vaccinationRatio['已接种'] || 0,
+            text2: '（只）',
+            badge: '2',
+            type: "error"
+        },
+        {
+            url: '/static/left1-copy.png',
+            text: '健康数量',
+            data: catDataAnalysisData.value.healthStatus['健康'] || 0,
+            text2: '（只）'
+        },
+        {
+            url: '/static/bell.png',
+            text: '本月新增',
+            data: catDataAnalysisData.value.monthlyNewCount || 0,
+            text2: '（只）'
+        },
+        {
+            url: '../static/fund.png',
+            data: catDataAnalysisData.value.fundBalance || 0,
+            text: '救助资金剩余',
+            text2: '（元）'
+        },
+        {
+            url: '../static/expense.png',
+            data: catDataAnalysisData.value.lastMonthExpense || 0,
+            text: '资金支出',
+            text2: '（元）'
+        },
+        {
+            url: '../static/income.png',
+            data: catDataAnalysisData.value.lastMonthIncome || 0,
+            text: '资金收入',
+            text2: '（元）'
+        }];
+    } catch (error) {
+        console.error('获取猫猫数据失败:', error);
+        uni.showToast({
+            title: '获取猫猫数据失败',
+            icon: 'none'
+        });
+    } finally {
+        // 如果是首次加载，重置加载状态和首次加载标记
+        if (isFirstLoad.value) {
+            setTimeout(() => {
+                isRefreshing.value = false;
+                isFirstLoad.value = false;
+            }, 500);
+        }
     }
 }
 
@@ -717,153 +794,164 @@ const ensureNumber = (value) => {
 
 // 获取猫爪页面数据分析数据
 const fetchDataAnalysis = async () => {
-    const newData = appStore.catDataAnalysisData;
-    // 为每个统计数据添加动画效果
-    gridList.value.forEach((item, index) => {
-        let targetValue = 0;
-        switch (index) {
-            case 0:
-                targetValue = ensureNumber(catList.value?.length);
-                break;
-            case 1:
-                targetValue = ensureNumber(newData?.adoptionCount);
-                break;
-            case 2:
-                targetValue = ensureNumber(newData?.sterilizationRatio?.['已绝育']);
-                break;
-            case 3:
-                targetValue = ensureNumber(newData?.vaccinationRatio?.['已接种']);
-                break;
-            case 4:
-                targetValue = ensureNumber(newData?.healthStatus?.['健康']);
-                break;
-            case 5:
-                targetValue = ensureNumber(newData?.monthlyNewCount);
-                break;
-            case 6:
-                targetValue = ensureNumber(newData?.fundBalance);
-                break;
-            case 7:
-                targetValue = ensureNumber(newData?.lastMonthExpense);
-                break;
-            case 8:
-                targetValue = ensureNumber(newData?.lastMonthIncome);
-                break;
-        }
-        // 执行动画，从0到目标值
-        animateValue(0, targetValue, 1000, (value) => {
-            gridList.value[index].data = Math.floor(value);
-        });
-    });
-
-    // 更新其他图表数据
-    catDataAnalysisData.value = {
-        adoptionCount: ensureNumber(newData?.adoptionCount),
-        sterilizationRatio: {
-            '已绝育': ensureNumber(newData?.sterilizationRatio?.['已绝育']),
-            '未绝育': ensureNumber(newData?.sterilizationRatio?.['未绝育'])
-        },
-        vaccinationRatio: {
-            '已接种': ensureNumber(newData?.vaccinationRatio?.['已接种']),
-            '未接种': ensureNumber(newData?.vaccinationRatio?.['未接种'])
-        },
-        healthStatus: {
-            '健康': ensureNumber(newData?.healthStatus?.['健康']),
-            '疾病': ensureNumber(newData?.healthStatus?.['疾病']),
-            '营养不良': ensureNumber(newData?.healthStatus?.['营养不良']),
-            '肥胖': ensureNumber(newData?.healthStatus?.['肥胖'])
-        },
-        monthlyNewCount: ensureNumber(newData?.monthlyNewCount),
-        fundBalance: ensureNumber(newData?.fundBalance),
-        lastMonthExpense: ensureNumber(newData?.lastMonthExpense),
-        lastMonthIncome: ensureNumber(newData?.lastMonthIncome),
-        ageDistribution: {
-            "3个月以内": ensureNumber(newData?.ageDistribution?.["3个月以内"]),
-            "3-6个月": ensureNumber(newData?.ageDistribution?.["3-6个月"]),
-            "6-12个月": ensureNumber(newData?.ageDistribution?.["6-12个月"]),
-            "12-18个月": ensureNumber(newData?.ageDistribution?.["12-18个月"]),
-            "18-24个月": ensureNumber(newData?.ageDistribution?.["18-24个月"]),
-            "24个月以上": ensureNumber(newData?.ageDistribution?.["24个月以上"])
-        },
-        areaDistribution: {
-            '北门': ensureNumber(newData?.areaDistribution?.['北门']),
-            '岐头': ensureNumber(newData?.areaDistribution?.['岐头']),
-            '凤翔': ensureNumber(newData?.areaDistribution?.['凤翔']),
-            '厚德楼': ensureNumber(newData?.areaDistribution?.['厚德楼']),
-            '香晖苑': ensureNumber(newData?.areaDistribution?.['香晖苑'])
-        }
-    };
-
-    // 更新年龄分布数据
-    let tripDiagramDataDetail = {
-        categories: ["3个月以内", "3-6个月", "6-12个月", "12-18个月", "18-24个月", "24个月以上"],
-        series: [{
-            name: "校内小猫年龄分布",
-            data: [
-                ensureNumber(newData?.ageDistribution?.["3个月以内"]),
-                ensureNumber(newData?.ageDistribution?.["3-6个月"]),
-                ensureNumber(newData?.ageDistribution?.["6-12个月"]),
-                ensureNumber(newData?.ageDistribution?.["12-18个月"]),
-                ensureNumber(newData?.ageDistribution?.["18-24个月"]),
-                ensureNumber(newData?.ageDistribution?.["24个月以上"])
-            ]
-        }]
-    };
-    StripDiagramData.value = JSON.parse(JSON.stringify(tripDiagramDataDetail));
-
-    // 更新健康状态数据
-    let CakeDataDetail = {
-        series: [{
-            data: [
-                { "name": "健康", "value": ensureNumber(newData?.healthStatus?.['健康']), "labelText": `健康:${ensureNumber(newData?.healthStatus?.['健康'])}只` },
-                { "name": "疾病", "value": ensureNumber(newData?.healthStatus?.['疾病']), "labelText": `疾病:${ensureNumber(newData?.healthStatus?.['疾病'])}只` },
-                { "name": "营养不良", "value": ensureNumber(newData?.healthStatus?.['营养不良']), "labelText": `营养不良:${ensureNumber(newData?.healthStatus?.['营养不良'])}只` },
-                { "name": "肥胖", "value": ensureNumber(newData?.healthStatus?.['肥胖']), "labelText": `肥胖:${ensureNumber(newData?.healthStatus?.['肥胖'])}只` }
-            ]
-        }]
-    };
-    CakeData.value = JSON.parse(JSON.stringify(CakeDataDetail));
-
-    // 更新区域分布数据
-    let PeakMapDataDetail = {
-        series: [{
-            data: [
-                { "name": "北门", "value": ensureNumber(newData?.areaDistribution?.['北门']) },
-                { "name": "岐头", "value": ensureNumber(newData?.areaDistribution?.['岐头']) },
-                { "name": "凤翔", "value": ensureNumber(newData?.areaDistribution?.['凤翔']) },
-                { "name": "厚德楼", "value": ensureNumber(newData?.areaDistribution?.['厚德楼']) },
-                { "name": "香晖苑", "value": ensureNumber(newData?.areaDistribution?.['香晖苑']) }
-            ]
-        }]
-    };
-    PeakMapData.value = JSON.parse(JSON.stringify(PeakMapDataDetail));
-
-    // 更新其他数据图表
-    let chartsDataDetail = {
-        categories: ["性别", "", "是否绝育", "", "是否打疫苗", ""],
-        series: [
-            {
-                name: "公猫/已绝育/已打疫苗",
-                data: [
-                    ensureNumber(newData?.genderRatio?.['公猫']), ,
-                    ensureNumber(newData?.sterilizationRatio?.['已绝育']), ,
-                    ensureNumber(newData?.vaccinationRatio?.['已接种']),
-                ]
+    try {
+        // 调用API获取数据
+        await getCatAnalyseData();
+        // 从appStore获取数据
+        const newData = appStore.catDataAnalysisData;
+        
+        // 更新其他图表数据
+        catDataAnalysisData.value = {
+            adoptionCount: ensureNumber(newData?.adoptionCount),
+            sterilizationRatio: {
+                '已绝育': ensureNumber(newData?.sterilizationRatio?.['已绝育']),
+                '未绝育': ensureNumber(newData?.sterilizationRatio?.['未绝育'])
             },
-            {
-                name: "雌性/未绝育/未打疫苗",
-                data: [
-                    ensureNumber(newData?.genderRatio?.['母猫']), ,
-                    ensureNumber(newData?.sterilizationRatio?.['未绝育']), ,
-                    ensureNumber(newData?.vaccinationRatio?.['未接种']),
-                ]
+            vaccinationRatio: {
+                '已接种': ensureNumber(newData?.vaccinationRatio?.['已接种']),
+                '未接种': ensureNumber(newData?.vaccinationRatio?.['未接种'])
+            },
+            healthStatus: {
+                '健康': ensureNumber(newData?.healthStatus?.['健康']),
+                '疾病': ensureNumber(newData?.healthStatus?.['疾病']),
+                '营养不良': ensureNumber(newData?.healthStatus?.['营养不良']),
+                '肥胖': ensureNumber(newData?.healthStatus?.['肥胖'])
+            },
+            monthlyNewCount: ensureNumber(newData?.monthlyNewCount),
+            fundBalance: ensureNumber(newData?.fundBalance),
+            lastMonthExpense: ensureNumber(newData?.lastMonthExpense),
+            lastMonthIncome: ensureNumber(newData?.lastMonthIncome),
+            ageDistribution: {
+                "3个月以内": ensureNumber(newData?.ageDistribution?.["3个月以内"]),
+                "3-6个月": ensureNumber(newData?.ageDistribution?.["3-6个月"]),
+                "6-12个月": ensureNumber(newData?.ageDistribution?.["6-12个月"]),
+                "12-18个月": ensureNumber(newData?.ageDistribution?.["12-18个月"]),
+                "18-24个月": ensureNumber(newData?.ageDistribution?.["18-24个月"]),
+                "24个月以上": ensureNumber(newData?.ageDistribution?.["24个月以上"])
+            },
+            areaDistribution: {
+                '北门': ensureNumber(newData?.areaDistribution?.['北门']),
+                '岐头': ensureNumber(newData?.areaDistribution?.['岐头']),
+                '凤翔': ensureNumber(newData?.areaDistribution?.['凤翔']),
+                '厚德楼': ensureNumber(newData?.areaDistribution?.['厚德楼']),
+                '香晖苑': ensureNumber(newData?.areaDistribution?.['香晖苑'])
             }
-        ]
-    };
-    chartData.value = JSON.parse(JSON.stringify(chartsDataDetail));
+        };
+
+        // 为每个统计数据添加动画效果
+        gridList.value.forEach((item, index) => {
+            let targetValue = 0;
+            switch (index) {
+                case 0:
+                    targetValue = ensureNumber(catList.value?.length);
+                    break;
+                case 1:
+                    targetValue = ensureNumber(newData?.adoptionCount);
+                    break;
+                case 2:
+                    targetValue = ensureNumber(newData?.sterilizationRatio?.['已绝育']);
+                    break;
+                case 3:
+                    targetValue = ensureNumber(newData?.vaccinationRatio?.['已接种']);
+                    break;
+                case 4:
+                    targetValue = ensureNumber(newData?.healthStatus?.['健康']);
+                    break;
+                case 5:
+                    targetValue = ensureNumber(newData?.monthlyNewCount);
+                    break;
+                case 6:
+                    targetValue = ensureNumber(newData?.fundBalance);
+                    break;
+                case 7:
+                    targetValue = ensureNumber(newData?.lastMonthExpense);
+                    break;
+                case 8:
+                    targetValue = ensureNumber(newData?.lastMonthIncome);
+                    break;
+            }
+            // 执行动画，从0到目标值
+            animateValue(0, targetValue, 1000, (value) => {
+                gridList.value[index].data = Math.floor(value);
+            });
+        });
+
+        // 更新年龄分布数据
+        let tripDiagramDataDetail = {
+            categories: ["3个月以内", "3-6个月", "6-12个月", "12-18个月", "18-24个月", "24个月以上"],
+            series: [{
+                name: "校内小猫年龄分布",
+                data: [
+                    ensureNumber(newData?.ageDistribution?.["3个月以内"]),
+                    ensureNumber(newData?.ageDistribution?.["3-6个月"]),
+                    ensureNumber(newData?.ageDistribution?.["6-12个月"]),
+                    ensureNumber(newData?.ageDistribution?.["12-18个月"]),
+                    ensureNumber(newData?.ageDistribution?.["18-24个月"]),
+                    ensureNumber(newData?.ageDistribution?.["24个月以上"])
+                ]
+            }]
+        };
+        StripDiagramData.value = JSON.parse(JSON.stringify(tripDiagramDataDetail));
+
+        // 更新健康状态数据
+        let CakeDataDetail = {
+            series: [{
+                data: [
+                    { "name": "健康", "value": ensureNumber(newData?.healthStatus?.['健康']), "labelText": `健康:${ensureNumber(newData?.healthStatus?.['健康'])}只` },
+                    { "name": "疾病", "value": ensureNumber(newData?.healthStatus?.['疾病']), "labelText": `疾病:${ensureNumber(newData?.healthStatus?.['疾病'])}只` },
+                    { "name": "营养不良", "value": ensureNumber(newData?.healthStatus?.['营养不良']), "labelText": `营养不良:${ensureNumber(newData?.healthStatus?.['营养不良'])}只` },
+                    { "name": "肥胖", "value": ensureNumber(newData?.healthStatus?.['肥胖']), "labelText": `肥胖:${ensureNumber(newData?.healthStatus?.['肥胖'])}只` }
+                ]
+            }]
+        };
+        CakeData.value = JSON.parse(JSON.stringify(CakeDataDetail));
+
+        // 更新区域分布数据
+        let PeakMapDataDetail = {
+            series: [{
+                data: [
+                    { "name": "北门", "value": ensureNumber(newData?.areaDistribution?.['北门']) },
+                    { "name": "岐头", "value": ensureNumber(newData?.areaDistribution?.['岐头']) },
+                    { "name": "凤翔", "value": ensureNumber(newData?.areaDistribution?.['凤翔']) },
+                    { "name": "厚德楼", "value": ensureNumber(newData?.areaDistribution?.['厚德楼']) },
+                    { "name": "香晖苑", "value": ensureNumber(newData?.areaDistribution?.['香晖苑']) }
+                ]
+            }]
+        };
+        PeakMapData.value = JSON.parse(JSON.stringify(PeakMapDataDetail));
+
+        // 更新其他数据图表
+        let chartsDataDetail = {
+            categories: ["性别", "", "是否绝育", "", "是否打疫苗", ""],
+            series: [
+                {
+                    name: "公猫/已绝育/已打疫苗",
+                    data: [
+                        ensureNumber(newData?.genderRatio?.['公猫']), ,
+                        ensureNumber(newData?.sterilizationRatio?.['已绝育']), ,
+                        ensureNumber(newData?.vaccinationRatio?.['已接种']),
+                    ]
+                },
+                {
+                    name: "雌性/未绝育/未打疫苗",
+                    data: [
+                        ensureNumber(newData?.genderRatio?.['母猫']), ,
+                        ensureNumber(newData?.sterilizationRatio?.['未绝育']), ,
+                        ensureNumber(newData?.vaccinationRatio?.['未接种']),
+                    ]
+                }
+            ]
+        };
+        chartData.value = JSON.parse(JSON.stringify(chartsDataDetail));
+
+    } catch (error) {
+        console.error('获取数据分析失败:', error);
+        uni.showToast({
+            title: '获取数据分析失败',
+            icon: 'none'
+        });
+    }
 }
-
-
 
 // 点击卡片时跳转，传递catId给卡片页面
 function handleClickCard(catId) {
@@ -1043,122 +1131,31 @@ const activeGridIndex = ref(-1);
 // 显示格子详情
 const showGridDetail = (item) => {
     selectedGrid.value = item;
+    // 获取数据的最大值和最小值
+    const getAxisConfig = (data) => {
+        const max = Math.max(...data);
+        const min = Math.min(...data);
+        const range = max - min;
+        // 根据数据范围设置合适的分割数
+        const splitNumber = range <= 4 ? range : 5;
+        return {
+            gridType: "dash",
+            dashLength: 2,
+            min: 0,  // 固定最小值为0
+            max: max + 1,  // 最大值加1，留出空间
+            splitNumber: splitNumber  // 设置分割数
+        };
+    };
+
     // 根据不同类型添加趋势数据
     switch (item.text) {
-        case '在校小猫数量':
-            selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
-                series: [{
-                    name: "校内小猫总数量",
-                    data: [25, 28, 25, 17, 24, catList.value.length]
-                }]
-            };
-            selectedGrid.value.chartOpts = {
-                color: ["#1890FF"],
-                padding: [15, 10, 0, 15],
-                enableScroll: false,
-                legend: {},
-                xAxis: { disableGrid: true },
-                yAxis: { gridType: "dash", dashLength: 2 },
-                extra: {
-                    line: {
-                        type: "straight",
-                        width: 2,
-                        activeType: "hollow"
-                    }
-                }
-            };
-            break;
-        case '已领养数量':
-            selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
-                series: [{
-                    name: "每月领养数量",
-                    data: [2, 1, 3, 2, 2, appStore.catDataAnalysisData.adoptionCount || 0]
-                }]
-            };
-            selectedGrid.value.chartOpts = {
-                color: ["#91CB74"],
-                padding: [15, 10, 0, 15],
-                enableScroll: false,
-                legend: {},
-                xAxis: { disableGrid: true },
-                yAxis: { 
-                    gridType: "dash", 
-                    dashLength: 2,
-                    // min: Math.min(...selectedGrid.value.chartData.series[0].data) -1,
-                    // max: Math.max(...selectedGrid.value.chartData.series[0].data) +1,
-                    splitNumber: Math.max(...selectedGrid.value.chartData.series[0].data) -1
-                },
-                extra: { 
-                    line: { 
-                        type: "curve", 
-                        width: 2,
-                        activeType: "hollow"  // 添加悬停效果
-                    }
-                }
-            };
-            break;
-        case '已绝育数量':
-            selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
-                series: [{
-                    name: "累计绝育数量",
-                    data: [11, 11, 12, 14, 14, catDataAnalysisData.value.sterilizationRatio['已绝育'] || 0]
-                }]
-            };
-            selectedGrid.value.chartOpts = {
-                color: ["#FAC858"],
-                padding: [15, 10, 0, 15],
-                enableScroll: false,
-                legend: {},
-                xAxis: { disableGrid: true },
-                yAxis: { gridType: "dash", dashLength: 2 },
-                extra: { line: { type: "straight", width: 2 } }
-            };
-            break;
-        case '已打疫苗':
-            selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
-                series: [{
-                    name: "累计接种数量",
-                    data: [3, 5, 5, 6, 6, catDataAnalysisData.value.vaccinationRatio['已接种'] || 0]
-                }]
-            };
-            selectedGrid.value.chartOpts = {
-                color: ["#EE6666"],
-                padding: [15, 10, 0, 15],
-                enableScroll: false,
-                legend: {},
-                xAxis: { disableGrid: true },
-                yAxis: { gridType: "dash", dashLength: 2 },
-                extra: { line: { type: "straight", width: 2 } }
-            };
-            break;
-        case '健康数量':
-            selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
-                series: [{
-                    name: "健康猫咪数量",
-                    data: [12, 16, 13, 14, 16, catDataAnalysisData.value.healthStatus['健康'] || 0]
-                }]
-            };
-            selectedGrid.value.chartOpts = {
-                color: ["#73C0DE"],
-                padding: [15, 10, 0, 15],
-                enableScroll: false,
-                legend: {},
-                xAxis: { disableGrid: true },
-                yAxis: { gridType: "dash", dashLength: 2 },
-                extra: { line: { type: "curve", width: 2 } }
-            };
-            break;
         case '本月新增':
+            const newCatData = [1, 2, 0, 2, 1, catDataAnalysisData.value.monthlyNewCount || 0];
             selectedGrid.value.chartData = {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
                     name: "每月新增数量",
-                    data: [0, 0, 0, 0, 0, 0]
+                    data: newCatData
                 }]
             };
             selectedGrid.value.chartOpts = {
@@ -1167,16 +1164,104 @@ const showGridDetail = (item) => {
                 enableScroll: false,
                 legend: {},
                 xAxis: { disableGrid: true },
-                yAxis: { gridType: "dash", dashLength: 2 },
+                yAxis: getAxisConfig(newCatData),
+                extra: { line: { type: "curve", width: 2 } }
+            };
+            break;
+            
+        case '已领养数量':
+            const adoptData = [2, 1, 3, 2, 2, appStore.catDataAnalysisData.adoptionCount || 0];
+            selectedGrid.value.chartData = {
+                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                series: [{
+                    name: "每月领养数量",
+                    data: adoptData
+                }]
+            };
+            selectedGrid.value.chartOpts = {
+                color: ["#91CB74"],
+                padding: [15, 10, 0, 15],
+                enableScroll: false,
+                legend: {},
+                xAxis: { disableGrid: true },
+                yAxis: getAxisConfig(adoptData),
+                extra: { 
+                    line: { 
+                        type: "curve", 
+                        width: 2,
+                        activeType: "hollow"
+                    }
+                }
+            };
+            break;
+            
+        case '已绝育数量':
+            const sterilizedData = [8, 10, 12, 15, 15, catDataAnalysisData.value.sterilizationRatio['已绝育'] || 0];
+            selectedGrid.value.chartData = {
+                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                series: [{
+                    name: "已绝育数量变化",
+                    data: sterilizedData
+                }]
+            };
+            selectedGrid.value.chartOpts = {
+                color: ["#FAC858"],
+                padding: [15, 10, 0, 15],
+                enableScroll: false,
+                legend: {},
+                xAxis: { disableGrid: true },
+                yAxis: getAxisConfig(sterilizedData),
                 extra: { line: { type: "straight", width: 2 } }
             };
             break;
+            
+        case '已打疫苗':
+            const vaccinatedData = [1, 2, 2, 3, 5, catDataAnalysisData.value.vaccinationRatio['已接种'] || 0];
+            selectedGrid.value.chartData = {
+                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                series: [{
+                    name: "已接种疫苗数量",
+                    data: vaccinatedData
+                }]
+            };
+            selectedGrid.value.chartOpts = {
+                color: ["#EE6666"],
+                padding: [15, 10, 0, 15],
+                enableScroll: false,
+                legend: {},
+                xAxis: { disableGrid: true },
+                yAxis: getAxisConfig(vaccinatedData),
+                extra: { line: { type: "curve", width: 2 } }
+            };
+            break;
+            
+        case '健康数量':
+            const healthyData = [10, 15, 12, 15, 15, catDataAnalysisData.value.healthStatus['健康'] || 0];
+            selectedGrid.value.chartData = {
+                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                series: [{
+                    name: "健康猫咪数量",
+                    data: healthyData
+                }]
+            };
+            selectedGrid.value.chartOpts = {
+                color: ["#73C0DE"],
+                padding: [15, 10, 0, 15],
+                enableScroll: false,
+                legend: {},
+                xAxis: { disableGrid: true },
+                yAxis: getAxisConfig(healthyData),
+                extra: { line: { type: "straight", width: 2 } }
+            };
+            break;
+            
         case '救助资金剩余':
+            const fundData = [1100, 500, 800, 1500, 1000, catDataAnalysisData.value.fundBalance || 0];
             selectedGrid.value.chartData = {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
                     name: "资金余额变化",
-                    data: [0, 0, 0, 0, 0, 0]
+                    data: fundData
                 }]
             };
             selectedGrid.value.chartOpts = {
@@ -1185,16 +1270,20 @@ const showGridDetail = (item) => {
                 enableScroll: false,
                 legend: {},
                 xAxis: { disableGrid: true },
-                yAxis: { gridType: "dash", dashLength: 2 },
+                yAxis: getAxisConfig(fundData),
                 extra: { line: { type: "curve", width: 2 } }
             };
+            selectedGrid.value.showManageBtn = true;
+            selectedGrid.value.fundType = 'fund';
             break;
-        case '上月支出':
+            
+        case '资金支出':
+            const expenseData = [200, 800, 500, 700, 500, catDataAnalysisData.value.lastMonthExpense || 0];
             selectedGrid.value.chartData = {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
                     name: "月度支出",
-                    data: [0, 0, 0, 0, 0, 0]
+                    data: expenseData
                 }]
             };
             selectedGrid.value.chartOpts = {
@@ -1203,16 +1292,20 @@ const showGridDetail = (item) => {
                 enableScroll: false,
                 legend: {},
                 xAxis: { disableGrid: true },
-                yAxis: { gridType: "dash", dashLength: 2 },
+                yAxis: getAxisConfig(expenseData),
                 extra: { line: { type: "straight", width: 2 } }
             };
+            selectedGrid.value.showManageBtn = true;
+            selectedGrid.value.fundType = 'expense';
             break;
-        case '上月收入':
+            
+        case '资金收入':
+            const incomeData = [300, 250, 400, 350, 500, catDataAnalysisData.value.lastMonthIncome || 0];
             selectedGrid.value.chartData = {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
                     name: "月度收入",
-                    data: [0, 0, 0, 0, 0, 0]
+                    data: incomeData
                 }]
             };
             selectedGrid.value.chartOpts = {
@@ -1221,8 +1314,36 @@ const showGridDetail = (item) => {
                 enableScroll: false,
                 legend: {},
                 xAxis: { disableGrid: true },
-                yAxis: { gridType: "dash", dashLength: 2 },
+                yAxis: getAxisConfig(incomeData),
                 extra: { line: { type: "curve", width: 2 } }
+            };
+            selectedGrid.value.showManageBtn = true;
+            selectedGrid.value.fundType = 'income';
+            break;
+            
+        case '在校小猫数量':
+            const catCountData = [25, 28, 25, 17, 24, catList.value.length];
+            selectedGrid.value.chartData = {
+                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                series: [{
+                    name: "校内小猫总数量",
+                    data: catCountData
+                }]
+            };
+            selectedGrid.value.chartOpts = {
+                color: ["#1890FF"],
+                padding: [15, 10, 0, 15],
+                enableScroll: false,
+                legend: {},
+                xAxis: { disableGrid: true },
+                yAxis: getAxisConfig(catCountData),
+                extra: {
+                    line: {
+                        type: "straight",
+                        width: 2,
+                        activeType: "hollow"
+                    }
+                }
             };
             break;
     }
@@ -1252,9 +1373,9 @@ const getDetailDescription = (grid) => {
             return '这是每月新登记的猫咪数量。新增数量保持在合理范围内，便于管理和照顾。';
         case '救助资金剩余':
             return '这是目前救助基金的余额。资金状况总体良好，可以保证猫咪们得到妥善照顾。';
-        case '上月支出':
+        case '资金支出':
             return '这是每月用于猫咪护理的支出，包括食物、医疗、绝育手术等费用。支出合理且透明。';
-        case '上月收入':
+        case '资金收入':
             return '这是每月收到的爱心捐赠。感谢大家的持续支持，使我们能够为猫咪提供更好的照顾。';
         default:
             return '';
@@ -1312,6 +1433,210 @@ const handleTouchEnd = (event) => {
         translateX.value = 0;
     }
 };
+
+// 资金记录相关
+const fundRecordsPopup = ref(null);
+const fundFormPopup = ref(null);
+const isEditingFund = ref(false);
+const currentEditFundIndex = ref(-1);
+const currentFundType = ref('');
+const fundRecords = ref([]);
+const isAdmin = ref(true); // 这里应该根据实际用户权限来设置
+
+// 资金记录表单数据
+const fundForm = ref({
+    date: '',
+    amount: '',
+    type: '',
+    description: ''
+});
+
+// 显示资金记录
+function showFundRecords(type) {
+    currentFundType.value = type;
+    // 获取当前月份
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    
+    // 根据不同类型显示不同的记录
+    switch(type) {
+        case 'fund':
+            // 资金剩余：显示本月所有收支记录
+            fundRecords.value = [
+                {
+                    date: '2024-01-15',
+                    amount: '1000',
+                    type: 'income',
+                    description: '爱心人士捐赠'
+                },
+                {
+                    date: '2024-01-10',
+                    amount: '500',
+                    type: 'expense',
+                    description: '购买猫粮'
+                }
+            ].filter(record => {
+                const [year, month] = record.date.split('-').map(Number);
+                return year === currentYear && month === currentMonth;
+            });
+            break;
+            
+        case 'expense':
+            // 本月支出：只显示本月支出记录
+            fundRecords.value = [
+                {
+                    date: '2024-01-10',
+                    amount: '500',
+                    type: 'expense',
+                    description: '购买猫粮'
+                }
+            ].filter(record => {
+                const [year, month] = record.date.split('-').map(Number);
+                return year === currentYear && month === currentMonth && record.type === 'expense';
+            });
+            break;
+            
+        case 'income':
+            // 本月收入：只显示本月收入记录
+            fundRecords.value = [
+                {
+                    date: '2024-01-15',
+                    amount: '1000',
+                    type: 'income',
+                    description: '爱心人士捐赠'
+                }
+            ].filter(record => {
+                const [year, month] = record.date.split('-').map(Number);
+                return year === currentYear && month === currentMonth && record.type === 'income';
+            });
+            break;
+    }
+    
+    fundRecordsPopup.value.open();
+}
+
+// 关闭资金记录弹窗
+function closeFundRecords() {
+    fundRecordsPopup.value.close();
+}
+
+// 显示添加资金记录表单
+function showAddFundForm() {
+    isEditingFund.value = false;
+    // 根据当前类型设置默认值
+    fundForm.value = {
+        date: new Date().toISOString().split('T')[0],
+        amount: '',
+        // 根据不同类型设置默认的记录类型
+        type: currentFundType.value === 'fund' ? 'expense' : // 资金剩余默认支出
+              currentFundType.value === 'expense' ? 'expense' : // 支出固定为支出
+              'income', // 收入固定为收入
+        description: ''
+    };
+    
+    // 如果是支出或收入页面，禁用类型选择
+    const isTypeFixed = currentFundType.value === 'expense' || currentFundType.value === 'income';
+    
+    // 更新表单的类型选项
+    fundTypeOptions.value = isTypeFixed ? 
+        [{ value: currentFundType.value, text: currentFundType.value === 'expense' ? '支出' : '收入' }] :
+        [
+            { value: 'expense', text: '支出' },
+            { value: 'income', text: '收入' }
+        ];
+    
+    fundFormPopup.value.open();
+}
+
+// 编辑资金记录
+function editFundRecord(index) {
+    isEditingFund.value = true;
+    currentEditFundIndex.value = index;
+    const record = fundRecords.value[index];
+    fundForm.value = { ...record };
+    fundFormPopup.value.open();
+}
+
+// 删除资金记录
+function deleteFundRecord(index) {
+    uni.showModal({
+        title: '确认删除',
+        content: '确定要删除这条记录吗？',
+        success: function (res) {
+            if (res.confirm) {
+                fundRecords.value.splice(index, 1);
+                uni.showToast({
+                    title: '删除成功',
+                    icon: 'success'
+                });
+            }
+        }
+    });
+}
+
+// 关闭资金记录表单
+function closeFundForm() {
+    fundFormPopup.value.close();
+    fundForm.value = {
+        date: '',
+        amount: '',
+        type: '',
+        description: ''
+    };
+    currentEditFundIndex.value = -1;
+}
+
+// 提交资金记录
+function submitFundRecord() {
+    if (!fundForm.value.date || !fundForm.value.amount || !fundForm.value.description) {
+        uni.showToast({
+            title: '请填写完整信息',
+            icon: 'none'
+        });
+        return;
+    }
+
+    if (isEditingFund.value) {
+        fundRecords.value[currentEditFundIndex.value] = { ...fundForm.value };
+    } else {
+        fundRecords.value.push({ ...fundForm.value });
+    }
+    
+    // 按日期排序
+    fundRecords.value.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    closeFundForm();
+    uni.showToast({
+        title: isEditingFund.value ? '编辑成功' : '添加成功',
+        icon: 'success'
+    });
+}
+
+// 处理资金管理按钮点击
+function handleManageFund(type) {
+    let fundType = '';
+    if (typeof type === 'string') {
+        fundType = type;
+    } else if (typeof type === 'object' && type.text) {
+        if (type.text.includes('救助资金')) {
+            fundType = 'fund';
+        } else if (type.text.includes('支出')) {
+            fundType = 'expense';
+        } else if (type.text.includes('收入')) {
+            fundType = 'income';
+        }
+    }
+    
+    closeGridDetail();
+    showFundRecords(fundType);
+}
+
+// 添加类型选项的响应式变量
+const fundTypeOptions = ref([
+    { value: 'expense', text: '支出' },
+    { value: 'income', text: '收入' }
+]);
 
 </script>
 
@@ -1967,18 +2292,50 @@ scroll-view ::-webkit-scrollbar {
             margin-bottom: 30rpx;
 
             .detail-number {
-                margin-bottom: 20rpx;
+                margin: 0rpx 0;  // 增加上下外边距
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                padding: 0 20rpx;
+                position: relative;
+                min-height: 60rpx;  // 添加最小高度
+                
+                .number-unit-container {
+                    position: absolute;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    display: flex;
+                    align-items: baseline;
+                    
+                    .number {
+                        font-size: 60rpx;
+                        color: #b876d9;
+                        font-weight: bold;
+                    }
 
-                .number {
-                    font-size: 60rpx;
-                    color: #b876d9;
-                    font-weight: bold;
+                    .unit {
+                        font-size: 24rpx;
+                        color: #999;
+                        margin-left: 8rpx;
+                    }
                 }
 
-                .unit {
+                .manage-btn {
+                    position: absolute;
+                    right: 80rpx;
+                    width: 160rpx;
+                    height: 60rpx;
+                    line-height: 60rpx;
+                    background: linear-gradient(135deg, #8d5da3, #a679c7);
+                    color: #fff;
                     font-size: 24rpx;
-                    color: #999;
-                    margin-left: 10rpx;
+                    border-radius: 30rpx;
+                    text-align: center;
+                    
+                    &:active {
+                        opacity: 0.9;
+                    }
                 }
             }
 
@@ -1987,12 +2344,14 @@ scroll-view ::-webkit-scrollbar {
                 color: #666;
                 line-height: 1.5;
                 padding: 0 30rpx;
+                margin-top: 40rpx;  // 增加上边距
+                margin-bottom: 20rpx;  // 增加下边距
             }
         }
 
         .detail-chart {
             height: 400rpx;
-            margin-top: 30rpx;
+            margin-top: 60rpx;
         }
     }
 }
@@ -2049,4 +2408,206 @@ scroll-view ::-webkit-scrollbar {
     font-weight: 500 !important;
 }
 
+// 资金记录弹窗样式
+.fund-records-popup {
+    width: 680rpx;
+    height: 800rpx;
+    background-color: #fff;
+    border-radius: 20rpx;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    
+    .popup-header {
+        padding: 30rpx;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #f0f0f0;
+        
+        .title {
+            font-size: 32rpx;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20rpx;
+            
+            .add-btn {
+                height: 60rpx;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #8d5da3, #a679c7);
+                color: #fff;
+                font-size: 26rpx;
+                padding: 10rpx 30rpx;
+                border-radius: 30rpx;
+                border: none;
+                
+                &:active {
+                    opacity: 0.9;
+                }
+            }
+        }
+    }
+    
+    .fund-content {
+        flex: 1;
+        padding: 30rpx 0rpx 30 30rpx; // 分别设置上、右、下、左的padding
+        overflow-y: auto;
+        
+        .fund-list {
+            position: relative;
+            
+            &::before {
+                content: '';
+                position: absolute;
+                left: 15rpx;
+                top: 0;
+                bottom: 0;
+                width: 2rpx;
+                background-color: #e0e0e0;
+            }
+            
+            .fund-item {
+                position: relative;
+                padding-left: 50rpx;
+                margin-bottom: 30rpx;
+                
+                .fund-dot {
+                    position: absolute;
+                    left: 8rpx;
+                    top: 20rpx;
+                    width: 16rpx;
+                    height: 16rpx;
+                    background-color: #8d5da3;
+                    border-radius: 50%;
+                    z-index: 1;
+                }
+                
+                .fund-card {
+                    background-color: #f8f9fa;
+                    border-radius: 12rpx;
+                    padding: 20rpx;
+                    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+                    
+                    .record-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 10rpx;
+                        
+                        .record-time {
+                            font-size: 24rpx;
+                            color: #666;
+                        }
+                        
+                        .record-actions {
+                            display: flex;
+                            gap: 20rpx;
+                        }
+                    }
+                    
+                    .record-amount {
+                        font-size: 32rpx;
+                        font-weight: bold;
+                        color: #333;
+                        margin-bottom: 8rpx;
+                    }
+                    
+                    .record-desc {
+                        font-size: 26rpx;
+                        color: #666;
+                        line-height: 1.5;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// 资金记录表单弹窗样式
+.fund-form {
+    width: 600rpx;
+    background-color: #fff;
+    border-radius: 20rpx;
+    overflow: hidden;
+    
+    .form-header {
+        padding: 30rpx;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #f0f0f0;
+        
+        .title {
+            font-size: 32rpx;
+            font-weight: bold;
+            color: #333;
+        }
+    }
+    
+    .form-content {
+        padding: 30rpx;
+        
+        :deep(.uni-forms-item) {
+            margin-bottom: 20rpx;
+            
+            .uni-forms-item__label {
+                font-size: 28rpx;
+                color: #333;
+            }
+            
+            .uni-easyinput__content {
+                background-color: #f8f9fa;
+                border-radius: 12rpx;
+            }
+        }
+    }
+    
+    .form-footer {
+        padding: 20rpx 30rpx;
+        display: flex;
+        justify-content: flex-end;
+        gap: 20rpx;
+        border-top: 1px solid #f0f0f0;
+        
+        button {
+            width: 160rpx;
+            height: 70rpx;
+            line-height: 70rpx;
+            text-align: center;
+            border-radius: 35rpx;
+            font-size: 28rpx;
+            
+            &.cancel-btn {
+                background-color: #f5f5f5;
+                color: #666;
+            }
+            
+            &.submit-btn {
+                background: linear-gradient(135deg, #8d5da3, #a679c7);
+                color: #fff;
+            }
+        }
+    }
+}
+
+.manage-fund-btn {
+    margin-top: 20rpx;
+    padding: 20rpx;
+    background: linear-gradient(to right, #4CAF50, #45a049);
+    border-radius: 10rpx;
+    text-align: center;
+    box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+}
+
+.manage-fund-btn text {
+    color: #ffffff;
+    font-size: 28rpx;
+}
 </style>

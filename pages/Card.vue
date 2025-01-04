@@ -350,7 +350,7 @@
 			<uni-popup ref="eventFormPopup" type="center">
 				<view class="event-form">
 					<view class="form-header">
-						<text class="title">{{isEditingEvent ? '编辑记录' : '添加记录'}}</text>
+						<text class="title">{{isEditingEvent ? '编辑记录（管理员）' : '添加记录（管理员）'}}</text>
 						<uni-icons type="closeempty" size="24" @click="closeEventForm"></uni-icons>
 					</view>
 					<view class="form-content">
@@ -379,6 +379,7 @@
 <script setup>
 	import { ref, onMounted } from 'vue';
 	import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+    import { STATUS_CODE } from '@/src/constant/constant.js'
 	const appStore = useAppStore()
 	
 	const showMenu = ref(false);
@@ -496,7 +497,7 @@
 			url: `${API_general_request_url.value}/api/cat/photo/${catId}`,
 			method: 'GET,',
 			success: (response) => {
-				if (response.statusCode === 200 && response.data.code === '2000'){
+				if (response.statusCode === 200 && response.data.code === STATUS_CODE.SUCCESS){
 					picUrlDatas.value = response.data.data;
                     console.log('获取小猫图片成功')
 				}else{
@@ -640,7 +641,7 @@
 	function handleDelete() {
 		showMenu.value = false;
 		uni.showModal({
-			title: '确认删除',
+			title: '确认删除（管理员）',
 			content: '确定要删除这只小猫的信息吗？此操作不可恢复。',
 			success: function (res) {
 				if (res.confirm) {
@@ -649,7 +650,7 @@
 						url: `${API_general_request_url.value}/api/cat/${cat.value.catId}`,
 						method: 'DELETE',
 						success: (response) => {
-							if (response.statusCode === 200 && response.data.code === '2000') {
+							if (response.statusCode === 200 && response.data.code === STATUS_CODE.SUCCESS) {
 								uni.showToast({
 									title: '删除成功',
 									icon: 'success'
@@ -693,11 +694,11 @@
 		uni.request({
 			url: `${API_general_request_url.value}/api/cat/comment/get/${cat.value.catId}`,
 			method: 'GET',
-			// header: {
-			// 	'Authorization': `Bearer ${uni.getStorageSync('token')}`
-			// },
+			header: {
+				'Authorization': `Bearer ${uni.getStorageSync('token')}`
+			},
 			success: (res) => {
-				if (res.statusCode === 200 && res.data.code === '2000') {
+				if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
 					comments.value = res.data.data;
 					commentCount.value = res.data.data.length || 0;
                     console.log('获取小猫评论列表成功')
@@ -739,7 +740,7 @@
 				'Authorization': `Bearer ${uni.getStorageSync('token')}`  
 			},
 			success: (res) => {	
-				if (res.statusCode === 200 && res.data.code === '2000') {
+				if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                     console.log(res.data)
 					// 更新本地状态
 					isLiked.value = true;
@@ -822,7 +823,7 @@
 				'Authorization': `Bearer ${uni.getStorageSync('token')}`
 			},
 			success: (res) => {
-				if (res.statusCode === 200 && res.data.code === '2000') {
+				if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                     // 添加评论到列表
 					comments.value.unshift(comment); // 添加到列表
 					commentCount.value++; // 增加评论计数
@@ -923,7 +924,7 @@
             url: `${API_general_request_url.value}/api/cat/timeline/${cat.value.catId}`,
             method: 'GET',
             success: (res) => {
-                if(res.statusCode === 200 && res.data.code === '2000'){
+                if(res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS){
                     timelineEvents.value = res.data.data
                     console.log('获取小猫时间轴数据成功')
                     console.log(timelineEvents.value)
@@ -983,7 +984,7 @@
                             'Authorization': `Bearer ${uni.getStorageSync('token')}`
                         },
                         success: (res) => {
-                            if(res.statusCode === 200 && res.data.code === '2000'){
+                            if(res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS){
                                 console.log('删除事件成功')
                                 console.log(res.data)
                                 timelineEvents.value.splice(index, 1);
@@ -1046,10 +1047,12 @@
                     'Authorization': `Bearer ${uni.getStorageSync('token')}`
                 },
                 success: (res) => {
-                    if(res.statusCode === 200 && res.data.code === '2000'){
+                    if(res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS){
                         console.log('更新现有事件成功')
                         console.log(res.data)
                         closeEventForm();
+                        // 更新现有事件
+			            timelineEvents.value[currentEditIndex.value] = { ...eventForm.value };
                         uni.showToast({
                             title: '编辑成功',
                             icon: 'success'
@@ -1069,8 +1072,6 @@
                     console.log(err)
                 }
             })
-			// 更新现有事件
-			timelineEvents.value[currentEditIndex.value] = { ...eventForm.value };
 		} else {
             console.log('添加新事件')
             console.log(eventForm.value)
@@ -1083,10 +1084,12 @@
                     'Authorization': `Bearer ${uni.getStorageSync('token')}`
                 },
                 success: (res) => {
-                    if(res.statusCode === 200 && res.data.code === '2000'){
+                    if(res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS){
                         console.log('添加新事件成功')
                         console.log(res.data)
                         closeEventForm();
+                        // 添加新事件
+			            timelineEvents.value.push({ ...eventForm.value });
                         uni.showToast({
                             title: '添加成功',
                             icon: 'success'
@@ -1107,8 +1110,6 @@
                 }
 
             })
-			// 添加新事件
-			timelineEvents.value.push({ ...eventForm.value });
 		}
 		
 		// 按日期排序

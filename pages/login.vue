@@ -99,6 +99,7 @@
 import { ref, reactive, nextTick } from 'vue'
 import { jwtDecode } from "jwt-decode";
 import { API_general_request_url } from '@/src/config/index.js'
+import { STATUS_CODE } from '@/src/constant/constant.js'
 
 // 响应式变量
 const email = ref('')
@@ -164,7 +165,7 @@ const handleLogin = async () => {
       }
     })
 
-    if (res.statusCode === 200 && res.data.code === "2000") {
+    if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
       // 保存 token
       const token = res.data.data.token
       uni.setStorageSync('token', token)

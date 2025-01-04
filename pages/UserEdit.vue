@@ -129,6 +129,7 @@
 <script setup>
 import { ref, reactive, onMounted, nextTick } from 'vue';
 import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+import { STATUS_CODE } from '@/src/constant/constant.js'
 import NavBar1001 from '@/src/components/common/NavBar1001.vue'
 import { useAppStore } from '@/store/modules/app'
 
@@ -151,7 +152,7 @@ const rules = {
     rules: [{required: true, message: '请输入邮箱'}, {format: 'email', message: '邮箱格式不正确'}]
   },
   phoneNumber: {
-    rules: [{message: '请输入手机号'}, {pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确'}]
+    rules: [{required: false, message: '请输入手机号'}, {pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确'}]
   }
 };
 
@@ -176,110 +177,115 @@ const selectAvatar = (files) => {
 };
 
 const handleSubmit = async () => {
-  try {
-    // 校验表单
-    await formRef.value.validate();
-    
-    // 1、持久化用户信息
-    const updateResponse = await uni.request({
-        url: `${API_general_request_url.value}/api/user/updateProfile`,
-        method: 'POST',
-        header: {
-            'Authorization': `Bearer ${uni.getStorageSync('token')}`,
-            'Content-Type': 'application/json'
-        },
-        data: userInfo
-    });
-    if (updateResponse.statusCode === 200 && updateResponse.data.code === '2000') {
-        // 更新本地存储的用户信息
-        appStore.setUserInfo(userInfo);
+    try {
+        // 校验表单
+        await formRef.value.validate();
+    } catch (error) {
         uni.showToast({
-            title: '更新成功',
-            icon: 'success',
-            duration: 1500
-        });
-        setTimeout(() => {
-            uni.navigateBack();
-        }, 1500);
-    } else {
-        uni.showToast({
-            title: updateResponse.data.msg || '更新失败',
+            title: error.msg || '表单验证失败',
             icon: 'none'
         });
+        return;
     }
-
-    // 2、如果选择了新头像，上传到七牛云
-    if (selectedTempFiles.value && selectedTempFiles.value.length > 0) {
-        // 2.1、处理文件名映射
-        const fileNameConvertMap = updateResponse.data.data.fileNameConvertMap;
-        const convertedFiles = selectedTempFiles.value.map((file, index) => {
-            const convertedName = Object.values(fileNameConvertMap)[index];
-            return {
-                ...file,
-                name: convertedName
-            };
-        });
-        // 2.2、获取上传凭证
-        const tokenResponse = await uni.request({  
-            url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,  
-            method: 'GET',  
-            header: {  
-                'Authorization': `Bearer ${uni.getStorageSync('token')}`  
-            }  
-        });  
-      
-        if (tokenResponse.statusCode === 200 && tokenResponse.data.code === '2000') {  
-            const uploadToken = tokenResponse.data.data.qiniuToken;  
-            try {
-                // 2.3、上传文件到七牛云  
-                const uploadRes = await new Promise((resolve, reject) => {  
-                    uni.uploadFile({  
-                    url: 'https://upload-z2.qiniup.com',  
-                    filePath: convertedFiles[0].path,  
-                    name: 'file',  
-                    formData: {  
-                        token: uploadToken,  
-                        key: `catcat/user_avatar/${convertedFiles[0].name}`  
-                    },  
-                    success: (res) => {  
-                        if (res.statusCode === 200) {  
-                            resolve(res);  
-                        } else {  
-                            reject(new Error(`头像上传失败: ${res.data || '未知错误'}`));  
-                        }  
-                    },  
-                    fail: (error) => reject(new Error(`上传请求失败: ${error.errMsg || '未知错误'}`))
-                    });  
-                });
-                // 2.4、更新用户信息中的头像字段
-                userInfo.avatar = convertedFiles[0].name;
-            } catch (error) {
+    
+    try {
+        // 1、如果选择了新头像，先上传到七牛云
+        if (selectedTempFiles.value && selectedTempFiles.value.length > 0) {
+            // 1.1、获取上传凭证
+            const tokenResponse = await uni.request({  
+                url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,  
+                method: 'GET',  
+                header: {  
+                    'Authorization': `Bearer ${uni.getStorageSync('token')}`  
+                }  
+            });  
+          
+            if (tokenResponse.statusCode === 200 && tokenResponse.data.code === STATUS_CODE.SUCCESS) {  
+                const uploadToken = tokenResponse.data.data.qiniuToken;  
+                
+                // 1.2、生成文件名（使用时间戳和随机数）
+                const timestamp = new Date().getTime();
+                const random = Math.floor(Math.random() * 1000);
+                const fileExt = selectedTempFiles.value[0].name.split('.').pop();
+                const fileName = `${timestamp}_${random}.${fileExt}`;
+                
+                try {
+                    // 1.3、上传文件到七牛云  
+                    const uploadRes = await new Promise((resolve, reject) => {  
+                        uni.uploadFile({  
+                            url: 'https://upload-z2.qiniup.com',  
+                            filePath: selectedTempFiles.value[0].path,  
+                            name: 'file',  
+                            formData: {  
+                                token: uploadToken,  
+                                key: `catcat/user_avatar/${fileName}`  
+                            },  
+                            success: (res) => {  
+                                if (res.statusCode === 200) {  
+                                    resolve(res);  
+                                } else {  
+                                    reject(new Error(`头像上传失败: ${res.data || '未知错误'}`));  
+                                }  
+                            },  
+                            fail: (error) => reject(new Error(`上传请求失败: ${error.errMsg || '未知错误'}`))
+                        });  
+                    });
+                    
+                    // 1.4、更新用户信息中的头像字段
+                    userInfo.avatar = fileName;
+                } catch (error) {
+                    uni.showToast({
+                        title: `头像上传失败: ${error.message}`,
+                        icon: 'none',
+                        duration: 2000
+                    });
+                    return;
+                }
+            } else {
                 uni.showToast({
-                    title: `头像上传失败: ${error.msg}`,
+                    title: '获取上传凭证失败',
                     icon: 'none',
                     duration: 2000
                 });
-            return;
+                return;
             }
+        }
+
+        // 2、持久化用户信息
+        const updateResponse = await uni.request({
+            url: `${API_general_request_url.value}/api/user/updateProfile`,
+            method: 'POST',
+            header: {
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`,
+                'Content-Type': 'application/json'
+            },
+            data: userInfo
+        });
+
+        if (updateResponse.statusCode === 200 && updateResponse.data.code === STATUS_CODE.SUCCESS) {
+            // 更新本地存储的用户信息
+            appStore.setUserInfo(userInfo);
+            uni.showToast({
+                title: '更新成功',
+                icon: 'success',
+                duration: 1500
+            });
+            setTimeout(() => {
+                uni.navigateBack();
+            }, 1500);
         } else {
             uni.showToast({
-                title: '获取上传凭证失败',
-                icon: 'none',
-                duration: 2000
+                title: updateResponse.data.msg || '更新失败',
+                icon: 'none'
             });
-            return;
         }
+    } catch (error) {
+        uni.showToast({
+            title: error.message || '操作失败',
+            icon: 'none',
+            duration: 2000
+        });
     }
-
-    
-
-    
-  } catch (error) {
-    uni.showToast({
-      title: error.msg || '表单验证失败',
-      icon: 'none'
-    });
-  }
 };
 
 const formatTime = (timeString) => {

@@ -55,6 +55,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js';
+import { STATUS_CODE } from '@/src/constant/constant.js';
 import NavBar1001 from '@/src/components/common/NavBar1001.vue';
 
 // 响应式数据
@@ -86,7 +87,7 @@ const fetchUsers = async (page = 1, keyword = null) => {
                     'Authorization': `Bearer ${uni.getStorageSync('token')}`
                 },
                 success: (res) => {
-                    if (res.statusCode === 200 && res.data.code === "2000") {
+                    if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                         console.log("获取用户成功：", res.data.data)
                         users.value = res.data.data;
                         total.value = 1;
@@ -104,12 +105,16 @@ const fetchUsers = async (page = 1, keyword = null) => {
                     'Authorization': `Bearer ${uni.getStorageSync('token')}`
                 },
                 success: (res) => {
-                    if (res.statusCode === 200 && res.data.code === "2000") {
+                    if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                         console.log("获取用户列表成功：", res.data.data)
                         users.value = res.data.data;
                         total.value = res.data.data.length;
                         loadMoreStatus.value = users.value.length >= total.value ? 'noMore' : 'more';
                     } else {
+                        uni.showToast({
+                            title: res.data.msg || '获取用户列表失败',
+                            icon: 'none'
+                        })
                         throw new Error('获取用户列表失败');
                     }
                 }
@@ -165,7 +170,7 @@ const confirmRoleChange = async () => {
             },
             success: (res) => {
                 console.log("修改角色成功：", res)
-                if (res.statusCode === 200 && res.data.code === "2000") {
+                if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                     // 更新本地数据
                     const userIndex = users.value.findIndex(u => u.userId === selectedUser.value.userId);
                     if (userIndex !== -1) {

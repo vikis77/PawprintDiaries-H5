@@ -198,6 +198,7 @@
 	import { onMounted, onUnmounted, ref, nextTick } from "vue";
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
 	import { toBeDeveloped, showToast } from '@/src/utils/toast'
+	import { STATUS_CODE } from '@/src/constant/constant.js'
 	// #ifdef H5
 	import AMapLoader from "@amap/amap-jsapi-loader";
 	// #endif
@@ -352,7 +353,7 @@
 				url: `${API_general_request_url.value}/api/cat/location/latest`,
 				method: "GET",
 				success: (response) => {
-					if (response.statusCode === 200 && response.data.code === "2000") {
+					if (response.statusCode === 200 && response.data.code === STATUS_CODE.SUCCESS) {
 						responseData.value = response.data.data;
 						mapDrawMode.value = 'point';
 						path.value = responseData.value.map(item => [
@@ -390,7 +391,7 @@
 			method: "GET", 
 			data: params,
 			success: (response) => {
-				if (response.statusCode === 200 && response.data.code === "2000") {
+				if (response.statusCode === 200 && response.data.code === STATUS_CODE.SUCCESS) {
 					responseData.value = response.data.data;
 					// 如果是查询具体猫咪的轨迹(无论是否选择日期)
 					if (selectedValueC.value !== 'all' && selectedValueC.value !== '') {
@@ -647,7 +648,7 @@
 				'uploader': baseFormData1.value.name
 			},
 			success: (resp) => {
-				if (resp.statusCode === 200 && resp.data.code === "2000") {
+				if (resp.statusCode === 200 && resp.data.code === STATUS_CODE.SUCCESS) {
 					uni.showToast({
 						title: '提交成功',
 						icon: 'none',
@@ -887,13 +888,13 @@
 			filePath: imagePath.value,
 			name: 'image',
 			header: {
-				'Authorization': `Bearer ${token.value}`
+				'Authorization': `Bearer ${uni.getStorageSync('token')}`
 			},
 			success: (res) => {
 				try {
 					const result = JSON.parse(res.data);
 					console.log('识别结果:', result);
-					if (result.code === '2000' && result.data.success) {
+					if (result.code === STATUS_CODE.SUCCESS && result.data.success) {
 						const predictions = result.data.data.predictions;
 						console.log('原始预测数据:', predictions);
 						

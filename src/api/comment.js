@@ -2,7 +2,7 @@ import { useAppStore } from '@/store/modules/app'
 import { storeToRefs } from 'pinia'
 import axios from 'axios'
 import { API_general_request_url } from '@/src/config/index.js'
-
+import { STATUS_CODE } from '@/src/constant/constant.js'
 
 // 获取待审核评论列表
 export const getPendingComments = async (params) => {
@@ -21,7 +21,7 @@ export const getPendingComments = async (params) => {
             }
         });
 
-        if (response.status === 200 && response.data.code === "2000") {
+        if (response.status === 200 && response.data.code === STATUS_CODE.SUCCESS) {
             console.log("获取待审核评论成功：", response.data.data)
             // 确保返回的数据结构正确
             const responseData = {
@@ -31,6 +31,10 @@ export const getPendingComments = async (params) => {
             appStore.setAuditCommentList(responseData)
             return responseData;
         }
+        uni.showToast({
+            title: response.data.msg || '获取待审核评论失败',
+            icon: 'none'
+        })
         throw new Error('获取待审核评论失败');
     } catch (error) {
         console.error('获取待审核评论失败:', error);
@@ -57,7 +61,7 @@ export const reviewComment = async (id, type, action) => {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.statusCode === 200 && res.data.code === "2000") {
+                if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                     console.log("审核评论成功：", res)
                 } else {
                     throw new Error('评论审核操作失败');

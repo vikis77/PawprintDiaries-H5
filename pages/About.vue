@@ -31,33 +31,26 @@
         <view class="card-title">更新日志</view>
         <view class="card-content">
           <view class="update-item">
-            <view class="update-version">v2.0.2 (2024-12-27)</view>
-            <view class="update-list">
-              <view class="update-point">• 新增帖子图片下载功能</view>
-              <view class="update-point">• 优化页面动画效果</view>
-              <view class="update-point">• 新增小猫时间线事件功能</view>
-            </view>
-            <view class="update-version">v2.0.1 (2024-12-22)</view>
-            <view class="update-list">
-              <view class="update-point">• 修复若干已知问题</view>
-              <view class="update-point">• 优化系统性能</view>
-              <view class="update-point"></view>
-            </view>
             <view class="update-version">v2.0.0 (2024-12)</view>
             <view class="update-list">
-              <view class="update-point">• 全面优化界面</view>
-              <view class="update-point">• 新增猫咪信息管理</view>
-              <view class="update-point">• 新增帖子管理</view>
-              <view class="update-point">• 新增上传地图定位</view>
-              <view class="update-point">• 新增拍猫识别</view>
-              <view class="update-point"></view>
+                <view class="update-point">• 新增资金记录和管理功能</view>
+                <view class="update-point">• 新增帖子图片下载功能</view>
+                <view class="update-point">• 优化页面动画效果</view>
+                <view class="update-point">• 新增小猫时间线事件功能</view>
+                <view class="update-point">• 修复若干已知问题</view>
+                <view class="update-point">• 优化系统性能</view>
+                <view class="update-point">• 全面优化界面</view>
+                <view class="update-point">• 新增猫咪信息管理</view>
+                <view class="update-point">• 新增帖子管理</view>
+                <view class="update-point">• 新增上传地图定位</view>
+                <view class="update-point">• 新增拍猫识别</view>
             </view>
             <view class="update-version">v1.0.0 (2024-9)</view>
             <view class="update-list">
-              <view class="update-point">• 首次上线1.0测试版本</view>
-              <view class="update-point">• 实现基础的猫咪信息展示</view>
-              <view class="update-point">• 首页帖子展示</view>
-              <view class="update-point">• 集成地图定位，可显示小猫位置</view>
+                <view class="update-point">• 首次上线1.0测试版本</view>
+                <view class="update-point">• 实现基础的猫咪信息展示</view>
+                <view class="update-point">• 首页帖子展示</view>
+                <view class="update-point">• 集成地图定位，可显示小猫位置</view>
             </view>
           </view>
         </view>

@@ -197,6 +197,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+import { STATUS_CODE } from '@/src/constant/constant.js'
 import { toBeDeveloped, showToast } from '@/src/utils/toast'
 import { useAppStore } from '@/store/modules/app'
 const appStore = useAppStore()
@@ -260,7 +261,7 @@ onShow(() => {
             'Authorization': `Bearer ${uni.getStorageSync('token')}`
         },
         success: (res) => {
-            if (res.statusCode === 200 && res.data.code === '2000') {
+            if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                 console.log('获取当前帖子数据成功', res.data)
                 const post = res.data.data;
                 console.log(post)
@@ -293,7 +294,7 @@ onShow(() => {
         },
         success: (res) => {
             console.log(res)
-            if (res.statusCode === 200 && res.data.code === '2000') {
+            if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                 comments.value = Array.isArray(res.data.data) ? res.data.data : [];
                 console.log('获取帖子评论列表成功')
             } else {
@@ -329,7 +330,7 @@ const handleLike = () => {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.statusCode === 200 && res.data.code === '2000') {
+                if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                     // 把首页对应帖子点赞数+1
                     let postList = appStore.postList;
                     for (let i = 0; i < postList.length; i++) {
@@ -360,7 +361,7 @@ const handleLike = () => {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.statusCode === 200 && res.data.code === '2000') {
+                if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                     isLikeAnimating.value = true;
                     currentPost.value.liked = !currentPost.value.liked;
                     currentPost.value.likeCount += currentPost.value.liked ? 1 : -1;
@@ -385,7 +386,7 @@ const handleCollect = () => {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.statusCode === 200 && res.data.code === '2000') {
+                if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                     isCollectAnimating.value = true;
                     currentPost.value.collected = !currentPost.value.collected;
                     showToast(currentPost.value.collected ? '收藏成功' : '取消收藏');
@@ -406,7 +407,7 @@ const handleCollect = () => {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.statusCode === 200 && res.data.code === '2000') {
+                if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                     isCollectAnimating.value = true;
                     currentPost.value.collected = !currentPost.value.collected;
                     showToast(currentPost.value.collected ? '收藏成功' : '取消收藏');
@@ -446,7 +447,7 @@ const submitComment = () => {
             'Authorization': `Bearer ${uni.getStorageSync('token')}`
         },
         success: (res) => {
-            if (res.statusCode === 200 && res.data.code === '2000') {
+            if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                 console.log('评论成功', res.data.data);
 
                 // 构建新评论对象，包含必要的显示信息
@@ -479,6 +480,9 @@ const submitComment = () => {
 
 // 点赞评论
 const likeComment = (index) => {
+    if (!checkLogin()) {
+        return;
+    }
     const comment = comments.value[index];
     comment.liked = !comment.liked;
     comment.likes += comment.liked ? 1 : -1;
@@ -499,7 +503,7 @@ const handleFollow = () => {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.statusCode === 200 && res.data.code === '2000') {
+                if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                     currentPost.value.followed = !currentPost.value.followed;
                     showToast(currentPost.value.followed ? '关注成功' : '取消关注');
                 } else {
@@ -516,7 +520,7 @@ const handleFollow = () => {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
-                if (res.statusCode === 200 && res.data.code === '2000') {
+                if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                     currentPost.value.followed = !currentPost.value.followed;
                     showToast(currentPost.value.followed ? '关注成功' : '取消关注');
                 } else {
@@ -584,8 +588,11 @@ const dialogConfirmDelete = () => {
     uni.request({
         url: `${API_general_request_url.value}/api/post/deletepost?postId=${currentPost.value.postId}`,
         method: 'DELETE',
+        header: {
+            'Authorization': `Bearer ${uni.getStorageSync('token')}`
+        },
         success: (res) => {
-            if (res.statusCode === 200 && res.data.code === '2000') {
+            if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                 showToast('删除成功');
                 uni.navigateBack();
             } else {
@@ -676,6 +683,9 @@ const touchEnd = () => {
 
 // 下载图片处理函数
 const handleDownload = () => {
+    if (!checkLogin()) {
+        return;
+    }
     if (!currentPost.value.images || currentPost.value.images.length === 0) {
         showToast('暂无图片可下载');
         return;
