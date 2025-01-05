@@ -53,7 +53,7 @@
 					<view class="example-body">
 						<uni-file-picker 
 							limit="9" 
-							title="最多选择9张图片"
+							title="至少选择1张，最多选择9张"
 							:auto-upload="false"
 							fileMediatype="image" 
 							mode="grid" 

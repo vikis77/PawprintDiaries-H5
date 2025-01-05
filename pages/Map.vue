@@ -195,7 +195,7 @@
 </template>
 
 <script setup>
-	import { onMounted, onUnmounted, ref, nextTick } from "vue";
+	import { onMounted, onUnmounted, ref, nextTick, onActivated } from "vue";
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
 	import { toBeDeveloped, showToast } from '@/src/utils/toast'
 	import { STATUS_CODE } from '@/src/constant/constant.js'
@@ -457,8 +457,10 @@
 		});
 	};
 	
-	onShow(async () => {
-		// 只有在第一次加载时才显示加载动画
+	onMounted(async () => {
+		console.log('页面挂载');
+		// 确保DOM已经渲染完成
+		await nextTick();
 		if (isFirstLoad.value) {
 			isLoading.value = true;
 			loadingText.value = '正在加载数据...';
@@ -494,75 +496,124 @@
 			loadingText.value = '正在初始化地图...';
 			
 			// #ifdef H5
-			// 设置高德地图安全密钥
-			window._AMapSecurityConfig = {
-				securityJsCode: "d099747db9129b84ab6ce834d56e9573",
-			};
-			// 加载高德地图
-			AMapLoader.load({
-				key: "aada17cf2848387456285d0e1b5c74c6",
-				version: "2.0",
-				plugins: ["AMap.Scale","AMap.Geolocation", "AMap.Marker", "AMap.Polyline"],
-			})
-			.then((loadedAMap) => {
-				AMap = loadedAMap
-				/* 创建地图实例1 */
-				map1 = new AMap.Map("mymap", {
-					viewMode: "3D",
-					zoom: 16,
-					center: [113.390166, 22.527103],
-					pitch: 45,
-					rotation: 0,
-					rotateEnable: true,
-					pitchEnable: true,
-					features: ['bg', 'road','name'],
-					canvasRender: true,
-					willReadFrequently: true
-				});
-				map1.addControl(new AMap.Scale());
-				map1.addControl(new AMap.Geolocation());
-				
-				let url = process.env.NODE_ENV === 'development' ? "/static/realmap.jpg" : `${pic_general_request_url.value}/static_image/realmap.jpg`;
-				const imageLayer = new AMap.ImageLayer({
-					url: url,
-					bounds: new AMap.Bounds(
-						[113.386036, 22.523024],
-						[113.396039, 22.532817]
-					),
-					opacity: 1,
-				});
-				map1.add(imageLayer);
-				
-				map2 = new AMap.Map("mymap2", {
-					viewMode: "2D",
-					zoom: 16,
-					center: [113.390166, 22.527103],
-					canvasRender: true,
-					willReadFrequently: true
-				});
-				map2.addControl(new AMap.Scale());
-				map2.addControl(new AMap.Geolocation());
-				
-				mapDraw();
-				isLoading.value = false;
-				isFirstLoad.value = false; // 标记首次加载完成
-			})
-			.catch((e) => {
-				console.log(e);
-				isLoading.value = false;
-				isFirstLoad.value = false; // 即使加载失败也标记为非首次加载
-				uni.showToast({
-					title: '地图加载失败，请重试',
-					icon: 'none'
-				});
-			});
-			// #endif
+			let retryCount = 0;
+			const maxRetries = 3;
+			
+			const initMaps = async () => {
+				try {
+					// 设置高德地图安全密钥
+					window._AMapSecurityConfig = {
+						securityJsCode: "d099747db9129b84ab6ce834d56e9573",
+					};
+					
+					// 加载高德地图
+					AMap = await AMapLoader.load({
+						key: "aada17cf2848387456285d0e1b5c74c6",
+						version: "2.0",
+						plugins: ["AMap.Scale","AMap.Geolocation", "AMap.Marker", "AMap.Polyline"],
+					});
+					
+					// 创建地图实例
+					map1 = new AMap.Map("mymap", {
+						viewMode: "3D",
+						zoom: 16,
+						center: [113.390166, 22.527103],
+						pitch: 45,
+						rotation: 0,
+						rotateEnable: true,
+						pitchEnable: true,
+						features: ['bg', 'road','name'],
+						canvasRender: true,
+						willReadFrequently: true
+					});
+					
+					map2 = new AMap.Map("mymap2", {
+						viewMode: "2D",
+						zoom: 16,
+						center: [113.390166, 22.527103],
+						canvasRender: true,
+						willReadFrequently: true
+					});
+					
+					// 添加地图状态监听
+					map2.on('complete', () => {
+						console.log('2D地图加载完成');
+					});
 
+					map2.on('error', (error) => {
+						console.error('2D地图错误:', error);
+					});
+
+					// 添加地图容器大小变化监听
+					const resizeObserver = new ResizeObserver(() => {
+						if (map2) {
+							console.log('地图容器大小发生变化');
+							map2.resize();
+						}
+					});
+
+					// 监听地图容器大小变化
+					const mapContainer2 = document.getElementById('mymap2');
+					if (mapContainer2) {
+						resizeObserver.observe(mapContainer2);
+					}
+					
+					// 等待地图加载完成
+					await Promise.all([
+						new Promise(resolve => map1.on('complete', resolve)),
+						new Promise(resolve => map2.on('complete', resolve))
+					]);
+					
+					// 添加控件
+					map1.addControl(new AMap.Scale());
+					map1.addControl(new AMap.Geolocation());
+					map2.addControl(new AMap.Scale());
+					map2.addControl(new AMap.Geolocation());
+					
+					let url = process.env.NODE_ENV === 'development' ? "/static/realmap.jpg" : `${pic_general_request_url.value}/static_image/realmap.jpg`;
+					const imageLayer = new AMap.ImageLayer({
+						url: url,
+						bounds: new AMap.Bounds(
+							[113.386036, 22.523024],
+							[113.396039, 22.532817]
+						),
+						opacity: 1,
+					});
+					
+					// 只给3D地图添加校园地图图层
+					map1.add(imageLayer);
+					
+					// 绘制地图
+					if (path.value.length > 0) {
+						mapDraw();
+					}
+					
+				} catch (error) {
+					console.error('地图初始化失败:', error);
+					if (retryCount < maxRetries) {
+						retryCount++;
+						loadingText.value = `地图加载失败，正在重试(${retryCount}/${maxRetries})...`;
+						await new Promise(resolve => setTimeout(resolve, 1000)); // 等待1秒后重试
+						return initMaps();
+					} else {
+						uni.showToast({
+							title: '地图加载失败，请刷新页面重试',
+							icon: 'none',
+							duration: 3000
+						});
+					}
+				}
+			};
+			
+			await initMaps();
+			// #endif
+			
 			// #ifdef APP-PLUS
 			initAppMapData();
-			isLoading.value = false;
-			isFirstLoad.value = false; // APP端加载完成后也标记为非首次加载
 			// #endif
+			
+			isLoading.value = false;
+			isFirstLoad.value = false;
 		}
 	});
 
@@ -622,11 +673,25 @@
 	};
 	// #endif
 
-	onMounted(()=>{
-		console.log('页面挂载')
-		// mapDraw() // 绘制地图
-	})
 	onUnmounted(() => {
+		// #ifdef H5
+		// 移除监听器
+		if (resizeObserver) {
+			resizeObserver.disconnect();
+		}
+		
+		// 销毁地图实例前记录状态
+		if (map2) {
+			console.log('销毁2D地图实例');
+			map2.destroy();
+			map2 = null;
+		}
+		if (map1) {
+			console.log('销毁3D地图实例');
+			map1.destroy();
+			map1 = null;
+		}
+		// #endif
 	});
 	
 	// 点击提交表单1按钮
@@ -681,92 +746,123 @@
 	
 	// 地图画图函数
 	function mapDraw() {
-		console.log(mapDrawMode.value)
+		// 检查地图实例是否存在
+		if (!map1 || !map2) {
+			console.error('地图实例未初始化');
+			return;
+		}
 		
-		if (mapDrawMode.value === 'point') { /* 检查绘图模式 */
-			// /* 给地图1绘点 */
-			path.value.forEach(marker => {
-				// console.log(marker)
-				map1catMarker = new AMap.Marker({
-					position: [marker[0], marker[1]], // 经纬度 113 22
-					icon: "../static/redpoint12.svg",
-					offset: new AMap.Pixel(-20, -20), // 根据图标的尺寸整偏移
+		console.log('开始绘制地图:', mapDrawMode.value);
+		console.log('路径数据:', path.value);
+		
+		try {
+			if (mapDrawMode.value === 'point') {
+				// 清除之前的标记
+				map1.clearMap();
+				map2.clearMap();
+				
+				path.value.forEach(marker => {
+					if (!marker || marker.length < 3) {
+						console.warn('无效的标记数据:', marker);
+						return;
+					}
+					
+					try {
+						// 给地图1绘点
+						map1catMarker = new AMap.Marker({
+							position: [marker[0], marker[1]],
+							icon: "../static/redpoint12.svg",
+							offset: new AMap.Pixel(-20, -20),
+						});
+						map1catMarker.setMap(map1);
+						map1catMarker.setLabel({
+							offset: new AMap.Pixel(-17,-15),
+							content: `<div class='mapLabelInfo'>${marker[2]}</div>`,
+							direction: 'right'
+						});
+						
+						// 给地图2绘点
+						map2catMarker = new AMap.Marker({
+							position: [marker[0], marker[1]],
+							icon: "../static/redpoint12.svg",
+							offset: new AMap.Pixel(-5, -5),
+						});
+						map2catMarker.setMap(map2);
+						map2catMarker.setLabel({
+							content: `<div class='mapLabelInfo'>${marker[2]}</div>`,
+							direction: 'right'
+						});
+					} catch (error) {
+						console.error('标记点绘制失败:', error, marker);
+					}
 				});
-				map1catMarker.setMap(map1);
-				map1catMarker.setLabel({
-				        offset: new AMap.Pixel(-17,-15),  //设文本标注偏移量
-				        content: `<div class='mapLabelInfo'>${marker[2]}</div>`, //设置文本标注内容
-				        direction: 'right' //设置文本标注方位
-				    });
-			});
-			
-			// /* 给地图2绘画点 */
-			path.value.forEach(marker => {
-				// console.log(marker)
-				map2catMarker = new AMap.Marker({
-					position: [marker[0], marker[1]], // 经纬度 113 22
-					icon: "../static/redpoint12.svg",
-					offset: new AMap.Pixel(-5, -5), // 根据图标的尺寸调整偏移
+			} else if (mapDrawMode.value === 'line') {
+				// 清除之前的标记
+				map1.clearMap();
+				map2.clearMap();
+				
+				if (path.value.length < 1) {
+					console.warn('路径数据为空');
+					return;
+				}
+				
+				let linePath = path.value.map((item) => {
+					return [item[0], item[1]];
 				});
-				map2catMarker.setMap(map2);
-				map2catMarker.setLabel({
-						// offset: new AMap.Pixel(-17,-15),  //设置文标注偏移量
-						content: `<div class='mapLabelInfo'>${marker[2]}</div>`, //设置文本标注内容
-						direction: 'right' //设置文本标注方位
-					});
+				
+				// 画地图1的轨迹
+				map1polyline = new AMap.Polyline({
+					path: linePath,
+					strokeColor: "#55ffff",
+					strokeWeight: 4,
+					strokeOpacity: 0.9,
+				});
+				map1.add(map1polyline);
+				
+				// 添加起点和终点标记
+				let starMarker1 = new AMap.Marker({
+					position: linePath[0],
+					icon: "../static/startPoint.png",
+					offset: new AMap.Pixel(-26, -44),
+				});
+				map1.add(starMarker1);
+				
+				let endMarker1 = new AMap.Marker({
+					position: linePath[linePath.length - 1],
+					icon: "../static/cat32.svg",
+					offset: new AMap.Pixel(-15, -20),
+				});
+				map1.add(endMarker1);
+				
+				// 画地图2的轨迹
+				map2polyline = new AMap.Polyline({
+					path: linePath,
+					strokeColor: "#55ffff",
+					strokeWeight: 4,
+					strokeOpacity: 0.9,
+				});
+				map2.add(map2polyline);
+				
+				let starMarker2 = new AMap.Marker({
+					position: linePath[0],
+					icon: "../static/startPoint.png",
+					offset: new AMap.Pixel(-26, -44),
+				});
+				map2.add(starMarker2);
+				
+				let endMarker2 = new AMap.Marker({
+					position: linePath[linePath.length - 1],
+					icon: "../static/cat32.svg",
+					offset: new AMap.Pixel(-10, -20),
+				});
+				map2.add(endMarker2);
+			}
+		} catch (error) {
+			console.error('地图绘制失败:', error);
+			uni.showToast({
+				title: '地图绘制失败，请重试',
+				icon: 'none'
 			});
-		}else if (mapDrawMode.value === 'line') {
-			// /* 给地图1绘轨迹 */
-			console.log(path.value)
-			let linePath = path.value.map((item) => {
-				return [item[0], item[1]]; // 只返回经纬度
-			})
-			console.log(linePath)
-			// 画单只猫猫的
-			map1polyline = new AMap.Polyline({
-				path: linePath, // 轨迹坐标点
-				strokeColor: "#55ffff", // 线颜色
-				rokeWeight: 4, // 线宽
-				strokeOpacity: 0.9, // 线透明度
-			});
-			map1.add(map1polyline);
-			// 添加起点的标记
-			let starMarker1 = new AMap.Marker({
-			  position: linePath[0], // 轨迹线的最后一个点
-			  icon: "../static/startPoint.png",
-			  offset: new AMap.Pixel(-26, -44), // 根据图标的尺寸调整偏移
-			});
-			map1.add(starMarker1);
-			// 添加结束点的标记
-			let endMarker1 = new AMap.Marker({
-			  position: linePath[linePath.length - 1], // 轨迹线的最后一个点
-			  icon: "../static/cat32.svg",
-			  offset: new AMap.Pixel(-15, -20), // 根据图标的尺寸调整偏移
-			});
-			map1.add(endMarker1);
-			
-			// /* 给地图2绘轨迹 */
-			map2polyline = new AMap.Polyline({ // 添加轨迹线
-				path: path.value, // 轨迹坐标点
-				strokeColor: "#55ffff", // 线颜色
-				strokeWeight: 4, // 线宽
-				strokeOpacity: 0.9, // 线透明度
-			});
-			map2.add(map2polyline);
-			
-			let starMarker2 = new AMap.Marker({ // 添加起始点的标记
-			  position: path.value[0], // 轨迹线的最后一个点
-			  icon: "../static/startPoint.png",
-			  offset: new AMap.Pixel(-26, -44), // 根据图标的尺寸调整偏移
-			});
-			map2.add(starMarker2);
-			
-			let endMarker2 = new AMap.Marker({ // 添加结束点的标记
-			  position: path.value[path.value.length - 1], // 轨迹线的最后一个点
-			  icon: "../static/cat32.svg",
-			  offset: new AMap.Pixel(-10, -20), // 根据图的尺寸调整偏移
-			});
-			map2.add(endMarker2);
 		}
 	}
 	
@@ -969,6 +1065,17 @@
 	// 		});
 	// 	}
 	// };
+
+	// 添加页面显示/隐藏的生命周期钩子
+	onActivated(() => {
+		// 页面重新显示时，检查并重新初始化地图
+		if (map2 && !map2.getSize().width) {
+			console.log('检测到地图容器大小异常，尝试重新初始化');
+			nextTick(() => {
+				map2.resize();
+			});
+		}
+	});
 </script>
 
 <style lang="scss" scoped>
@@ -1040,48 +1147,50 @@
 	flex-direction: column;
 	gap: 16rpx;
 	padding: 0 20rpx;
-	
-	// #ifdef APP-PLUS
-	.map-section {
-		flex: 1;
-		height: 80vh;
-		background: #fff;
-		border-radius: 16rpx;
-		position: relative;
-		overflow: hidden;
-		
-		.map-box {
-			width: 100%;
-			height: 100%;
-		}
-	}
-	// #endif
+	height: calc(94vh - 200rpx); /* 减去顶部搜索区域的高度 */
+	overflow: hidden; /* 添加此行 */
 }
 
 // #ifdef H5
 .map-section {
 	flex: 1;
+	min-height: 400rpx; /* 增加最小高度 */
 	background: #fff;
 	border-radius: 16rpx;
 	position: relative;
 	overflow: hidden;
+	margin-bottom: 16rpx;
+	display: flex; /* 添加此行 */
+	flex-direction: column; /* 添加此行 */
+	
+	&:first-child {
+		flex: 1.1; /* 让3D地图稍大一些 */
+	}
+	
+	&:last-child {
+		flex: 0.9;
+		margin-bottom: 0; /* 修改此行 */
+	}
 }
 
 .map-title {
 	position: absolute;
 	top: 12rpx;
 	left: 12rpx;
-	font-size: 22rpx;
+	font-size: 24rpx;
 	color: #666;
 	background: rgba(255,255,255,0.9);
-	padding: 4rpx 12rpx;
-	border-radius: 4rpx;
+	padding: 6rpx 16rpx;
+	border-radius: 6rpx;
 	z-index: 1;
+	font-weight: 500;
 }
 
 #mymap, #mymap2 {
 	width: 100%;
 	height: 100%;
+	min-height: 400rpx;
+	position: relative; /* 添加此行 */
 }
 // #endif
 

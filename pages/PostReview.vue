@@ -2,15 +2,23 @@
     <view class="post-review">
         <NavBar1001 title="帖子审核" :showLeft="true" :showRight="false" />
 
-        <scroll-view scroll-y="true" class="post-list" refresher-enabled :refresher-triggered="isTriggered"
-            @refresherrefresh="onRefresh">
+        <scroll-view 
+            scroll-y="true" 
+            class="post-list" 
+            refresher-enabled 
+            :refresher-triggered="isTriggered"
+            @refresherrefresh="onRefresh"
+            :enhanced="true"
+            :bounces="true"
+            :show-scrollbar="false"
+            :fast-deceleration="true">
             <view v-if="posts === null || posts.length === 0" class="empty-state">
                 <text>暂无待审核的帖子</text>
             </view>
 
             <view v-else v-for="post in posts" :key="post.postId" class="post-item">
                 <view class="post-header">
-                    <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}${Suffix_1001}`"
+                    <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}${Suffix_1002}`"
                         mode="aspectFill" />
                     <text class="nickname">{{ post.authorNickname }}</text>
                     <text class="time">{{ formatTime(post.send_time) }}</text>
@@ -51,7 +59,7 @@
                                 indicator-active-color="#07c160">
                                 <swiper-item v-for="(image, index) in selectedPost.images" :key="index"
                                     class="swiper-item">
-                                    <image :src="`${pic_general_request_url}/post_pics/${image}${Suffix_1001}`" mode="aspectFit"
+                                    <image :src="`${pic_general_request_url}/post_pics/${image}${Suffix_1002}`" mode="aspectFit"
                                         class="detail-image" />
                                 </swiper-item>
                             </swiper>
@@ -70,7 +78,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
 import { STATUS_CODE } from '@/src/constant/constant.js'
 import NavBar1001 from '@/src/components/common/NavBar1001.vue';
 
@@ -201,13 +209,14 @@ const formatTime = (timestamp) => {
 // 刷新帖子列表
 const onRefresh = async () => {
     isTriggered.value = true;
+    await getApplyPosts();
     setTimeout(() => {
         isTriggered.value = false;
     }, 1000);
 };
 
 onMounted(async () => {
-    // 初始化时获取待审核帖子列表
+    // 初始化时调用全局方法：获取待审核帖子列表
     await getApplyPosts();
     console.log("获取待审核帖子列表成功：", appStore.applyPostList)
     posts.value = appStore.applyPostList
@@ -221,11 +230,25 @@ onMounted(async () => {
     background-color: #f5f5f5;
     display: flex;
     flex-direction: column;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
 }
 
 .post-list {
     flex: 1;
     height: calc(100vh - 150rpx);
+    padding: 20rpx;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    z-index: 1;
+    
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 .empty-state {
@@ -236,169 +259,181 @@ onMounted(async () => {
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 28rpx;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
 }
 
 .post-item {
-    margin: 20rpx;
-    padding: 20rpx;
     background-color: #ffffff;
     border-radius: 12rpx;
+    padding: 20rpx;
+    margin-bottom: 20rpx;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+    transform: translateZ(0);
+    will-change: transform;
+    -webkit-transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
 }
 
 .post-header {
     display: flex;
     align-items: center;
-    margin-bottom: 20rpx;
-}
+    margin-bottom: 16rpx;
 
-.avatar {
-    width: 80rpx;
-    height: 80rpx;
-    border-radius: 50%;
-    margin-right: 20rpx;
-}
+    .avatar {
+        width: 60rpx;
+        height: 60rpx;
+        border-radius: 30rpx;
+        margin-right: 16rpx;
+    }
 
-.nickname {
-    font-size: 28rpx;
-    color: #333;
-    flex: 1;
-}
+    .nickname {
+        font-size: 28rpx;
+        color: #333;
+        font-weight: bold;
+        flex: 1;
+    }
 
-.time {
-    font-size: 24rpx;
-    color: #999;
+    .time {
+        font-size: 24rpx;
+        color: #999;
+    }
 }
 
 .post-content {
     margin-bottom: 20rpx;
-}
+    
+    .post-title {
+        font-size: 32rpx;
+        font-weight: bold;
+        margin-bottom: 16rpx;
+        color: #333;
+        display: block;
+    }
 
-.post-title {
-    font-size: 32rpx;
-    font-weight: bold;
-    margin-bottom: 20rpx;
-    display: block;
-}
-
-.post-article {
-    max-height: 250rpx;
-    font-size: 28rpx;
-    color: #333;
-    line-height: 1.6;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    word-break: break-all;
-    padding: 10rpx 0;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    box-sizing: border-box;
-}
-
-.post-img {
-    width: 100%;
-    height: 300rpx;
-    border-radius: 8rpx;
-    object-fit: cover;
+    .post-article {
+        font-size: 28rpx;
+        color: #666;
+        line-height: 1.6;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-break: break-all;
+        padding: 10rpx 0;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        overflow: hidden;
+    }
 }
 
 .action-buttons {
     display: flex;
     justify-content: flex-end;
     gap: 20rpx;
+
+    button {
+        min-width: 140rpx;
+        height: 60rpx;
+        line-height: 60rpx;
+        text-align: center;
+        border-radius: 30rpx;
+        font-size: 28rpx;
+        border: none;
+        padding: 0 32rpx;
+    }
+
+    .approve-btn {
+        background-color: #007AFF;
+        color: #ffffff;
+    }
+
+    .reject-btn {
+        background-color: #ffffff;
+        color: #FF3B30;
+        border: 1rpx solid #FF3B30;
+    }
 }
 
-button {
-    min-width: 160rpx;
-    padding: 16rpx 32rpx;
-    border-radius: 30rpx;
-    font-size: 28rpx;
-    border: none;
-}
-
-.approve-btn {
-    background-color: #07c160;
-    color: #ffffff;
-}
-
-.reject-btn {
-    background-color: #ff4d4f;
-    color: #ffffff;
-}
-
+// 弹窗样式
 .post-detail-popup {
-    width: 80vw;
+    width: 90vw;
     max-height: 80vh;
     background-color: #ffffff;
     border-radius: 12rpx;
-}
+    overflow: hidden;
 
-.popup-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20rpx;
-    border-bottom: 1rpx solid #eee;
-}
+    .popup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20rpx;
+        border-bottom: 1rpx solid #eee;
+        background-color: #f8f8f8;
 
-.popup-title {
-    font-size: 32rpx;
-    font-weight: bold;
-}
+        .popup-title {
+            font-size: 32rpx;
+            font-weight: bold;
+            color: #333;
+        }
 
-.close-btn {
-    font-size: 40rpx;
-    color: #999;
-    padding: 10rpx;
-    cursor: pointer;
-}
-
-.popup-content {
-    // padding: 20rpx;
-    max-height: calc(80vh - 100rpx);
-}
-
-.detail-content {
-    .detail-title {
-        font-size: 36rpx;
-        font-weight: bold;
-        margin-bottom: 20rpx;
-        padding-left: 40rpx;
-    }
-
-    .image-section {
-        margin: 20rpx 0;
-
-        .swiper {
-            width: 100%;
-            height: 400rpx;
-
-            .swiper-item {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-
-            .detail-image {
-                width: 100%;
-                height: 100%;
-                border-radius: 8rpx;
-            }
+        .close-btn {
+            font-size: 40rpx;
+            color: #999;
+            padding: 10rpx;
+            line-height: 1;
         }
     }
 
-    .content-section {
-        padding: 10rpx 0;
-        width: 90%;
-        margin: 0 auto;
+    .popup-content {
+        max-height: calc(80vh - 100rpx);
+        padding: 20rpx;
+    }
 
-        .detail-content-text {
-            font-size: 28rpx;
+    .detail-content {
+        .detail-title {
+            font-size: 36rpx;
+            font-weight: bold;
             color: #333;
-            line-height: 1.6;
-            display: block;
-            word-wrap: break-word;
-            white-space: pre-wrap;
-            padding: 0 0rpx;
+            margin-bottom: 20rpx;
+            padding: 0 20rpx;
+        }
+
+        .image-section {
+            margin: 20rpx 0;
+
+            .swiper {
+                width: 100%;
+                height: 400rpx;
+                border-radius: 8rpx;
+                overflow: hidden;
+
+                .swiper-item {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+
+                .detail-image {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+            }
+        }
+
+        .content-section {
+            padding: 20rpx;
+
+            .detail-content-text {
+                font-size: 28rpx;
+                color: #666;
+                line-height: 1.6;
+                white-space: pre-wrap;
+                word-break: break-all;
+            }
         }
     }
 }

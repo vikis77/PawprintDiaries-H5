@@ -48,7 +48,7 @@
 </template>
 
 <script setup>
-import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
 import { useAppStore } from '@/store/modules/app'
 const appStore = useAppStore()
 
@@ -77,7 +77,7 @@ onShow(() => {
 		// 遍历 catList，将每只猫的信息加入 gridList
 		catList.forEach((cat) => {
 			gridList.value.push({
-				url: `${pic_general_request_url.value}/cat_avatar/${cat.avatar}${Suffix_1001.value}`,
+				url: `${pic_general_request_url.value}/cat_avatar/${cat.avatar}${Suffix_1002.value}`,
 				data: '',
 				text: cat.catname,
 				text2: cat.area,

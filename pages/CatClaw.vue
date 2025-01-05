@@ -43,7 +43,7 @@
                                                 <!-- 猫猫头像 -->
                                                 <view class="t7908f">
                                                     <image class="img32r"
-                                                        :src="`${pic_general_request_url}/cat_avatar/${cat.avatar}${Suffix_1001}`"
+                                                        :src="`${pic_general_request_url}/cat_avatar/${cat.avatar}${Suffix_1002}`"
                                                         mode="aspectFill"></image>
                                                 </view>
                                                 <!-- 猫猫信息  -->
@@ -59,7 +59,7 @@
                                                 <view class="interaction-area">
                                                     <text class="preview-text">仅预览</text>
                                                     <view class="interaction-item">
-                                                        <uni-icons type="heart" size="18" color="#666"></uni-icons>
+                                                        <uni-icons :type="cat.isLikedToday ? 'heart-filled' : 'heart'" size="18" :color="cat.isLikedToday ? '#FF6B6B' : '#666'"></uni-icons>
                                                         <text class="like-count">{{ cat.likeCount || 0 }}</text>
                                                     </view>
                                                     <view class="interaction-item">
@@ -68,7 +68,7 @@
                                                     </view>
                                                     <view class="interaction-item">
                                                         <uni-icons type="chat" size="18" color="#666"></uni-icons>
-                                                        <text class="comment-count">{{ cat.comments || 0 }}</text>
+                                                        <text class="comment-count">{{ cat.commentCount || 0 }}</text>
                                                     </view>
                                                 </view>
                                             </view>
@@ -85,7 +85,7 @@
             <view class="showStatisticsBox">
                 <view class="th0hzf">
                     <!-- thumbnail 图片现在只能使用网络图片，本地图片不显示 -->
-                    <uni-card class="tz0v898" margin="0" title="校猫数据统计卡片" :sub-title="nowTime" extra="" thumbnail="https://cdn.luckyiur.com/catcat/static_image/cat-copy.png-small35">
+                    <uni-card class="tz0v898" margin="0" title="校猫数据统计卡片" :sub-title="nowTime" extra="" thumbnail="https://cdn.luckyiur.com/catcat/static_image/cat-copy.png-small15">
                         <view class="gridbody">
                             <uni-grid class="tyh08hz" :column="3" :square="false" :highlight="false">
                                 <uni-grid-item v-for="(item, index) in gridList" :index="index" :key="index"
@@ -273,7 +273,7 @@
                     <view class="popup-header">
                         <text class="title">{{ currentFundType === 'fund' ? '资金记录' : currentFundType === 'expense' ? '支出记录' : '收入记录' }}</text>
                         <view class="header-actions">
-                            <button class="add-btn" @click="showAddFundForm" v-if="isAdmin">添加记录（管理员）</button>
+                            <button class="add-btn" @click="showAddFundForm" v-if="isAdmin">添加记录</button>
                             <uni-icons type="closeempty" size="24" @click="closeFundRecords"></uni-icons>
                         </view>
                     </view>
@@ -289,7 +289,8 @@
                                             <uni-icons type="trash" size="20" color="#666" @click="deleteFundRecord(index)"></uni-icons>
                                         </view>
                                     </view>
-                                    <text class="record-amount">{{ record.type === 'expense' ? '-' : '+' }}￥{{record.amount}}</text>
+                                    <!-- {{ record.type }} -->
+                                    <text class="record-amount">{{ record.type === '支出' ? '-' : '+' }}￥{{record.amount}}</text>
                                     <text class="record-desc">{{record.description}}</text>
                                 </view>
                             </view>
@@ -337,7 +338,8 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
+import { STATUS_CODE } from '@/src/constant/constant.js'
 import { toBeDeveloped, showToast } from '@/src/utils/toast'
 // import { getCatInfoDetail, getCatAnalyseData } from '@/src/api/post'
 import { useAppStore } from '@/store/modules/app'
@@ -361,8 +363,8 @@ const catDataAnalysisData = ref({
     healthStatus: { '健康': 0, '疾病': 0, '营养不良': 0, '肥胖': 0 },
     monthlyNewCount: 0,
     fundBalance: 0,
-    lastMonthExpense: 0,
-    lastMonthIncome: 0,
+    monthExpense: 0,
+    monthIncome: 0,
     ageDistribution: {
         "3个月以内": 0,
         "3-6个月": 0,
@@ -657,7 +659,7 @@ const refreshCatList = () => {
     }, 800);
 };
 
-// 修改获取猫猫数据的方法
+// 获取猫猫数据的方法
 const fetchCatData = async () => {
     // 只在首次加载时显示加载动画
     if (isFirstLoad.value) {
@@ -729,13 +731,13 @@ const fetchCatData = async () => {
         },
         {
             url: '../static/expense.png',
-            data: catDataAnalysisData.value.lastMonthExpense || 0,
+            data: catDataAnalysisData.value.monthExpense || 0,
             text: '资金支出',
             text2: '（元）'
         },
         {
             url: '../static/income.png',
-            data: catDataAnalysisData.value.lastMonthIncome || 0,
+            data: catDataAnalysisData.value.monthIncome || 0,
             text: '资金收入',
             text2: '（元）'
         }];
@@ -819,8 +821,8 @@ const fetchDataAnalysis = async () => {
             },
             monthlyNewCount: ensureNumber(newData?.monthlyNewCount),
             fundBalance: ensureNumber(newData?.fundBalance),
-            lastMonthExpense: ensureNumber(newData?.lastMonthExpense),
-            lastMonthIncome: ensureNumber(newData?.lastMonthIncome),
+            monthExpense: ensureNumber(newData?.monthExpense),
+            monthIncome: ensureNumber(newData?.monthIncome),
             ageDistribution: {
                 "3个月以内": ensureNumber(newData?.ageDistribution?.["3个月以内"]),
                 "3-6个月": ensureNumber(newData?.ageDistribution?.["3-6个月"]),
@@ -864,10 +866,10 @@ const fetchDataAnalysis = async () => {
                     targetValue = ensureNumber(newData?.fundBalance);
                     break;
                 case 7:
-                    targetValue = ensureNumber(newData?.lastMonthExpense);
+                    targetValue = ensureNumber(newData?.monthExpense);
                     break;
                 case 8:
-                    targetValue = ensureNumber(newData?.lastMonthIncome);
+                    targetValue = ensureNumber(newData?.monthIncome);
                     break;
             }
             // 执行动画，从0到目标值
@@ -1129,7 +1131,7 @@ const selectedGrid = ref({});
 const activeGridIndex = ref(-1);
 
 // 显示格子详情
-const showGridDetail = (item) => {
+const showGridDetail = async (item) => {
     selectedGrid.value = item;
     // 获取数据的最大值和最小值
     const getAxisConfig = (data) => {
@@ -1146,7 +1148,7 @@ const showGridDetail = (item) => {
             splitNumber: splitNumber  // 设置分割数
         };
     };
-
+    let money = 0;
     // 根据不同类型添加趋势数据
     switch (item.text) {
         case '本月新增':
@@ -1256,7 +1258,16 @@ const showGridDetail = (item) => {
             break;
             
         case '救助资金剩余':
-            const fundData = [1100, 500, 800, 1500, 1000, catDataAnalysisData.value.fundBalance || 0];
+            await getFundCalculate('救助资金剩余');
+            console.log(appStore.fundCalculateData[0].remainingFund)
+            const fundData = [
+                appStore.fundCalculateData[5].remainingFund || 0,
+                appStore.fundCalculateData[4].remainingFund || 0, 
+                appStore.fundCalculateData[3].remainingFund || 0, 
+                appStore.fundCalculateData[2].remainingFund || 0,
+                appStore.fundCalculateData[1].remainingFund || 0,
+                appStore.fundCalculateData[0].remainingFund || 0
+            ];
             selectedGrid.value.chartData = {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
@@ -1278,7 +1289,15 @@ const showGridDetail = (item) => {
             break;
             
         case '资金支出':
-            const expenseData = [200, 800, 500, 700, 500, catDataAnalysisData.value.lastMonthExpense || 0];
+            await getFundCalculate('资金支出');
+            const expenseData = [
+                appStore.fundCalculateData[5].totalExpenses || 0,
+                appStore.fundCalculateData[4].totalExpenses || 0, 
+                appStore.fundCalculateData[3].totalExpenses || 0, 
+                appStore.fundCalculateData[2].totalExpenses || 0,
+                appStore.fundCalculateData[1].totalExpenses || 0,
+                appStore.fundCalculateData[0].totalExpenses || 0
+            ];
             selectedGrid.value.chartData = {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
@@ -1300,7 +1319,15 @@ const showGridDetail = (item) => {
             break;
             
         case '资金收入':
-            const incomeData = [300, 250, 400, 350, 500, catDataAnalysisData.value.lastMonthIncome || 0];
+            await getFundCalculate('资金收入');
+            const incomeData = [
+                appStore.fundCalculateData[5].totalIncome || 0,
+                appStore.fundCalculateData[4].totalIncome || 0, 
+                appStore.fundCalculateData[3].totalIncome || 0, 
+                appStore.fundCalculateData[2].totalIncome || 0,
+                appStore.fundCalculateData[1].totalIncome || 0,
+                appStore.fundCalculateData[0].totalIncome || 0
+            ];
             selectedGrid.value.chartData = {
                 categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
                 series: [{
@@ -1445,6 +1472,7 @@ const isAdmin = ref(true); // 这里应该根据实际用户权限来设置
 
 // 资金记录表单数据
 const fundForm = ref({
+    id: null,
     date: '',
     amount: '',
     type: '',
@@ -1454,64 +1482,86 @@ const fundForm = ref({
 // 显示资金记录
 function showFundRecords(type) {
     currentFundType.value = type;
+    // 清空之前的记录
+    fundRecords.value = [];
+    
     // 获取当前月份
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
     
     // 根据不同类型显示不同的记录
+    let requestType = 0; // 默认显示所有记录
+    
     switch(type) {
         case 'fund':
-            // 资金剩余：显示本月所有收支记录
-            fundRecords.value = [
-                {
-                    date: '2024-01-15',
-                    amount: '1000',
-                    type: 'income',
-                    description: '爱心人士捐赠'
-                },
-                {
-                    date: '2024-01-10',
-                    amount: '500',
-                    type: 'expense',
-                    description: '购买猫粮'
-                }
-            ].filter(record => {
-                const [year, month] = record.date.split('-').map(Number);
-                return year === currentYear && month === currentMonth;
-            });
+        case '救助资金':
+            requestType = 0; // 显示所有收支记录
             break;
-            
         case 'expense':
-            // 本月支出：只显示本月支出记录
-            fundRecords.value = [
-                {
-                    date: '2024-01-10',
-                    amount: '500',
-                    type: 'expense',
-                    description: '购买猫粮'
-                }
-            ].filter(record => {
-                const [year, month] = record.date.split('-').map(Number);
-                return year === currentYear && month === currentMonth && record.type === 'expense';
-            });
+        case '支出':
+            requestType = 2; // 只显示支出记录
             break;
-            
         case 'income':
-            // 本月收入：只显示本月收入记录
-            fundRecords.value = [
-                {
-                    date: '2024-01-15',
-                    amount: '1000',
-                    type: 'income',
-                    description: '爱心人士捐赠'
-                }
-            ].filter(record => {
-                const [year, month] = record.date.split('-').map(Number);
-                return year === currentYear && month === currentMonth && record.type === 'income';
-            });
+        case '收入':
+            requestType = 1; // 只显示收入记录
             break;
     }
+    
+    uni.request({
+        url: `${API_general_request_url.value}/api/cat/analysis/fund/list?type=${requestType}`, 
+        method: 'GET',
+        header: {
+            'Authorization': `Bearer ${uni.getStorageSync('token')}`
+        },
+        success: (res) => {
+            if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
+                console.log("获取资金记录成功")
+                console.log(res)
+                let fundList = res.data.data;
+                
+                // 将时间戳转换为日期格式的函数
+                const formatDate = (timestamp) => {
+                    const date = new Date(timestamp);
+                    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                };
+                
+                // 根据不同类型处理数据
+                if (type === 'fund' || type === '救助资金') {
+                    // 显示所有记录，需要区分收入和支出
+                    fundRecords.value = fundList.map(item => ({
+                        ...item,
+                        date: formatDate(item.date), // 转换时间戳为日期格式
+                        type: item.type === 1 ? '收入' : '支出'
+                    }));
+                } else if (type === 'expense' || type === '支出') {
+                    // 只显示支出记录
+                    fundRecords.value = fundList.map(item => ({
+                        ...item,
+                        date: formatDate(item.date), // 转换时间戳为日期格式
+                        type: '支出'
+                    }));
+                } else if (type === 'income' || type === '收入') {
+                    // 只显示收入记录
+                    fundRecords.value = fundList.map(item => ({
+                        ...item,
+                        date: formatDate(item.date), // 转换时间戳为日期格式
+                        type: '收入'
+                    }));
+                }
+                
+                console.log(fundRecords.value)
+            } else {
+                uni.showToast({
+                    title: res.data.msg || '获取资金记录失败',
+                    icon: 'none'
+                });
+            }
+        },
+        fail: (err) => {
+            console.log(err);
+        }
+    });
     
     fundRecordsPopup.value.open();
 }
@@ -1554,7 +1604,32 @@ function editFundRecord(index) {
     isEditingFund.value = true;
     currentEditFundIndex.value = index;
     const record = fundRecords.value[index];
-    fundForm.value = { ...record };
+    
+    // 确保type是字符串形式
+    const recordType = typeof record.type === 'number' 
+        ? (record.type === 1 ? 'income' : 'expense')
+        : (record.type === '收入' ? 'income' : 'expense');
+        
+    fundForm.value = { 
+        ...record,
+        type: recordType
+    };
+    
+    // 根据当前资金类型设置表单类型选项
+    if (currentFundType.value === 'income') {
+        fundTypeOptions.value = [{ value: 'income', text: '收入' }];
+        fundForm.value.type = 'income';
+    } else if (currentFundType.value === 'expense') {
+        fundTypeOptions.value = [{ value: 'expense', text: '支出' }];
+        fundForm.value.type = 'expense';
+    } else {
+        // 在资金记录（全部）页面，根据当前记录类型设置
+        fundTypeOptions.value = [
+            { value: 'expense', text: '支出' },
+            { value: 'income', text: '收入' }
+        ];
+    }
+    
     fundFormPopup.value.open();
 }
 
@@ -1565,10 +1640,31 @@ function deleteFundRecord(index) {
         content: '确定要删除这条记录吗？',
         success: function (res) {
             if (res.confirm) {
-                fundRecords.value.splice(index, 1);
-                uni.showToast({
-                    title: '删除成功',
-                    icon: 'success'
+                uni.request({
+                    url: `${API_general_request_url.value}/api/cat/analysis/fund/delete?id=${fundRecords.value[index].id}`,
+                    method: 'DELETE',
+                    header: {
+                        'Authorization': `Bearer ${uni.getStorageSync('token')}`
+                    },
+                    success: (res) => {
+                        if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
+                            console.log("删除资金记录成功")
+                            console.log(res)
+                            fundRecords.value.splice(index, 1);
+                            uni.showToast({
+                                title: '删除成功',
+                                icon: 'success'
+                            });
+                        } else {
+                            uni.showToast({
+                                title: res.data.msg || '删除资金记录失败',
+                                icon: 'none'
+                            });
+                        }
+                    },
+                    fail: (err) => {
+                        console.log(err);
+                    }
                 });
             }
         }
@@ -1596,29 +1692,67 @@ function submitFundRecord() {
         });
         return;
     }
-
-    if (isEditingFund.value) {
-        fundRecords.value[currentEditFundIndex.value] = { ...fundForm.value };
-    } else {
-        fundRecords.value.push({ ...fundForm.value });
-    }
     
-    // 按日期排序
-    fundRecords.value.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // 创建一个用于提交到API的数据副本
+    const submitData = {
+        ...fundForm.value,
+        type: fundForm.value.type === 'income' ? 1 : 2
+    };
     
-    closeFundForm();
-    uni.showToast({
-        title: isEditingFund.value ? '编辑成功' : '添加成功',
-        icon: 'success'
+    uni.request({
+        url: `${API_general_request_url.value}/api/cat/analysis/fund/add`,
+        method: 'POST',
+        header: {
+            'Authorization': `Bearer ${uni.getStorageSync('token')}`
+        },
+        data: submitData,
+        success: (res) => {
+            if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
+                console.log(res);
+                // 如果是编辑，则更新记录
+                if (isEditingFund.value) {
+                    fundRecords.value[currentEditFundIndex.value] = {
+                        ...fundForm.value,
+                        type: fundForm.value.type === 'income' ? '收入' : '支出'
+                    };
+                } else {
+                    // 如果是添加，则添加记录
+                    fundRecords.value.push({
+                        ...fundForm.value,
+                        type: fundForm.value.type === 'income' ? '收入' : '支出'
+                    });
+                }
+                
+                // 按日期排序
+                fundRecords.value.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                closeFundForm();
+                uni.showToast({
+                    title: isEditingFund.value ? '编辑成功' : '添加成功',
+                    icon: 'success'
+                });
+            } else {
+                uni.showToast({
+                    title: res.data.msg || '添加资金记录失败',
+                    icon: 'none'
+                });
+            }
+        },
+        fail: (err) => {
+            console.log(err);
+        }
     });
 }
 
 // 处理资金管理按钮点击
 function handleManageFund(type) {
     let fundType = '';
+    // 如果type是字符串，直接赋值
     if (typeof type === 'string') {
         fundType = type;
-    } else if (typeof type === 'object' && type.text) {
+    }
+    // 如果type是对象，判断是否包含救助资金
+    else if (typeof type === 'object' && type.text) {
         if (type.text.includes('救助资金')) {
             fundType = 'fund';
         } else if (type.text.includes('支出')) {
@@ -2323,8 +2457,8 @@ scroll-view ::-webkit-scrollbar {
 
                 .manage-btn {
                     position: absolute;
-                    right: 80rpx;
-                    width: 160rpx;
+                    right: 30rpx;
+                    width: 150rpx;
                     height: 60rpx;
                     line-height: 60rpx;
                     background: linear-gradient(135deg, #8d5da3, #a679c7);
@@ -2517,6 +2651,7 @@ scroll-view ::-webkit-scrollbar {
                         font-weight: bold;
                         color: #333;
                         margin-bottom: 8rpx;
+                        padding-right: 20rpx;
                     }
                     
                     .record-desc {

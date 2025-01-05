@@ -56,14 +56,22 @@ export const reviewComment = async (id, type, action) => {
                 "type": type,
                 "action": action
             },
-            headers: {
+            header: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: (res) => {
                 if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                     console.log("审核评论成功：", res)
+                    uni.showToast({
+                        title: '操作成功',
+                        icon: 'success'
+                    })
                 } else {
+                    uni.showToast({
+                        title: res.data.msg || '操作失败',
+                        icon: 'none'
+                    })
                     throw new Error('评论审核操作失败');
                 }
             },

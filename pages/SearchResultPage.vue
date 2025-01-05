@@ -46,7 +46,7 @@
 				>
 				  <image 
 					class="cat-avatar"
-					:src="`${pic_general_request_url}/cat_avatar/${cat.avatar}${Suffix_1001}`"
+					:src="`${pic_general_request_url}/cat_avatar/${cat.avatar}${Suffix_1002}`"
 					mode="aspectFill"
 				  />
 				  <view class="cat-info">
@@ -70,7 +70,7 @@
 			  >
 				<image 
 				  class="post-cover"
-				  :src="`${pic_general_request_url}/post_pics/${post.coverPicture}${Suffix_1001}`"
+				  :src="`${pic_general_request_url}/post_pics/${post.coverPicture}${Suffix_1002}`"
 				  mode="aspectFill"
 				/>
 				<view class="post-content">
@@ -79,7 +79,7 @@
 					<view class="author">
 					  <image 
 						class="author-avatar"
-						:src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}${Suffix_1001}`"
+						:src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}${Suffix_1002}`"
 						mode="aspectFill"
 					  />
 					  <text class="author-name">{{ post.authorNickname }}</text>
@@ -107,7 +107,7 @@
 <script setup>
 	import { ref, onMounted } from 'vue';
 	import { onLoad } from '@dcloudio/uni-app';
-	import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+	import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
     import { STATUS_CODE } from '@/src/constant/constant.js'
     import { useAppStore } from '@/store/modules/app'
     const appStore = useAppStore()

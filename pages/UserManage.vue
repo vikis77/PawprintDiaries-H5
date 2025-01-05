@@ -21,7 +21,7 @@
 
             <view v-else v-for="user in users" :key="user.userId" class="user-item">
                 <view class="user-info">
-                    <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${user.avatar}${Suffix_1001}`" mode="aspectFill" />
+                    <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${user.avatar}${Suffix_1002}`" mode="aspectFill" />
                     <view class="user-detail">
                         <view class="user-name">
                             <text class="nickname">{{ user.nickName }}</text>
@@ -54,7 +54,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js';
+import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js';
 import { STATUS_CODE } from '@/src/constant/constant.js';
 import NavBar1001 from '@/src/components/common/NavBar1001.vue';
 
@@ -83,7 +83,7 @@ const fetchUsers = async (page = 1, keyword = null) => {
                 data: {
                     keyword: Number(keyword) // 现阶段只支持用户名ID搜索
                 },
-                headers: {
+                header: {
                     'Authorization': `Bearer ${uni.getStorageSync('token')}`
                 },
                 success: (res) => {
@@ -101,7 +101,7 @@ const fetchUsers = async (page = 1, keyword = null) => {
             await uni.request({
                 url: `${API_general_request_url.value}/api/role/list?page=${page}&pageSize=${pageSize.value}`,
                 method: 'GET',
-                headers: {
+                header: {
                     'Authorization': `Bearer ${uni.getStorageSync('token')}`
                 },
                 success: (res) => {

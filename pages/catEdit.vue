@@ -47,7 +47,7 @@
 									</view>
 									<view v-else-if="catBaseFormData.avatar" class="avatar-preview-container" @click="handleReselect">
 										<image 
-											:src="`${pic_general_request_url}/cat_avatar/${catBaseFormData.avatar}${Suffix_1001}`" 
+											:src="`${pic_general_request_url}/cat_avatar/${catBaseFormData.avatar}${Suffix_1002}`" 
 											mode="aspectFill" 
 											class="avatar-preview"
 										/>
@@ -76,6 +76,22 @@
 								v-model="catBaseFormData.gender" 
 								:localdata="sexs"
 								class="custom-checkbox"
+							/>
+						</uni-forms-item>
+						
+						<uni-forms-item label="品种" required>
+							<uni-easyinput 
+								v-model="catBaseFormData.breed" 
+								placeholder="请输入猫咪品种"
+								class="custom-input"
+							/>
+						</uni-forms-item>
+						
+						<uni-forms-item label="常居地" required>
+							<uni-easyinput 
+								v-model="catBaseFormData.area" 
+								placeholder="请输入猫咪常居地"
+								class="custom-input"
 							/>
 						</uni-forms-item>
 					</view>
@@ -171,7 +187,7 @@
 
 <script setup>
 	import { ref, onMounted, nextTick } from 'vue';
-	import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+	import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
 	import NavBar1001 from '@/src/components/common/NavBar1001.vue'
     import { STATUS_CODE } from '@/src/constant/constant.js'
 	
@@ -188,7 +204,9 @@
 		vaccinationStatus: '未接种',
 		badRecord: '',
 		catGuide: '',
-		avatar: []
+		avatar: [],
+		breed: '',
+		area: ''
 	});
 	const selectedTempFilePaths = ref([]); // 存储已选择的图片的路径
 	const selectedTempFiles = ref([]); // 存储已选择的图片信息
@@ -330,7 +348,7 @@
 		if (!catBaseFormData.value.catname || !catBaseFormData.value.age 
 			|| !catBaseFormData.value.food || !catBaseFormData.value.taboo || !catBaseFormData.value.catCharacter 
 			|| !catBaseFormData.value.healthStatus || !catBaseFormData.value.sterilizationStatus 
-			|| !catBaseFormData.value.vaccinationStatus) {
+			|| !catBaseFormData.value.vaccinationStatus || !catBaseFormData.value.breed || !catBaseFormData.value.area) {
 			uni.showToast({
 				title: '请填写所有必填项',
 				icon: 'none'
@@ -358,7 +376,10 @@
 			'sterilizationStatus': catBaseFormData.value.sterilizationStatus,
 			'vaccinationStatus': catBaseFormData.value.vaccinationStatus,
 			'badRecord': catBaseFormData.value.badRecord,
-			'catGuide': catBaseFormData.value.catGuide
+			'catGuide': catBaseFormData.value.catGuide,
+			'breed': catBaseFormData.value.breed,
+			'area': catBaseFormData.value.area,
+            'birthday': catBaseFormData.value.birthday
 		};
 		if (catId.value) {
 			postData.catId = catId.value;
@@ -381,6 +402,8 @@
 				data: postData
 			});  
 			if (postResponse.statusCode === 200 && postResponse.data.code === STATUS_CODE.SUCCESS) {
+                // 请求一次获取猫猫详情
+                fetchCatDetails(catId.value);
 				console.log("持久化完成")  
 			} else {
 				console.log(postResponse.data)

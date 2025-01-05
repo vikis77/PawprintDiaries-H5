@@ -4,6 +4,14 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+// 定义资金计算数据接口
+interface FundCalculateData {
+    month: number; // 月份
+    remainingFund: number; // 救助资金剩余
+    totalExpenses: number; // 资金支出 
+    totalIncome: number; // 资金收入
+}
+
 // 定义搜索结果数据接口
 interface SearchResult {
     cats: CatList[];
@@ -24,40 +32,40 @@ interface CatLocation {
 
 // 定义猫咪数据分析接口
 interface CatDataAnalysis {
-    adoptionCount: number;
+    adoptionCount: number; // 领养数量
     sterilizationRatio: {
-        '已绝育': number;
-        '未绝育': number;
+        '已绝育': number; // 已绝育数量
+        '未绝育': number; // 未绝育数量
     };
     vaccinationRatio: {
-        '已接种': number;
-        '未接种': number;
+        '已接种': number; // 已接种数量
+        '未接种': number; // 未接种数量
     };
     healthStatus: {
-        '健康': number;
-        '疾病': number;
-        '营养不良': number;
-        '肥胖': number;
+        '健康': number; // 健康数量
+        '疾病': number; // 疾病数量
+        '营养不良': number; // 营养不良数量
+        '肥胖': number; // 肥胖数量
     };
-    monthlyNewCount: number;
-    fundBalance: number;
-    lastMonthExpense: number;
-    lastMonthIncome: number;
+    monthlyNewCount: number; // 本月新增数量
+    fundBalance: number; // 资金余额
+    monthExpense: number; // 本月支出
+    monthIncome: number; // 本月收入
     ageDistribution: {
-        "3个月以内": number;
-        "3-6个月": number;
-        "6-12个月": number;
-        "12-18个月": number;
-        "18-24个月": number;
-        "24个月以上": number;
+        "3个月以内": number; // 3个月以内数量
+        "3-6个月": number; // 3-6个月数量
+        "6-12个月": number; // 6-12个月数量
+        "12-18个月": number; // 12-18个月数量
+        "18-24个月": number; // 18-24个月数量
+        "24个月以上": number; // 24个月以上数量
     };
     areaDistribution: {
-        '北门': number;
-        '岐头': number;
-        '凤翔': number;
-        '厚德楼': number;
-        '香晖苑': number;
-        '未知': number;
+        '北门': number; // 北门数量
+        '岐头': number; // 岐头数量
+        '凤翔': number; // 凤翔数量
+        '厚德楼': number; // 厚德楼数量
+        '香晖苑': number; // 香晖苑数量
+        '未知': number; // 未知数量
     };
 }
 
@@ -136,6 +144,7 @@ interface UserInfo {
     postList: PostDetail[]; // 该作者的首页帖子的集合
     collectionList: PostDetail[] | null; // 该作者的收藏帖子的集合
     likeList: PostDetail[] | null; // 该作者的点赞帖子的集合
+    postLikedCount: number; // 获得的全部帖子的点赞总数
 }
 
 // 首页！！帖子类型接口
@@ -180,7 +189,7 @@ interface CatList {
     sterilizationStatus: string; // 绝育状态
     vaccinationStatus: string; // 疫苗接种状态
     badRecord: string; // 不良记录
-    area: string | null; // 活动区域
+    area: string | null; // 常居地
     catGuide: string; // 撸猫指南
     createTime: number[]; // 创建时间
     updateTime: number[]; // 更新时间
@@ -188,6 +197,8 @@ interface CatList {
     likeCount: number; // 点赞数
     isAdopted: number; // 是否已被领养
     isLikedToday: number; // 今天是否已点赞
+    commentCount: number; // 评论数量
+    breed: string; // 品种
 }
 
 // 定义待审核帖子列表类型接口
@@ -206,6 +217,10 @@ interface ApplyPost {
 // 使用组合式 API 风格定义 store
 export const useAppStore = defineStore('app', () => {
     /* ---------------------定义状态--------------------- */
+
+    // 资金计算数据
+    const fundCalculateData = ref<FundCalculateData[]>([])
+
     // 搜索结果数据
     const searchResultData = ref<SearchResult | null>(null)
 
@@ -275,6 +290,11 @@ export const useAppStore = defineStore('app', () => {
 
 
     /* ---------------------设置状态--------------------- */
+
+    // 设置资金计算数据
+    function setFundCalculateData(data: FundCalculateData[]) {
+        fundCalculateData.value = data
+    }
     // 设置搜索结果数据
     function setSearchResultData(data: SearchResult) {
         searchResultData.value = data
@@ -360,7 +380,9 @@ export const useAppStore = defineStore('app', () => {
         // 数据分析相关导出
         catDataAnalysisData,
         setCatDataAnalysis,
-
+        // 资金计算相关导出
+        fundCalculateData,
+        setFundCalculateData,
         /* ---------------------状态--------------------- */
         postCommentList,
         catCommentList,
@@ -385,6 +407,6 @@ export const useAppStore = defineStore('app', () => {
         updateSettings,
         markAsNotFirstLaunch,
         setUserInfo,
-        setUserInfoNull
+        setUserInfoNull,
     }
 }) 

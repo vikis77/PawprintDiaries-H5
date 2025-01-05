@@ -33,7 +33,7 @@
               </view>
               <view v-else-if="userInfo.avatar" class="avatar-preview-container" @click="handleReselect">
                 <image 
-                  :src="`${pic_general_request_url}/user_avatar/${userInfo.avatar}${Suffix_1001}`" 
+                  :src="`${pic_general_request_url}/user_avatar/${userInfo.avatar}${Suffix_1002}`" 
                   mode="aspectFill" 
                   class="avatar-preview"
                 />
@@ -109,7 +109,7 @@
       <text class="section-title">我的帖子</text>
       <view class="post-list">
         <view v-for="post in userInfo.postList" :key="post.postId" class="post-item">
-          <img :src="`${pic_general_request_url}/post_pics/${post.coverPicture}${Suffix_1001}`" class="post-cover" mode="aspectFit"></img>
+          <img :src="`${pic_general_request_url}/post_pics/${post.coverPicture}${Suffix_1002}`" class="post-cover" mode="aspectFit"></img>
           <view class="post-info">
             <text class="post-title">{{post.title}}</text>
             <text class="post-content">{{post.article}}</text>
@@ -128,7 +128,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, nextTick } from 'vue';
-import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
 import { STATUS_CODE } from '@/src/constant/constant.js'
 import NavBar1001 from '@/src/components/common/NavBar1001.vue'
 import { useAppStore } from '@/store/modules/app'

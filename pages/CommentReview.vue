@@ -29,7 +29,7 @@
             <view class="comment-item" v-for="item in commentList" :key="item.id">
                 <view class="comment-header">
                     <view class="user-info">
-                        <image class="avatar" :src="`${pic_general_request_url}/user_avatar/${item.avatar}${Suffix_1001}`" mode="aspectFill" />
+                        <image class="avatar" :src="`${pic_general_request_url}/user_avatar/${item.avatar}${Suffix_1002}`" mode="aspectFill" />
                         <text class="username">{{ item.nickName }}</text>
                     </view>
                     <text class="time">{{ item.createTime ? new Date(item.createTime).toLocaleString() : '暂无时间' }}</text>
@@ -59,7 +59,7 @@ import { ref, onMounted } from 'vue'
 import NavBar1001 from '@/src/components/common/NavBar1001.vue'
 import { getPendingComments, reviewComment } from '@/src/api/comment.js'
 import { useAppStore } from '@/store/modules/app'
-import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
 
 // 创建 store 实例
 const appStore = useAppStore()
@@ -211,10 +211,7 @@ const handleApprove = async (id, type) => {
                     try {
                         // 调用审核通过接口
                         await reviewComment(id, type, 'approve')
-                        uni.showToast({
-                            title: '已通过',
-                            icon: 'success'
-                        })
+                        
                         // 重新加载当前页数据
                         page.value = 1
                         await loadComments()
@@ -270,7 +267,7 @@ const handleReject = async (id, type) => {
     .filter-section {
         background-color: #fff;
         padding: 20rpx;
-        margin-bottom: 20rpx;
+        // margin-bottom: 20rpx;
 
         .filter-tabs {
             display: flex;

@@ -11,7 +11,7 @@ export const getCatInfoDetail = async () => {
         uni.request({
             url: `${API_general_request_url.value}/api/cat/list`,
             method: 'GET',
-            headers: {
+            header: {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: async (res) => {
@@ -45,7 +45,7 @@ export const getCatAnalyseData = async () => {
         uni.request({
             url: `${API_general_request_url.value}/api/cat/analysis`,
             method: 'GET',
-            headers: {
+            header: {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: async (res) => {
@@ -79,7 +79,7 @@ export const getCatLocationLatest = async () => {
         uni.request({
             url: `${API_general_request_url.value}/api/cat/location/latest`,
             method: 'GET',
-            headers: {
+            header: {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: async (res) => {

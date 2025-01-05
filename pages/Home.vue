@@ -120,10 +120,10 @@
 						animationDelay: `${index * 0.1}s`
 					}"
 				>
-					<image class="pic" :src="`${pic_general_request_url}/post_pics/${post.coverPicture}${Suffix_1001}`" mode="aspectFill" @click="handlerClickPost(post.postId)"></image>
+					<image class="pic" :src="`${pic_general_request_url}/post_pics/${post.coverPicture}${Suffix_1002}`" mode="aspectFill" @click="handlerClickPost(post.postId)"></image>
 					<view class="text" @click="handlerClickPost(post.postId)">{{ post.title }}</view>
 					<view class="info">
-						<image class="avatar" :src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}${Suffix_1001}`" mode="aspectFill"></image>
+						<image class="avatar" :src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}${Suffix_1002}`" mode="aspectFill"></image>
 						<text class="nickname">{{ post.authorNickname }}</text>
 						<view class="likes">
 						<image class="like-icon" src="../static/love.svg"></image>
@@ -146,7 +146,7 @@
 <script setup>
 	import { ref, onMounted, nextTick } from 'vue';
 	import axios from 'axios';
-	import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+	import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
 	import { toBeDeveloped, showToast } from '@/src/utils/toast'
 	import { useAppStore } from '@/store/modules/app'
 	import { storeToRefs } from 'pinia'
@@ -209,8 +209,8 @@
         console.log('系统信息：', debug)
         // #endif
 
-        // 调用全局方法：获取猫猫数据
-        getPosts(undefined, undefined, false, true);
+        // 调用全局方法：获取首页帖子数据
+        getPosts(undefined, undefined, true, true);
         
 		// 使用 `uni.createSelectorQuery` 获取 scroll-view 的实际高度
 		const query = uni.createSelectorQuery().in(this);

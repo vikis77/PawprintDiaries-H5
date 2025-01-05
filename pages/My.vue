@@ -22,7 +22,7 @@
             <view class="profile-section">
                 <view class="profile-header">
                     <view class="user-info">
-                        <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${appStore.userInfo.avatar}${Suffix_1001}`"
+                        <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${appStore.userInfo.avatar}${Suffix_1002}`"
                             mode="aspectFill"></img>
                         <view class="info-right">
                             <view class="username">{{ appStore.userInfo.nickName || '未设置昵称' }}</view>
@@ -40,20 +40,20 @@
 
                 <!-- 数据统计 -->
                 <view class="stats-bar">
-                    <view class="stats-item" @click="toBeDeveloped">
+                    <view class="stats-item">
                         <view class="stats-number">{{ appStore.userInfo.postCount || 0 }}</view>
                         <view class="stats-label">笔记</view>
                     </view>
-                    <view class="stats-item" @click="toBeDeveloped">
+                    <view class="stats-item">
                         <view class="stats-number">{{ appStore.userInfo.followCount || 0 }}</view>
                         <view class="stats-label">关注</view>
                     </view>
-                    <view class="stats-item" @click="toBeDeveloped">
+                    <view class="stats-item">
                         <view class="stats-number">{{ appStore.userInfo.fansCount || 0 }}</view>
                         <view class="stats-label">粉丝</view>
                     </view>
-                    <view class="stats-item" @click="toBeDeveloped">
-                        <view class="stats-number">0</view>
+                    <view class="stats-item">
+                        <view class="stats-number">{{ appStore.userInfo.postLikedCount || 0 }}</view>
                         <view class="stats-label">获赞</view>
                     </view>
                 </view>
@@ -101,7 +101,7 @@
                 <template v-if="getActiveList.length">
                     <view class="content">
                         <view v-for="post in getActiveList" :key="post.postId" class="box">
-                            <img class="pic" :src="`${pic_general_request_url}/post_pics/${post.coverPicture}${Suffix_1001}`"
+                            <img class="pic" :src="`${pic_general_request_url}/post_pics/${post.coverPicture}${Suffix_1002}`"
                                 mode="aspectFill" @click="handlerClickPost(post.postId)"></img>
                             <view class="post-info">
                                 <view class="text" @click="handlerClickPost(post.postId)">{{ post.title }}</view>
@@ -139,7 +139,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
 import { STATUS_CODE } from '@/src/constant/constant.js'
 import { toBeDeveloped, showToast } from '@/src/utils/toast'
 import { useAppStore } from '@/store/modules/app'
@@ -310,7 +310,7 @@ const getEmptyText = computed(() => {
 
 <style lang="scss" scoped>
 .container {
-    min-height: 100vh;
+    min-height: 94vh;
     background: #f8f8f8;
 
     .nav-bar {

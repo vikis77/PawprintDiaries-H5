@@ -35,139 +35,144 @@
 						</uni-col>
 					</uni-row>
 				</view>
-				<!-- 主题信息展示 -->
-				<view class="t2 animate-fade-in">
-					<!-- 左边图片区域 -->
-					<view class="tyh90p"> 
-						<view class="t87kza">
-							<image :src="`${pic_general_request_url}/cat_avatar/${cat.avatar}${Suffix_1001}`" mode="aspectFill" @click="previewImage([`${pic_general_request_url}/cat_avatar/${cat.avatar}${Suffix_1001}`])"></image>
-						</view>
-						<!-- 添加互动区域 -->
-						<view class="interaction-area">
-							<!-- 点赞 -->
-							<view class="interaction-item" @click="handleLike">
-                                <!-- <text>为小猫点赞（每次一次）：</text> -->
-								<uni-icons :type="isLiked ? 'heart-filled' : 'heart'" size="24" :color="isLiked ? '#ff4d4f' : '#666'"></uni-icons>
-								<text :class="{'liked': isLiked}" class="like-count">{{cat.likeCount}}</text>
-							</view>
-							<!-- 热度 -->
-							<view class="interaction-item">
-								<uni-icons type="fire" size="24" color="#ff9c6e"></uni-icons>
-								<text class="trending-count">{{cat.trending || 0}}</text>
-							</view>
-							<!-- 评论 -->
-							<view class="interaction-item" @click="showComments">
-								<uni-icons type="chat" size="24" color="#666"></uni-icons>
-								<text class="comment-count">{{commentCount}}</text>
-							</view>
-						</view>
-					</view>
-					<!-- 右边信息区域 -->
-					<view class="tz8ue">
-						<view class="t79zqw">
-							<view class="tzv88">
-								<text class="cat-name">名字：{{ cat.catname }}</text>
-							</view>
-							<view class="tzv88">
-								<text class="cat-age">年龄：{{ cat.age }}月</text>
-							</view>
-							<view class="tzv88">
-								<text class="cat-gender">性别：{{ cat.gender === 1 ? '雄性' : '雌性' }}</text>
-							</view>
-							<view class="timeline-btn" @click="showTimeline">
-								<uni-icons type="flag" size="24" color="#666"></uni-icons>
-								<text>小猫时间轴</text>
-							</view>
-							<view class="search-btn" @click="handleSearch">
-								<uni-icons type="search" size="20" color="#666"></uni-icons>
-								<text>查找相关内容</text>
-							</view>
-						</view>
-					</view>
+
+				<!-- 加载中提示 -->
+				<view v-if="!isDataLoaded" class="loading-container">
+					<uni-load-more status="loading" :content-text="loadingText"></uni-load-more>
 				</view>
-				<!-- 详细信息 -->
-				<view class="t3 animate-slide-up">
-					<view class="section-title">
-						<text>详细信息</text>
-					</view>
-					<view class="th80hj0">
-						<view class="tzv8mkm">
-							<view class="lefttzv00">
-								<text class="info-label">是否已绝育</text>
-								<text class="info-value">{{ cat.sterilizationStatus }}</text>
+
+				<!-- 主要内容区域，只在数据加载完成后显示 -->
+				<template v-else>
+					<!-- 主题信息展示 -->
+					<view class="t2 animate-fade-in">
+						<!-- 左边图片区域 -->
+						<view class="tyh90p"> 
+							<view class="t87kza">
+								<image :src="`${pic_general_request_url}/cat_avatar/${cat.avatar}${Suffix_1002}`" mode="aspectFill" @click="previewImage([`${pic_general_request_url}/cat_avatar/${cat.avatar}${Suffix_1000}`])"></image>
+							</view>
+							<!-- 添加互动区域 -->
+							<view class="interaction-area">
+								<view class="interaction-item" @click="handleLike">
+									<uni-icons :type="isLiked ? 'heart-filled' : 'heart'" size="24" :color="isLiked ? '#ff4d4f' : '#666'"></uni-icons>
+									<text :class="{'liked': isLiked}" class="like-count">{{cat.likeCount}}</text>
+								</view>
+								<view class="interaction-item">
+									<uni-icons type="fire" size="24" color="#ff9c6e"></uni-icons>
+									<text class="trending-count">{{cat.trending || 0}}</text>
+								</view>
+								<view class="interaction-item" @click="showComments">
+									<uni-icons type="chat" size="24" color="#666"></uni-icons>
+									<text class="comment-count">{{commentCount}}</text>
+								</view>
 							</view>
 						</view>
-						<view class="tzv8mkm">
-							<view class="righttzv00">
-								<text class="info-label">是否接种疫苗</text>
-								<text class="info-value">{{ cat.vaccinationStatus }}</text>
-							</view>
-						</view>
-						<view class="tzv8mkm">
-							<view class="lefttzv00">
-								<text class="info-label">健康状况</text>
-								<text class="info-value">{{ cat.healthStatus }}</text>
-							</view>
-						</view>
-						<view class="tzv8mkm">
-							<view class="righttzv00">
-								<text class="info-label">性格</text>
-								<text class="info-value">{{ cat.catCharacter }}</text>
-							</view>
-						</view>
-						<view class="tzv8mkm">
-							<view class="lefttzv00">
-								<text class="info-label">食物偏好</text>
-								<text class="info-value">{{ cat.food }}</text>
-							</view>
-						</view>
-						<view class="tzv8mkm">
-							<view class="righttzv00">
-								<text class="info-label">忌讳</text>
-								<text class="info-value">{{ cat.taboo }}</text>
-							</view>
-						</view>
-						<view class="tzv8mkm">
-							<view class="lefttzv00">
-								<text class="info-label">品种</text>
-								<text class="info-value">{{ cat.breed || '暂无' }}</text>
-							</view>
-						</view>
-						<view class="tzv8mkm">
-							<view class="righttzv00">
-								<text class="info-label">常住地</text>
-								<text class="info-value">{{ cat.area }}</text>
-							</view>
-						</view>
-						<view class="tzv8mkm">
-							<view class="lefttzv00">
-								<text class="info-label">撸猫指南</text>
-								<text class="info-value">{{ cat.guide || '暂无' }}</text>
-							</view>
-						</view>
-						<view class="tzv8mkm">
-							<view class="righttzv00">
-								<text class="info-label">不良行为记录</text>
-								<text class="info-value">{{ cat.badRecord }}</text>
+						<!-- 右边信息区域 -->
+						<view class="tz8ue">
+							<view class="t79zqw">
+								<view class="tzv88">
+									<text class="cat-name">名字：{{ cat.catname }}</text>
+								</view>
+								<view class="tzv88">
+									<text class="cat-age">年龄：{{ cat.age }}月</text>
+								</view>
+								<view class="tzv88">
+									<text class="cat-gender">性别：{{ cat.gender === 1 ? '雄性' : '雌性' }}</text>
+								</view>
+								<view class="timeline-btn" @click="showTimeline">
+									<uni-icons type="flag" size="24" color="#666"></uni-icons>
+									<text>小猫时间轴</text>
+								</view>
+								<view class="search-btn" @click="handleSearch">
+									<uni-icons type="search" size="20" color="#666"></uni-icons>
+									<text>查找相关内容</text>
+								</view>
 							</view>
 						</view>
 					</view>
-				</view>
-				<!-- 照片墙 -->
-				<view class="t4 animate-fade-in">
-					<view class="t00zc">
-						<view class="t23rx">
-							<uni-section class="t8qfv" title="照片" type="square" ></uni-section>
-							<view class="t9hz9">
-								<view class="t09row">
-									<view class="t9j0a" v-for="(item, index) in picUrlDatas" :key="index">
-										<image class="i23qh" :src="`${pic_general_request_url}/cat_pics/${item.url}${Suffix_1001}`" mode="aspectFill" @click="previewImage(picUrlDatas.map(pic => `${pic_general_request_url}/cat_pics/${pic.url}`), index)"></image>
+					<!-- 详细信息 -->
+					<view class="t3 animate-slide-up">
+						<view class="section-title">
+							<text>详细信息</text>
+						</view>
+						<view class="th80hj0">
+							<view class="tzv8mkm">
+								<view class="lefttzv00">
+									<text class="info-label">是否已绝育</text>
+									<text class="info-value">{{ cat.sterilizationStatus }}</text>
+								</view>
+							</view>
+							<view class="tzv8mkm">
+								<view class="righttzv00">
+									<text class="info-label">是否接种疫苗</text>
+									<text class="info-value">{{ cat.vaccinationStatus }}</text>
+								</view>
+							</view>
+							<view class="tzv8mkm">
+								<view class="lefttzv00">
+									<text class="info-label">健康状况</text>
+									<text class="info-value">{{ cat.healthStatus }}</text>
+								</view>
+							</view>
+							<view class="tzv8mkm">
+								<view class="righttzv00">
+									<text class="info-label">性格</text>
+									<text class="info-value">{{ cat.catCharacter }}</text>
+								</view>
+							</view>
+							<view class="tzv8mkm">
+								<view class="lefttzv00">
+									<text class="info-label">食物偏好</text>
+									<text class="info-value">{{ cat.food }}</text>
+								</view>
+							</view>
+							<view class="tzv8mkm">
+								<view class="righttzv00">
+									<text class="info-label">忌讳</text>
+									<text class="info-value">{{ cat.taboo }}</text>
+								</view>
+							</view>
+							<view class="tzv8mkm">
+								<view class="lefttzv00">
+									<text class="info-label">品种</text>
+									<text class="info-value">{{ cat.breed || '暂无' }}</text>
+								</view>
+							</view>
+							<view class="tzv8mkm">
+								<view class="righttzv00">
+									<text class="info-label">常住地</text>
+									<text class="info-value">{{ cat.area }}</text>
+								</view>
+							</view>
+							<view class="tzv8mkm">
+								<view class="lefttzv00">
+									<text class="info-label">撸猫指南</text>
+									<text class="info-value">{{ cat.catGuide || '暂无' }}</text>
+								</view>
+							</view>
+							<view class="tzv8mkm">
+								<view class="righttzv00">
+									<text class="info-label">不良行为记录</text>
+									<text class="info-value">{{ cat.badRecord }}</text>
+								</view>
+							</view>
+						</view>
+					</view>
+					<!-- 照片墙 -->
+					<view class="t4 animate-fade-in">
+						<view class="t00zc">
+							<view class="t23rx">
+								<uni-section class="t8qfv" title="照片（最多展示9张）" type="square" ></uni-section>
+								<view class="t9hz9">
+									<view class="t09row">
+										<view class="t9j0a" v-for="(item, index) in picUrlDatas" :key="index">
+											<image class="i23qh" :src="`${pic_general_request_url}/cat_pics/${item.url}${Suffix_1002}`" mode="aspectFill" @click="previewImage(picUrlDatas.map(pic => `${pic_general_request_url}/cat_pics/${pic.url}`), index)"></image>
+										</view>
 									</view>
 								</view>
 							</view>
 						</view>
 					</view>
-				</view>
+				</template>
 				
 				<!-- 底部上拉评论区提示条 -->
 				<view class="comment-hint" 
@@ -285,7 +290,7 @@
 					</view>
 					<scroll-view scroll-y="true" class="comments-container" :show-scrollbar="false">
 						<view class="comment-item" v-for="(comment, index) in comments" :key="index">
-							<img class="commenter-avatar" :src="`${pic_general_request_url}/user_avatar/${comment.avatar}${Suffix_1001}`" mode="aspectFill"></img>
+							<img class="commenter-avatar" :src="`${pic_general_request_url}/user_avatar/${comment.avatar}${Suffix_1002}`" mode="aspectFill"></img>
 							<view class="comment-content">
 								<view class="comment-header">
 									<text class="commenter-name">{{comment.nickName}}</text>
@@ -378,9 +383,17 @@
 
 <script setup>
 	import { ref, onMounted } from 'vue';
-	import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+	import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
     import { STATUS_CODE } from '@/src/constant/constant.js'
 	const appStore = useAppStore()
+	
+	// 添加数据加载状态
+	const isDataLoaded = ref(false);
+	const loadingText = {
+		contentdown: '加载中...',
+		contentrefresh: '加载中...',
+		contentnomore: '没有更多'
+	};
 	
 	const showMenu = ref(false);
 	const cat = ref(null);
@@ -453,71 +466,90 @@
 		description: ''
 	});
 	
-	onShow(() => {
-		let catId;
-		// #ifdef H5
-		const options = getCurrentPages().pop().options; // 获取页面传递的参数
-		catId = options.catId; // 获取传递过来的 catId
-		// #endif
-		
-		// #ifdef APP-PLUS
-		const pages = getCurrentPages();
-		const page = pages[pages.length - 1];
-		catId = page.$page.fullPath.split('?')[1].split('=')[1]; // 从路由中获取catId
-		// #endif
-		
-		console.log(catId)
-		// const catList = uni.getStorageSync('catList'); // 获取猫猫列表
-		const catList = appStore.catList
-		console.log(catList)
-		// 根据 catId 查找对应的小猫信息
-		const selectedCat = catList.find(cat => cat.catId === parseInt(catId));
-		// 将选中的猫信息存储到响应式数据中
-		cat.value = selectedCat;
-		
-		// 初始化点赞状态和数量
-		if (selectedCat) {
+	onShow(async () => {
+		try {
+			let catId;
+			// #ifdef H5
+			const options = getCurrentPages().pop().options;
+			catId = options.catId;
+			// #endif
+			
+			// #ifdef APP-PLUS
+			const pages = getCurrentPages();
+			const page = pages[pages.length - 1];
+			catId = page.$page.fullPath.split('?')[1].split('=')[1];
+			// #endif
+			
+			console.log(catId)
+			// 调用全局方法：获取全部猫猫详情
+			await getCatInfoDetail();
+			
+			const catList = appStore.catList
+			console.log(catList)
+			// 根据 catId 查找对应的小猫信息
+			const selectedCat = catList.find(cat => cat.catId === parseInt(catId));
+			
+			if (!selectedCat) {
+				throw new Error('未找到对应的猫咪信息');
+			}
+			
+			// 将选中的猫信息存储到响应式数据中
+			cat.value = selectedCat;
+			
+			// 初始化点赞状态和数量
 			isLiked.value = selectedCat.isLikedToday || false;
 			likeCount.value = selectedCat.likeCount || 0;
-		}
-		
-		// 处理猫咪选择列表数据
-		catSelectList.value = catList.map(cat => ({
-			value: cat.catname,
-			text: `${cat.catname} - ${cat.gender === 1 ? '公' : '母'} - ${cat.age}个月`
-		}));
-		
-		// 设置当前猫猫为默认选中
-		if (selectedCat) {
+			
+			// 处理猫咪选择列表数据
+			catSelectList.value = catList.map(cat => ({
+				value: cat.catname,
+				text: `${cat.catname} - ${cat.gender === 1 ? '公' : '母'} - ${cat.age}个月`
+			}));
+			
+			// 设置当前猫猫为默认选中
 			adoptFormsData.value.catName = selectedCat.catname;
-		}
-		
-		// 获取猫猫照片
-		uni.request({
-			url: `${API_general_request_url.value}/api/cat/photo/${catId}`,
-			method: 'GET,',
-			success: (response) => {
-				if (response.statusCode === 200 && response.data.code === STATUS_CODE.SUCCESS){
-					picUrlDatas.value = response.data.data;
-                    console.log('获取小猫图片成功')
-				}else{
-					uni.showToast({
-						title: response.data.msg || '获取小猫图片失败',
-						icon: 'none'
-					})
-				}
-				console.log(response)
-			},
-			fail: (e) => {
-				uni.showToast({
-					title: '请求获取小猫图片失败，请重试',
-					icon: 'none'
+			
+			// 获取猫猫照片
+			await new Promise((resolve, reject) => {
+				uni.request({
+					url: `${API_general_request_url.value}/api/cat/photo/${catId}`,
+					method: 'GET',
+					success: (response) => {
+						if (response.statusCode === 200 && response.data.code === STATUS_CODE.SUCCESS) {
+							picUrlDatas.value = response.data.data;
+							console.log('获取小猫图片成功')
+							resolve();
+						} else {
+							uni.showToast({
+								title: response.data.msg || '获取小猫图片失败',
+								icon: 'none'
+							});
+							reject(new Error(response.data.msg || '获取小猫图片失败'));
+						}
+					},
+					fail: (error) => {
+						uni.showToast({
+							title: '请求获取小猫图片失败，请重试',
+							icon: 'none'
+						});
+						reject(error);
+					}
 				});
-			}
-		})
-		
-		// 获取点赞和评论数据
-		getComments();
+			});
+			
+			// 获取点赞和评论数据
+			await getComments();
+			
+			// 所有数据加载完成后，设置加载状态为true
+			isDataLoaded.value = true;
+			
+		} catch (error) {
+			console.error('数据加载失败:', error);
+			uni.showToast({
+				title: '数据加载失败，请重试',
+				icon: 'none'
+			});
+		}
 	});
 	
 	function handleGoback() {
@@ -2356,6 +2388,15 @@
 			transform: scale(1);
 			opacity: 1;
 		}
+	}
+
+	// 添加加载中样式
+	.loading-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 40rpx;
+		min-height: 400rpx;
 	}
 </style>
 </```

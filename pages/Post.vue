@@ -20,7 +20,7 @@
                               :key="index"
                               class="image-item"
                               @click="downloadImage(index)">
-                            <image :src="`${pic_general_request_url}/post_pics/${item.picture}${Suffix_1001}`" 
+                            <image :src="`${pic_general_request_url}/post_pics/${item.picture}${Suffix_1002}`" 
                                    mode="aspectFill" 
                                    class="preview-image"></image>
                             <view class="image-info">
@@ -49,7 +49,7 @@
             <!-- 博主相关 -->
             <view class="box-blogger">
                 <view class="bb-left">
-                    <img class="img2" :src="`${pic_general_request_url}/user_avatar/${currentPost.authorAvatar}${Suffix_1001}`" alt=""
+                    <img class="img2" :src="`${pic_general_request_url}/user_avatar/${currentPost.authorAvatar}${Suffix_1002}`" alt=""
                         @click="showToast('主页功能开发中')" />
                     <text class="text1">{{ currentPost.authorNickname }}</text>
                 </view>
@@ -127,7 +127,7 @@
                     <view class="comment-list">
                         <view v-for="(comment, index) in comments" :key="index" class="comment-item">
                             <image class="comment-avatar"
-                                :src="`${pic_general_request_url}/user_avatar/${comment.avatar}${Suffix_1001}`"></image>
+                                :src="`${pic_general_request_url}/user_avatar/${comment.avatar}${Suffix_1002}`"></image>
                             <view class="comment-content">
                                 <view class="comment-info">
                                     <text class="comment-username">{{ comment.nickName }}</text>
@@ -165,7 +165,7 @@
                 </view>
                 <scroll-view scroll-y="true" class="comments-container" :show-scrollbar="false">
                     <view class="comment-item" v-for="(comment, index) in comments" :key="index">
-                        <img class="commenter-avatar" :src="`${pic_general_request_url}/user_avatar/${comment.avatar}${Suffix_1001}`" mode="aspectFill"></img>
+                        <img class="commenter-avatar" :src="`${pic_general_request_url}/user_avatar/${comment.avatar}${Suffix_1002}`" mode="aspectFill"></img>
                         <view class="comment-content">
                             <view class="comment-header">
                                 <text class="commenter-name">{{comment.nickName}}</text>
@@ -196,7 +196,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { API_general_request_url, pic_general_request_url, Suffix_1001 } from '@/src/config/index.js'
+import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
 import { STATUS_CODE } from '@/src/constant/constant.js'
 import { toBeDeveloped, showToast } from '@/src/utils/toast'
 import { useAppStore } from '@/store/modules/app'
@@ -454,7 +454,7 @@ const submitComment = () => {
                 const newCommentObj = {
                     commentContext: newComment.value,
                     createTime: new Date().toLocaleString(),
-                    nickname: appStore.userInfo.nickName,
+                    nickName: appStore.userInfo.nickName,
                     avatar: appStore.userInfo.avatar,
                     likes: 0,
                     liked: false,
@@ -612,7 +612,7 @@ const previewImage = (index) => {
     try {
         // 使用与显示相同的URL格式
         const urls = currentPost.value.images.map(item =>
-            `${pic_general_request_url.value}/post_pics/${item.picture}`
+            `${pic_general_request_url.value}/post_pics/${item.picture}${Suffix_1000}`
         );
 
         uni.previewImage({
