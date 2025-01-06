@@ -8,6 +8,7 @@ import { STATUS_CODE, STATUS_MESSAGE } from '@/src/constant/constant.js'
 
 // 获取帖子数据，默认加载更多数据
 export const getPosts = async (page = undefined, pageSize = undefined, isRefresh = false, isFirstTime = false) => {
+    // await checkLogin()
     // 创建 store 实例
     const appStore = useAppStore()
 
@@ -72,6 +73,7 @@ export const getPosts = async (page = undefined, pageSize = undefined, isRefresh
 
 // 获取待审核帖子列表
 export const getApplyPosts = async () => {
+    // await checkLogin()
     const appStore = useAppStore()
     console.log(`Bearer ${uni.getStorageSync('token')}`)
     return new Promise((resolve, reject) => {

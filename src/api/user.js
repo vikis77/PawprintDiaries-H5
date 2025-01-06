@@ -6,6 +6,7 @@ import { STATUS_CODE } from '@/src/constant/constant.js'
 
 // 请求用户个人资料
 export const getUserProfile = async (params) => {
+    // await checkLogin()
     // 创建 store 实例
     const appStore = useAppStore()
     try {

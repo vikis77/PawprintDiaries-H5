@@ -6,6 +6,7 @@ import { STATUS_CODE } from '@/src/constant/constant.js'
 
 // 全局搜索功能
 export const globalSearch = async (searchWords) => {
+    // await checkLogin()
     const appStore = useAppStore()
     try {
         const response = await uni.request({

@@ -6,6 +6,7 @@ import { STATUS_CODE } from '@/src/constant/constant.js'
 
 // 计算金额
 export const getFundCalculate = async (type) => {
+    // await checkLogin()
     // 这里调用一次请求总体的数据分析
     await getCatAnalyseData()
     const appStore = useAppStore()

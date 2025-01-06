@@ -6,6 +6,7 @@ import { STATUS_CODE } from '@/src/constant/constant.js'
 
 // 获取猫爪页面全部小猫详情数据
 export const getCatInfoDetail = async () => {
+    console.log(uni.getStorageSync('token'))
     const appStore = useAppStore()
     return new Promise((resolve, reject) => {
         uni.request({
@@ -49,6 +50,7 @@ export const getCatAnalyseData = async () => {
                 'Authorization': `Bearer ${uni.getStorageSync('token')}`
             },
             success: async (res) => {
+                console.log("success")
                 if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                     const newData = res.data.data;
                     await appStore.setCatDataAnalysis(newData);
@@ -62,8 +64,14 @@ export const getCatAnalyseData = async () => {
                     })
                     reject(new Error(res.data.msg || '获取猫爪页面数据分析数据失败'));
                 }
+                console.log(res)
             },
             fail: (err) => {
+                console.log("fail")
+                uni.showToast({
+                    title: '出错啦',
+                    icon: 'none'
+                })
                 console.log(err)
                 console.log("获取猫爪页面数据分析数据失败")
                 reject(err);
@@ -74,6 +82,7 @@ export const getCatAnalyseData = async () => {
 
 // 获取全部小猫最新坐标
 export const getCatLocationLatest = async () => {
+    await checkLogin()
     const appStore = useAppStore()
     return new Promise((resolve, reject) => {
         uni.request({

@@ -6,6 +6,7 @@ import { STATUS_CODE } from '@/src/constant/constant.js'
 
 // 获取待审核评论列表
 export const getPendingComments = async (params) => {
+    // await checkLogin()
     // 创建 store 实例
     const appStore = useAppStore()
     try {
@@ -44,6 +45,7 @@ export const getPendingComments = async (params) => {
 
 // 审核评论
 export const reviewComment = async (id, type, action) => {
+    // await checkLogin()
     // 创建 store 实例
     const appStore = useAppStore()
     console.log("审核评论：", id, type, action)

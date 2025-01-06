@@ -742,11 +742,11 @@ const fetchCatData = async () => {
             text2: '（元）'
         }];
     } catch (error) {
-        console.error('获取猫猫数据失败:', error);
-        uni.showToast({
-            title: '获取猫猫数据失败',
-            icon: 'none'
-        });
+        // console.error('获取猫猫数据失败:', error);
+        // uni.showToast({
+        //     title: '获取猫猫数据失败',
+        //     icon: 'none'
+        // });
     } finally {
         // 如果是首次加载，重置加载状态和首次加载标记
         if (isFirstLoad.value) {
@@ -798,7 +798,7 @@ const ensureNumber = (value) => {
 const fetchDataAnalysis = async () => {
     try {
         // 调用API获取数据
-        await getCatAnalyseData();
+        getCatAnalyseData();
         // 从appStore获取数据
         const newData = appStore.catDataAnalysisData;
         
@@ -948,10 +948,10 @@ const fetchDataAnalysis = async () => {
 
     } catch (error) {
         console.error('获取数据分析失败:', error);
-        uni.showToast({
-            title: '获取数据分析失败',
-            icon: 'none'
-        });
+        // uni.showToast({
+        //     title: '获取数据分析失败',
+        //     icon: 'none'
+        // });
     }
 }
 

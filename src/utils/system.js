@@ -15,6 +15,12 @@ export const checkLogin = () => {
     const token = uni.getStorageSync('token')
     if (!token) {
         showToast('请先登录')
+        try {
+            uni.removeStorageSync('token') // 清除过期token
+            console.log("清除过期token成功")
+        } catch (error) {
+            console.error('清除过期token失败:', error);
+        }
         return false
     }
 
