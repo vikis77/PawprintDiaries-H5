@@ -50,36 +50,102 @@
         </uni-forms-item>
         
         <uni-forms-item label="用户名" name="username" required>
-          <uni-easyinput v-model="userInfo.username" placeholder="请输入用户名"/>
+          <view class="input-wrapper" :class="{ error: !usernameValid && userInfo.username }">
+            <uni-easyinput 
+              v-model="userInfo.username" 
+              placeholder="请输入用户名" 
+              maxlength="20"
+              :inputBorder="false"
+            />
+            <view class="counter-tips">{{userInfo.username?.length || 0}}/20</view>
+          </view>
+          <view class="input-tips-wrapper">
+            <!-- <text class="input-tips">仅支持英文和数字，长度4-20位</text> -->
+            <text v-if="!usernameValid && usernameError" class="error-tips">{{usernameError}}</text>
+          </view>
         </uni-forms-item>
         
         <uni-forms-item label="昵称" name="nickName" required>
-          <uni-easyinput v-model="userInfo.nickName" placeholder="请输入昵称"/>
+          <view class="input-wrapper">
+            <uni-easyinput 
+              v-model="userInfo.nickName" 
+              placeholder="请输入昵称" 
+              maxlength="12"
+              :inputBorder="false"
+            />
+            <view class="counter-tips">{{userInfo.nickName?.length || 0}}/12</view>
+          </view>
+          <!-- <text class="input-tips">好名字让人更容易记住你</text> -->
         </uni-forms-item>
         
         <uni-forms-item label="邮箱" name="email" required>
-          <uni-easyinput v-model="userInfo.email" placeholder="请输入邮箱"/>
+          <view class="input-wrapper">
+            <uni-easyinput 
+              v-model="userInfo.email" 
+              placeholder="请输入邮箱"
+              :inputBorder="false"
+            />
+          </view>
+          <view class="input-tips-wrapper">
+            <!-- <text class="input-tips">可用于接收重要通知，请填写真实邮箱</text> -->
+            <text v-if="!emailValid && emailError" class="error-tips">{{emailError}}</text>
+          </view>
         </uni-forms-item>
         
         <uni-forms-item label="手机号" name="phoneNumber">
-          <uni-easyinput v-model="userInfo.phoneNumber" placeholder="请输入手机号"/>
+          <view class="input-wrapper">
+            <uni-easyinput 
+              v-model="userInfo.phoneNumber" 
+              placeholder="请输入手机号"
+              maxlength="11"
+              type="number"
+              :inputBorder="false"
+            />
+          </view>
+          <view class="input-tips-wrapper">
+            <!-- <text class="input-tips">绑定手机号可以获得更好的服务体验</text> -->
+            <text v-if="!phoneValid && phoneError" class="error-tips">{{phoneError}}</text>
+          </view>
         </uni-forms-item>
         
         <uni-forms-item label="生日" name="birthday">
-          <uni-datetime-picker 
-            v-model="userInfo.birthday" 
-            type="date" 
-            :value="formatBirthday(userInfo.birthday)"
-            @change="handleBirthdayChange"
-          />
+          <view class="input-wrapper birthday-wrapper">
+            <uni-datetime-picker 
+              v-model="userInfo.birthday" 
+              type="date" 
+              :value="formatBirthday(userInfo.birthday)"
+              @change="handleBirthdayChange"
+            />
+          </view>
+          <!-- <text class="input-tips">生日信息仅自己可见</text> -->
         </uni-forms-item>
         
         <uni-forms-item label="地址" name="address">
-          <uni-easyinput v-model="userInfo.address" placeholder="请输入地址"/>
+          <view class="input-wrapper">
+            <uni-easyinput 
+              v-model="userInfo.address" 
+              placeholder="请输入地址"
+              maxlength="100"
+              :inputBorder="false"
+            />
+            <view class="counter-tips">{{userInfo.address?.length || 0}}/100</view>
+          </view>
+          <!-- <text class="input-tips">详细地址让你的位置更精确</text> -->
         </uni-forms-item>
         
         <uni-forms-item label="个性签名" name="signature">
-          <uni-easyinput v-model="userInfo.signature" type="textarea" placeholder="请输入个性签名"/>
+          <view class="input-wrapper">
+            <uni-easyinput 
+              v-model="userInfo.signature" 
+              type="textarea" 
+              placeholder="请输入个性签名"
+              maxlength="200"
+              :inputBorder="false"
+              height="120"
+            />
+            <view class="counter-tips">{{userInfo.signature?.length || 0}}/200</view>
+          </view>
+          <!-- <text class="input-tips">展示你的个性，让大家更了解你</text> -->
         </uni-forms-item>
       </uni-forms>
       
@@ -127,7 +193,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick } from 'vue';
+import { ref, reactive, onMounted, nextTick, watch } from 'vue';
 import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
 import { STATUS_CODE } from '@/src/constant/constant.js'
 import NavBar1001 from '@/src/components/common/NavBar1001.vue'
@@ -141,20 +207,90 @@ const selectedTempFiles = ref([]); // 存储已选择的图片信息
 
 const userInfo = appStore.userInfo;
 
+const usernameValid = ref(true);
+const usernameError = ref('');
+
 const rules = {
   username: {
-    rules: [{required: true, message: '请输入用户名'}]
+    rules: [
+      {required: true, message: '亲爱的，用户名不能为空哦~'},
+      {
+        validateFunction: (rule, value, data, callback) => {
+          const usernameRegex = /^[a-zA-Z0-9]{4,20}$/;
+          if (!usernameRegex.test(value)) {
+            callback('用户名只能包含英文和数字，长度4-20位');
+          }
+          return true;
+        }
+      }
+    ]
   },
   nickName: {
-    rules: [{required: true, message: '请输入昵称'}]
+    rules: [{required: true, message: '给自己起个好听的昵称吧~'}]
   },
   email: {
-    rules: [{required: true, message: '请输入邮箱'}, {format: 'email', message: '邮箱格式不正确'}]
+    rules: [
+      {required: true, message: '请填写您的邮箱地址'},
+      {
+        validateFunction: (rule, value, data, callback) => {
+          const emailRegex = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+          if (!emailRegex.test(value)) {
+            callback('邮箱格式有误，请检查一下~');
+          }
+          return true;
+        }
+      }
+    ]
   },
   phoneNumber: {
-    rules: [{required: false, message: '请输入手机号'}, {pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确'}]
+    rules: [
+      {required: false},
+      {
+        validateFunction: (rule, value, data, callback) => {
+          if (value && !/^1[3-9]\d{9}$/.test(value)) {
+            callback('手机号格式不对，应为11位数字哦~');
+          }
+          return true;
+        }
+      }
+    ]
   }
 };
+
+const emailValid = ref(true);
+const phoneValid = ref(true);
+const emailError = ref('');
+const phoneError = ref('');
+
+const validateEmail = (email) => {
+  const emailRegex = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+  emailValid.value = emailRegex.test(email);
+  emailError.value = emailValid.value ? '' : '邮箱格式有误，请检查一下~';
+};
+
+const validatePhone = (phone) => {
+  if (!phone) {
+    phoneValid.value = true;
+    phoneError.value = '';
+    return;
+  }
+  const phoneRegex = /^1[3-9]\d{9}$/;
+  phoneValid.value = phoneRegex.test(phone);
+  phoneError.value = phoneValid.value ? '' : '手机号格式不对，应为11位数字哦~';
+};
+
+watch(() => userInfo.email, (newVal) => {
+  if (newVal) {
+    validateEmail(newVal);
+  } else {
+    emailValid.value = true;
+    emailError.value = '';
+  }
+}, { immediate: true });
+
+watch(() => userInfo.phoneNumber, (newVal) => {
+  validatePhone(newVal);
+}, { immediate: true });
 
 const handleReselect = (e) => {
   e.stopPropagation(); // 阻止事件冒泡
@@ -327,6 +463,23 @@ const handleBirthdayChange = (e) => {
   }
 };
 
+// 用户名验证函数
+const validateUsername = (username) => {
+  const usernameRegex = /^[a-zA-Z0-9]{4,20}$/;
+  usernameValid.value = usernameRegex.test(username);
+  usernameError.value = usernameValid.value ? '' : '用户名只能包含英文和数字，长度4-20位';
+};
+
+// 监听用户名输入
+watch(() => userInfo.username, (newVal) => {
+  if (newVal) {
+    validateUsername(newVal);
+  } else {
+    usernameValid.value = true;
+    usernameError.value = '';
+  }
+}, { immediate: true });
+
 onMounted(() => {
 
 });
@@ -342,62 +495,81 @@ onMounted(() => {
 .user-info-section {
   background-color: #ffffff;
   border-radius: 16rpx;
-  padding: 40rpx 30rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  padding: 30rpx 24rpx;
+//   margin: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
   
-  .avatar-item {
-    :deep(.uni-file-picker__container) {
-      width: 180rpx !important;
-      height: 180rpx !important;
+  :deep(.uni-forms-item) {
+    margin-bottom: 10rpx;
+    
+    .uni-forms-item__label {
+      font-size: 28rpx;
+      color: #333;
+      font-weight: 500;
+      margin-bottom: 12rpx;
     }
     
-    :deep(.uni-file-picker__box) {
-      border-radius: 90rpx !important;
-      overflow: hidden;
-      border: 2rpx solid #e0e0e0;
+    .is-required {
+      color: #ff5a5f;
     }
     
-    // 隐藏文件名信息
-    :deep(.file-picker__progress) {
-      display: none !important;
+    .uni-forms-item__content {
+      padding: 0;
+    }
+  }
+}
+
+.avatar-item {
+  :deep(.uni-file-picker__container) {
+    width: 180rpx !important;
+    height: 180rpx !important;
+  }
+  
+  :deep(.uni-file-picker__box) {
+    border-radius: 90rpx !important;
+    overflow: hidden;
+    border: 2rpx solid #e0e0e0;
+  }
+  
+  // 隐藏文件名信息
+  :deep(.file-picker__progress) {
+    display: none !important;
+  }
+  
+  :deep(.uni-file-picker__lists) {
+    display: none !important;
+  }
+  
+  .avatar-preview {
+    width: 180rpx;
+    height: 180rpx;
+    border-radius: 90rpx;
+    object-fit: cover;
+    border: 2rpx solid #e0e0e0;
+  }
+  
+  .avatar-placeholder {
+    width: 180rpx;
+    height: 180rpx;
+    border-radius: 90rpx;
+    background-color: #f8f9fa;
+    border: 2rpx solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8rpx;
+    
+    .default-avatar {
+      width: 80rpx;
+      height: 80rpx;
+      opacity: 0.5;
     }
     
-    :deep(.uni-file-picker__lists) {
-      display: none !important;
-    }
-    
-    .avatar-preview {
-      width: 180rpx;
-      height: 180rpx;
-      border-radius: 90rpx;
-      object-fit: cover;
-      border: 2rpx solid #e0e0e0;
-    }
-    
-    .avatar-placeholder {
-      width: 180rpx;
-      height: 180rpx;
-      border-radius: 90rpx;
-      background-color: #f8f9fa;
-      border: 2rpx solid #e0e0e0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8rpx;
-      
-      .default-avatar {
-        width: 80rpx;
-        height: 80rpx;
-        opacity: 0.5;
-      }
-      
-      .placeholder-text {
-        font-size: 24rpx;
-        color: #999;
-        margin-top: 8rpx;
-      }
+    .placeholder-text {
+      font-size: 24rpx;
+      color: #999;
+      margin-top: 8rpx;
     }
   }
 }
@@ -436,30 +608,22 @@ onMounted(() => {
 
 .form-buttons {
   margin-top: 60rpx;
-  display: flex;
-  gap: 24rpx;
-  padding: 0 40rpx;
-  
-  button {
-    flex: 1;
-    height: 88rpx;
-    border-radius: 44rpx;
-    font-size: 32rpx;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  padding: 0 20rpx;
   
   .submit-btn {
+    width: 100%;
+    height: 88rpx;
     background: linear-gradient(45deg, #8d5da3, #b876d9);
+    border-radius: 44rpx;
     color: #fff;
+    font-size: 32rpx;
+    font-weight: 500;
     border: none;
-  }
-  
-  .cancel-btn {
-    background: #fff;
-    color: #666;
-    border: 2rpx solid #ddd;
+    box-shadow: 0 4rpx 12rpx rgba(184, 118, 217, 0.3);
+    
+    &:active {
+      transform: scale(0.98);
+    }
   }
 }
 
@@ -589,5 +753,80 @@ onMounted(() => {
     font-weight: 500;
     color: #333;
   }
+}
+
+.input-wrapper {
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 12rpx;
+  padding: 0rpx 0rpx;
+  border: 2rpx solid #e0e0e0;
+  transition: all 0.3s ease;
+  
+  &:focus-within {
+    border-color: #8d5da3;
+    box-shadow: 0 0 8rpx rgba(141, 93, 163, 0.1);
+  }
+  
+  &.error {
+    border-color: #ff5a5f;
+    background-color: #fff2f2;
+  }
+  
+  :deep(.uni-easyinput__content) {
+    min-height: 88rpx;
+    background-color: transparent;
+    
+    .uni-easyinput__placeholder-class {
+      color: #bbb;
+    }
+    
+    .uni-input-input {
+      font-size: 28rpx;
+      color: #333;
+    }
+  }
+  
+  .counter-tips {
+    position: absolute;
+    right: 20rpx;
+    bottom: 10rpx;
+    font-size: 24rpx;
+    color: #bbb;
+  }
+}
+
+.birthday-wrapper {
+  :deep(.uni-date) {
+    width: 100%;
+    
+    .uni-date-editor {
+      padding: 0 0rpx;
+      
+      .uni-date-editor--x {
+        height: 88rpx;
+      }
+    }
+  }
+}
+
+.input-tips {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 12rpx;
+  padding-left: 20rpx;
+}
+
+.input-tips-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  margin-top: 12rpx;
+  padding-left: 20rpx;
+}
+
+.error-tips {
+  font-size: 24rpx;
+  color: #ff5a5f;
 }
 </style> 

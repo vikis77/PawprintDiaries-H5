@@ -627,31 +627,79 @@
 		adoptFormsData.value.catName = value;
 	}
 	
+	// 表单验证函数
+	function validateName(name) {
+		if (!name) return '姓名不能为空';
+		if (name.length < 2 || name.length > 20) return '姓名长度应在2-20个字符之间';
+		return '';
+	}
+	
+	function validateClass(className) {
+		if (!className) return '班级不能为空';
+		// 可以根据实际需求调整班级格式验证规则
+		if (className.length < 2 || className.length > 30) return '班级格式不正确';
+		return '';
+	}
+	
+	function validateOrigin(origin) {
+		if (!origin) return '籍贯不能为空';
+		if (origin.length < 2 || origin.length > 50) return '籍贯长度应在2-50个字符之间';
+		return '';
+	}
+	
+	function validatePhone(phone) {
+		if (!phone) return '手机号不能为空';
+		const phoneRegex = /^1[3-9]\d{9}$/;
+		if (!phoneRegex.test(phone)) return '请输入有效的11位手机号';
+		return '';
+	}
+	
+	function validateWechat(wechat) {
+		if (!wechat) return '微信号不能为空';
+		if (wechat.length < 6 || wechat.length > 20) return '微信号长度应在6-20个字符之间';
+		return '';
+	}
+	
 	function submitAdoptForm() {
-		// 验证表单是否填写完整
-		if (!adoptFormsData.value.catName || 
-			!adoptFormsData.value.name || 
-			!adoptFormsData.value.class || 
-			!adoptFormsData.value.origin || 
-			!adoptFormsData.value.phone || 
-			!adoptFormsData.value.wechat) {
+		// 表单验证
+		const nameError = validateName(adoptFormsData.value.name);
+		const classError = validateClass(adoptFormsData.value.class);
+		const originError = validateOrigin(adoptFormsData.value.origin);
+		const phoneError = validatePhone(adoptFormsData.value.phone);
+		const wechatError = validateWechat(adoptFormsData.value.wechat);
+		
+		// 收集所有错误信息
+		const errors = [];
+		if (nameError) errors.push(nameError);
+		if (classError) errors.push(classError);
+		if (originError) errors.push(originError);
+		if (phoneError) errors.push(phoneError);
+		if (wechatError) errors.push(wechatError);
+		
+		// 如果有错误，显示第一个错误信息并返回
+		if (errors.length > 0) {
 			uni.showToast({
-				title: '请填写完整信息',
-				icon: 'none'
+				title: errors[0],
+				icon: 'none',
+				duration: 2000
 			});
 			return;
 		}
 		
 		// 发送领养申请
 		uni.request({
-			url: `${API_general_request_url.value}/adopt/apply`,
+			url: `${API_general_request_url.value}/api/cat/adopt/apply`,
 			method: 'POST',
 			data: adoptFormsData.value,
+			header: {
+				'Authorization': `Bearer ${uni.getStorageSync('token')}`
+			},
 			success: (res) => {
-				if (res.data.code === 200) {
+				if (res.data.code === STATUS_CODE.SUCCESS) {
 					uni.showToast({
 						title: '申请提交成功',
-						icon: 'success'
+						icon: 'success',
+						duration: 2000 // 显示2秒后自动关闭
 					});
 					closeAdoptPopup();
 				} else {
@@ -673,7 +721,7 @@
 	function handleDelete() {
 		showMenu.value = false;
 		uni.showModal({
-			title: '确认删除（管理员）',
+			title: '确认删除（仅管理员）',
 			content: '确定要删除这只小猫的信息吗？此操作不可恢复。',
 			success: function (res) {
 				if (res.confirm) {
@@ -681,6 +729,9 @@
 					uni.request({
 						url: `${API_general_request_url.value}/api/cat/${cat.value.catId}`,
 						method: 'DELETE',
+						header: {
+							'Authorization': `Bearer ${uni.getStorageSync('token')}`
+						},
 						success: (response) => {
 							if (response.statusCode === 200 && response.data.code === STATUS_CODE.SUCCESS) {
 								uni.showToast({

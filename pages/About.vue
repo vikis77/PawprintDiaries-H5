@@ -31,6 +31,12 @@
         <view class="card-title">更新日志</view>
         <view class="card-content">
           <view class="update-item">
+            <view class="update-version">v2.1.0 (2024-1)</view>
+            <view class="update-list">
+                <view class="update-point">• 全新设计地图页面</view>
+                <view class="update-point">• 修复若干已知问题</view>
+                <view class="update-point"></view>
+            </view>
             <view class="update-version">v2.0.0 (2024-12)</view>
             <view class="update-list">
                 <view class="update-point">• 新增资金记录和管理功能</view>
@@ -44,6 +50,7 @@
                 <view class="update-point">• 新增帖子管理</view>
                 <view class="update-point">• 新增上传地图定位</view>
                 <view class="update-point">• 新增拍猫识别</view>
+                <view class="update-point"></view>
             </view>
             <view class="update-version">v1.0.0 (2024-9)</view>
             <view class="update-list">

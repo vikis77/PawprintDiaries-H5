@@ -191,7 +191,7 @@
 		if (!checkLoginStatus()) return; // 搜索时再次检查登录状态
 		
 		uni.request({
-			url: `${API_general_request_url.value}/api/search/search?words=${searchWords.value}`,
+			url: `${API_general_request_url.value}/api/search/search/mysql?words=${searchWords.value}`,
 			method: 'GET',
 			
 			header: {

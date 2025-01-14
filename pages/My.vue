@@ -213,18 +213,20 @@ onShow(async () => {
         appStore.setUserInfoNull()
         return;
     }
-    if (checkLogin()) {
-        try {
-            // 调用全局方法：请求用户个人资料
-            getUserProfile()
-            console.log("请求用户个人资料成功")
-        } catch (error) {
-            uni.showToast({
-                title: '请求失败，请重试',
-                icon: 'none'
-            })
-        }
-    }
+    //如果是从发帖页面返回的，等待收到发帖成功的通知，再发送请求新数据
+    uni.$on('postUploadSuccess', async () => {
+        // 调用全局方法：请求用户个人资料
+        await getUserProfile()
+        // 更新完用户资料后，计算更新当前显示的列表
+        await getActiveList()
+        console.log("收到发帖成功通知，更新用户个人资料成功")
+        return;
+    })
+    // 否则直接请求新数据
+    await getUserProfile()
+    await getActiveList()
+    
+    console.log("请求用户个人资料成功")
 })
 
 // 编辑我的资料
@@ -257,14 +259,18 @@ const checkLoginStatus = () => {
     isLoggedIn.value = !!token
 }
 
-// 处理登录登出
-const handleLoginLogout = () => {
+// 处理登出
+const handleLoginLogout = async () => {
     if (isLoggedIn.value) {
         // 登出逻辑
         uni.removeStorageSync('token')
         isLoggedIn.value = false
         appStore.setUserInfo(null) // 清空用户数据
         showToast('已退出登录')
+        // 刷新页面
+        uni.reLaunch({
+            url: 'My'
+        })
     } else {
         // 跳转到登录页
         uni.navigateTo({

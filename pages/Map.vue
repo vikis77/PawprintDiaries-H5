@@ -1,108 +1,156 @@
 <template>
 	<view class="container">
-		<!-- 添加加载动画组件 -->
+		<!-- 加载动画 -->
 		<view class="loading-overlay" v-if="isLoading">
 			<view class="loading-content">
 				<img class="loading-image" src="../static/loading-cat.gif" mode="aspectFit"/>
 				<text class="loading-text">{{loadingText}}</text>
 			</view>
 		</view>
-		<view class="layout">
-			<!-- 顶部搜索区域 -->
-			<view class="header-section">
-				<uni-section title="寻猫日迹" titleFontSize="40rpx" type="line">
-					<view class="search-container">
-						<!-- 日期选择 -->
-						<view class="search-row">
-							<view class="search-item">
-								<view class="icon-label">
-									<img class="icon" src="../static/time2.png" mode="aspectFill"/>
-									<text class="label">选择日期</text>
-								</view>
-								<view class="picker-container">
-									<uni-datetime-picker 
-										type="date"
-										placeholder="请选择日期"
-										v-model="selectedDate"
-										@change="onDateChange"
-										start="2024-01-01"
-										end="2024-12-31"
-									/>
-								</view>
-							</view>
-						</view>
-						<!-- 猫咪选择 -->
-						<view class="search-row">
-							<view class="search-item">
-								<view class="icon-label">
-									<img class="icon" src="../static/cat007.png" mode="aspectFill"/>
-									<text class="label">选择小猫</text>
-								</view>
-								<view class="picker-container">
-									<uni-data-select
-										placeholder="请选择小猫"
-										v-model="selectedValueC"
-										:localdata="dataListCat"
-										@change="onCatChange"
-									/>
-								</view>
-							</view>
-						</view>
-					</view>
-				</uni-section>
-			</view>
 
-			<!-- 地图展示区域 -->
+        <view class="header-section">
+            <uni-section title="寻猫日迹" titleFontSize="40rpx" type="line">
+            </uni-section>
+        </view>
+		
+		<!-- 主体内容 -->
+		<view class="layout" @click="handleLayoutClick">
+			<!-- 地图区域 -->
 			<view class="map-container">
 				<!-- #ifdef H5 -->
 				<!-- 3D地图 -->
-				<view class="map-section">
-					<text class="map-title">3D视图</text>
+				<view class="map1-section" :style="{ height: map1Height + 'px' }">
+					<div class="map-type-label">3D地图</div>
 					<div class="map-box" id="mymap"></div>
 				</view>
 				
+				<!-- 拖动手柄 -->
+				<view class="map-resizer" 
+					@mousedown="startResize" 
+					@mousemove="onResize"
+					@mouseup="endResize"
+					@mouseleave="endResize"
+					@touchstart="startResize" 
+					@touchmove="onResize"
+					@touchend="endResize">
+					<view class="resizer-line"></view>
+					<view class="resizer-handle">
+						<view class="handle-dot"></view>
+						<view class="handle-dot"></view>
+						<view class="handle-dot"></view>
+					</view>
+				</view>
+				
 				<!-- 2D地图 -->
-				<view class="map-section">
-					<text class="map-title">平面视图</text>
+				<view class="map2-section" :style="{ height: map2Height + 'px' }">
+					<div class="map-type-label">平面地图</div>
 					<div class="map-box" id="mymap2"></div>
 				</view>
 				<!-- #endif -->
 
 				<!-- #ifdef APP-PLUS -->
-				<!-- App端使用uni-app的map组件 -->
-				<view class="map-section">
-					<text class="map-title">地图视图</text>
-					<map
-						class="map-box"
+				<view class="map1-section">
+					<map class="map-box"
 						:latitude="22.527103"
 						:longitude="113.390166"
 						:markers="appMarkers"
 						:polyline="appPolyline"
 						scale="16"
-						show-location
-					></map>
+						show-location>
+					</map>
 				</view>
 				<!-- #endif -->
 			</view>
 
-			<!-- 统计信息面板 -->
-			<!-- <view class="stats-panel" v-if="path.length > 0">
-				<view class="stats-item">
-					<text class="stats-label">今日发现</text>
-					<text class="stats-value">{{path.length}}次</text>
+			<!-- 底部功能区 -->
+			<view class="bottom-area" 
+				:class="{'expanded': isBottomExpanded}"
+				@touchstart.stop="startDrag"
+				@touchmove.stop.prevent="onDrag"
+				@touchend.stop="endDrag"
+				@touchcancel.stop="endDrag">
+				<!-- 顶部拖动条 -->
+				<view class="drag-bar">
+					<view class="drag-handle"></view>
 				</view>
-				<view class="stats-item">
-					<text class="stats-label">活跃区域</text>
-					<text class="stats-value">图书馆</text>
-				</view>
-				<view class="stats-item">
-					<text class="stats-label">最近出现</text>
-					<text class="stats-value">10分钟前</text>
-				</view>
-			</view> -->
+				
+				<!-- 功能区内容 -->
+				<scroll-view class="bottom-content" 
+					scroll-y 
+					ref="bottomContent"
+					@touchstart.stop="handleContentTouch"
+					@touchmove.stop="handleContentMove"
+					@touchend.stop="handleContentEnd"
+					@touchcancel.stop="handleContentEnd">
+					<!-- 功能按钮区 -->
+					<view class="function-buttons">
+						<view class="function-btn" @click="openUploadForm">
+							<image class="btn-icon" src="https://cdn.luckyiur.com/catcat/static_image/V1_report.png" mode="aspectFit"></image>
+							<text class="btn-text">发现小猫</text>
+						</view>
+						<view class="function-btn" @click="openPhotoUpload">
+							<image class="btn-icon" src="https://cdn.luckyiur.com/catcat/static_image/aichong32.png" mode="aspectFit"></image>
+							<text class="btn-text">拍猫识别</text>
+						</view>
+						<view class="function-btn" @click="handleRefresh">
+							<image class="btn-icon refresh-icon" :class="{ 'refreshing': isRefreshing }" src="https://cdn.luckyiur.com/catcat/static_image/refresh.png" mode="aspectFit"></image>
+							<text class="btn-text">刷新数据</text>
+						</view>
+					</view>
+
+					<!-- 筛选区域 -->
+					<view class="filter-section">
+						<view class="filter-row">
+							<view class="filter-icon">
+								<img class="icon" src="../static/time2.png" mode="aspectFill"/>
+							</view>
+							<uni-datetime-picker 
+								class="filter-input"
+								@click="handleDatePickerClick"
+								@tap="handleDatePickerClick"
+								v-model="selectedDate"
+								type="date"
+								:clear-icon="true"
+								@change="onDateChange"
+								@maskClick="handleDatePickerCancel"
+								@cancel="handleDatePickerCancel"
+								:border="false"
+							></uni-datetime-picker>
+						</view>
+						<view class="filter-row">
+							<view class="filter-icon">
+								<img class="icon" src="../static/cat007.png" mode="aspectFill"/>
+							</view>
+							<view class="filter-input">
+								<uni-data-select
+									:border="false"
+									placeholder="选择要查看的猫咪"
+									v-model="selectedValueC"
+									:localdata="dataListCat"
+									@change="onCatChange"
+									popupTop
+								/>
+							</view>
+						</view>
+					</view>
+
+					<!-- 轨迹信息 -->
+					<view class="track-info" v-if="path.length > 0">
+						<view class="track-timeline">
+							<view class="timeline-item" v-for="(point, index) in path" :key="index">
+								<view class="timeline-dot" :class="{'start': index === 0, 'end': index === path.length - 1}"></view>
+								<view class="timeline-content">
+									<text class="location-name">{{point[2]}}</text>
+									<text class="location-time">{{formatTime(point[3])}}</text>
+								</view>
+							</view>
+						</view>
+					</view>
+				</scroll-view>
+			</view>
 			
 			<!-- 悬浮按钮 -->
-			<uni-fab 
+			<!-- <uni-fab 
 				ref="fab"
 				:pattern="pattern"
 				:content="content"
@@ -111,91 +159,89 @@
 				:direction="direction"
 				@trigger="trigger"
 				@fabClick="fabClick"
-			/>
+			/> -->
 			
 			<!-- 底部弹出层 (上传表单)-->
-			<view class="popup-wrapper">
-				<uni-popup ref="popupFromUpload" type='bottom' background-color="#fff" @change="change">
-					<view class="popup-content">
-						<view class="popup-header">
-							<text class="popup-title">报告小猫踪迹！</text>
-							<text class="popup-subtitle">帮助我们记录校园猫咪的足迹</text>
-						</view>
-						<view class="form-container">
-							<uni-forms ref="reportForm" :model="baseFormData1" :rules="baseFormRules">
-								<uni-forms-item label="小猫名字" required>
-									<uni-data-select
-										v-model="baseFormData1.catId"
-										:localdata="dataListCat"
-										@change="change"
-										placeholder='你发现了哪一只小猫？'
-									/>
-								</uni-forms-item>
-								<uni-forms-item label="位置信息" required>
-									<view class="location-inputs">
-										<uni-easyinput v-model="baseFormData1.longitude" placeholder="经度" />
-										<uni-easyinput v-model="baseFormData1.latitude" placeholder="纬度" />
-									</view>
-								</uni-forms-item>
-								<uni-forms-item label="上报者" required>
-									<uni-easyinput v-model="baseFormData1.name" placeholder="我们如何称呼您？" />
-								</uni-forms-item>
-								<button class="submit-btn" type="button" @click="submitForm">
-									<text class="btn-text">提交发现</text>
-								</button>
-							</uni-forms>
-						</view>
-					</view>
-				</uni-popup>
-				
-				<!-- 拍照识猫弹出层 -->
-				<uni-popup ref="popupPhotoUpload" type='bottom' background-color="#fff" @change="handlePopupChange">
-					<view class="popup-content photo-upload-content">
-						<view class="popup-header">
-							<text class="popup-title">拍照识别猫咪品种</text>
-							<text class="popup-subtitle">上传照片，帮你识别猫咪的品种类型</text>
-							<text class="popup-tips">支持识别的品种：伯曼猫、英国蓝猫、埃及猫、考拉特猫、缅因猫、奥西猫、波斯猫、布偶猫、俄罗斯蓝猫、暹罗猫、新加坡猫、斯芬克斯无毛猫等</text>
-						</view>
-						<view class="photo-container">
-							<view class="image-container">
-								<img v-if="imagePath" :src="imagePath" mode="aspectFit" class="preview-image"/>
-								<view v-else class="upload-placeholder" @click="chooseImage">
-									<img src="../static/cat007.png" mode="aspectFit" class="camera-icon"/>
-									<text class="upload-text">点击拍照或选择图片</text>
-								</view>
-							</view>
-							<view class="button-group">
-								<button class="photo-btn" @click="chooseImage">
-									<text class="btn-text">{{ imagePath ? '重新选择' : '选择图片' }}</text>
-								</button>
-								<button v-if="imagePath" class="recognition-btn" type="button" @click="submitPhotoForRecognition">
-									<text class="btn-text">开始识别</text>
-								</button>
-							</view>
-						</view>
-						<view v-if="recognitionResult && recognitionResult.topThree && recognitionResult.topThree.length > 0" class="recognition-result">
-							<text class="result-title">识别结果</text>
-							<view v-for="(result, index) in recognitionResult.topThree" :key="index" 
-								class="result-content" :class="{'top-result': index === 0}">
-								<view class="result-left">
-									<text class="rank-badge">{{ index + 1 }}</text>
-									<text class="cat-name">{{ result.catName }}</text>
-								</view>
-								<text class="confidence">{{ (result.confidence || 0).toFixed(1) }}%</text>
-							</view>
-						</view>
-						<view v-else-if="recognitionResult" class="recognition-result">
-							<text class="result-title">暂无匹配结果</text>
-						</view>
-					</view>
-				</uni-popup>
-			</view>
+			<uni-popup ref="popupFromUpload" type="bottom" background-color="#fff" @change="change">
+                <view class="popup-content form-upload-content">
+                    <view class="popup-header">
+                        <text class="popup-title">报告小猫踪迹！</text>
+                        <text class="popup-subtitle">帮助我们记录校园猫咪的足迹</text>
+                    </view>
+                    <view class="form-container">
+                        <uni-forms ref="reportForm" :model="baseFormData1" :rules="baseFormRules">
+                            <uni-forms-item label="小猫名字" required>
+                                <uni-data-select
+                                    v-model="baseFormData1.catId"
+                                    :localdata="dataListCat"
+                                    @change="change"
+                                    placeholder="你发现了哪一只小猫？"
+                                />
+                            </uni-forms-item>
+                            <uni-forms-item label="位置信息" required>
+                                <view class="location-inputs">
+                                    <uni-easyinput v-model="baseFormData1.longitude" placeholder="经度" />
+                                    <uni-easyinput v-model="baseFormData1.latitude" placeholder="纬度" />
+                                </view>
+                            </uni-forms-item>
+                            <uni-forms-item label="上报者" required>
+                                <uni-easyinput v-model="baseFormData1.name" placeholder="我们如何称呼您？" />
+                            </uni-forms-item>
+                            <button class="submit-btn" type="button" @click="submitForm">
+                                <text class="btn-text">提交发现</text>
+                            </button>
+                        </uni-forms>
+                    </view>
+                </view>
+            </uni-popup>
+			
+			<!-- 拍照识猫弹出层 -->
+            <uni-popup ref="popupPhotoUpload" type='bottom' background-color="#fff" @change="handlePopupChange">
+                <view class="popup-content photo-upload-content">
+                    <view class="popup-header">
+                        <text class="popup-title">拍照识别猫咪品种</text>
+                        <text class="popup-subtitle">上传照片，帮你识别猫咪的品种类型</text>
+                        <text class="popup-tips">支持识别的品种：伯曼猫、英国蓝猫、埃及猫、考拉特猫、缅因猫、奥西猫、波斯猫、布偶猫、俄罗斯蓝猫、暹罗猫、新加坡猫、斯芬克斯无毛猫等</text>
+                    </view>
+                    <view class="photo-container">
+                        <view class="image-container">
+                            <img v-if="imagePath" :src="imagePath" mode="aspectFit" class="preview-image"/>
+                            <view v-else class="upload-placeholder" @click="chooseImage">
+                                <img src="../static/cat007.png" mode="aspectFit" class="camera-icon"/>
+                                <text class="upload-text">点击拍照或选择图片</text>
+                            </view>
+                        </view>
+                        <view class="button-group">
+                            <button class="photo-btn" @click="chooseImage">
+                                <text class="btn-text">{{ imagePath ? '重新选择' : '选择图片' }}</text>
+                            </button>
+                            <button v-if="imagePath" class="recognition-btn" type="button" @click="submitPhotoForRecognition">
+                                <text class="btn-text">开始识别</text>
+                            </button>
+                        </view>
+                    </view>
+                    <view v-if="recognitionResult && recognitionResult.topThree && recognitionResult.topThree.length > 0" class="recognition-result">
+                        <text class="result-title">识别结果</text>
+                        <view v-for="(result, index) in recognitionResult.topThree" :key="index" 
+                            class="result-content" :class="{'top-result': index === 0}">
+                            <view class="result-left">
+                                <text class="rank-badge">{{ index + 1 }}</text>
+                                <text class="cat-name">{{ result.catName }}</text>
+                            </view>
+                            <text class="confidence">{{ (result.confidence || 0).toFixed(1) }}%</text>
+                        </view>
+                    </view>
+                    <view v-else-if="recognitionResult" class="recognition-result">
+                        <text class="result-title">暂无匹配结果</text>
+                    </view>
+                </view>
+            </uni-popup>
 		</view>
 	</view>
 </template>
 
 <script setup>
-	import { onMounted, onUnmounted, ref, nextTick, onActivated } from "vue";
+	import { onMounted, onUnmounted, ref, nextTick, onActivated, watch } from "vue";
 	import { API_general_request_url, pic_general_request_url } from '@/src/config/index.js'
 	import { toBeDeveloped, showToast } from '@/src/utils/toast'
 	import { STATUS_CODE } from '@/src/constant/constant.js'
@@ -328,10 +374,12 @@
 
 	// 将时间范围相关的函数改为单日
 	const selectedDate = ref('');
+	const isDatePickerOpen = ref(false);
 
 	// 日期变化处理函数
 	const onDateChange = (date) => {
 		selectedDate.value = date;
+		isDatePickerOpen.value = false;
 		filterResults();
 	};
 	
@@ -457,8 +505,32 @@
 		});
 	};
 	
-	onMounted(async () => {
+	onShow(async () => {
 		console.log('页面挂载');
+
+        // 检查用户token是否过期
+        const token = uni.getStorageSync('token');
+        if (token) {
+            try {
+                // 解析token获取过期时间
+                const tokenData = JSON.parse(atob(token.split('.')[1]));
+                const expTime = tokenData.exp * 1000; // 转换为毫秒
+                
+                // 判断token是否过期
+                if (Date.now() >= expTime) {
+                    // token已过期,清除本地存储的token和用户信息
+                    uni.removeStorageSync('token');
+                    uni.removeStorageSync('userInfo');
+                    console.log('token已过期,已清除用户登录信息');
+                }
+            } catch (error) {
+                console.error('token解析失败:', error);
+                // token格式错误,清除token
+                uni.removeStorageSync('token');
+                uni.removeStorageSync('userInfo');
+            }
+        }
+
 		// 确保DOM已经渲染完成
 		await nextTick();
 		if (isFirstLoad.value) {
@@ -523,18 +595,70 @@
 						rotateEnable: true,
 						pitchEnable: true,
 						features: ['bg', 'road','name'],
-						canvasRender: true,
-						willReadFrequently: true
+						mapStyle: 'amap://styles/normal',
+						showLabel: false,
 					});
 					
 					map2 = new AMap.Map("mymap2", {
 						viewMode: "2D",
 						zoom: 16,
 						center: [113.390166, 22.527103],
-						canvasRender: true,
-						willReadFrequently: true
+						mapStyle: 'amap://styles/normal',
+						showLabel: false,
 					});
-					
+
+					// 添加地图点击事件监听
+					const handleMapClick = (e) => {
+						// 获取点击事件的原始DOM事件
+						const domEvent = e.originEvent || e;
+						const target = domEvent.target;
+						
+						// 检查点击的元素是否是地图容器或其子元素
+						const isMapCanvas = target.classList.contains('amap-maps') || 
+										   target.classList.contains('amap-layer') ||
+										   target.classList.contains('amap-canvas');
+						
+						// 如果是地图画布区域，则收起功能区
+						if (isMapCanvas) {
+							isBottomExpanded.value = false;
+						}
+					};
+
+					// 为两个地图都添加点击事件监听
+					map1.on('click', handleMapClick);
+					map2.on('click', handleMapClick);
+
+					// 调整logo位置和样式
+					map1.on('complete', () => {
+						const logoEle = document.querySelector('#mymap .amap-logo');
+						const copyrightEle = document.querySelector('#mymap .amap-copyright');
+						if (logoEle) {
+							logoEle.style.zIndex = '1';
+							logoEle.style.bottom = '0';
+							logoEle.style.left = '0';
+						}
+						if (copyrightEle) {
+							copyrightEle.style.zIndex = '1';
+							copyrightEle.style.bottom = '0';
+							copyrightEle.style.right = '0';
+						}
+					});
+
+					map2.on('complete', () => {
+						const logoEle = document.querySelector('#mymap2 .amap-logo');
+						const copyrightEle = document.querySelector('#mymap2 .amap-copyright');
+						if (logoEle) {
+							logoEle.style.zIndex = '1';
+							logoEle.style.bottom = '0';
+							logoEle.style.left = '0';
+						}
+						if (copyrightEle) {
+							copyrightEle.style.zIndex = '1';
+							copyrightEle.style.bottom = '0';
+							copyrightEle.style.right = '0';
+						}
+					});
+
 					// 添加地图状态监听
 					map2.on('complete', () => {
 						console.log('2D地图加载完成');
@@ -777,7 +901,7 @@
 						map1catMarker.setMap(map1);
 						map1catMarker.setLabel({
 							offset: new AMap.Pixel(-17,-15),
-							content: `<div class='mapLabelInfo'>${marker[2]}</div>`,
+							content: `<div class='mapLabelInfo' data-cat-name="${marker[2]}">${marker[2]}</div>`,
 							direction: 'right'
 						});
 						
@@ -789,13 +913,45 @@
 						});
 						map2catMarker.setMap(map2);
 						map2catMarker.setLabel({
-							content: `<div class='mapLabelInfo'>${marker[2]}</div>`,
+							content: `<div class='mapLabelInfo' data-cat-name="${marker[2]}">${marker[2]}</div>`,
 							direction: 'right'
 						});
 					} catch (error) {
 						console.error('标记点绘制失败:', error, marker);
 					}
 				});
+
+				// 为地图添加标签点击事件委托
+				const handleLabelClick = (e) => {
+					const labelElement = e.target.closest('.mapLabelInfo');
+                    // 如果底部功能区是展开的，则关闭底部功能区
+					if (labelElement && isBottomExpanded.value === true) {
+						e.stopPropagation();
+						const catName = labelElement.dataset.catName;
+						const catData = dataListCat.value.find(cat => cat.text === catName);
+						if (catData) {
+							selectedValueC.value = catData.value;
+							filterResults();
+							isBottomExpanded.value = true;
+						}
+					
+                    }
+                    // 如果底部功能区是展开的，则关闭底部功能区
+                    else if (labelElement && isBottomExpanded.value === false) {
+                        const catName = labelElement.dataset.catName;
+                        const catData = dataListCat.value.find(cat => cat.text === catName);
+                        console.log(catData)
+                        if (catData) {
+                            uni.navigateTo({
+                                url: `Card?catId=${catData.value}`
+                            })
+                        }
+					}
+				};
+
+				// 为两个地图容器添加事件监听
+				document.getElementById('mymap').addEventListener('click', handleLabelClick);
+				document.getElementById('mymap2').addEventListener('click', handleLabelClick);
 			} else if (mapDrawMode.value === 'line') {
 				// 清除之前的标记
 				map1.clearMap();
@@ -869,7 +1025,6 @@
 	// 打开上传照片
 	const imagePath = ref('');
 	const chooseImage = () => {
-		isLoading.value = false; // 确保选择图片时不显示加载动画
 		uni.chooseImage({
 			count: 1,
 			sizeType: ['original', 'compressed'],
@@ -1001,13 +1156,26 @@
 						
 						// 使用nextTick确保数据更新后再显示
 						nextTick(() => {
-							recognitionResult.value = {
-								topThree: predictions.map(p => ({
-									catName: `${p.breed_cn} (${p.breed_en})`,
-									confidence: parseFloat(p.confidence)
-								}))
-							};
-							console.log('更新后的结果:', recognitionResult.value);
+							// 先重置结果
+							recognitionResult.value = null;
+							
+							// 添加一个短暂延迟，让重置动画有时间执行
+							setTimeout(() => {
+								recognitionResult.value = {
+									topThree: predictions.map(p => ({
+										catName: `${p.breed_cn} (${p.breed_en})`,
+										confidence: parseFloat(p.confidence)
+									}))
+								};
+								
+								// 添加结果类名，触发高度动画
+								const popupContent = document.querySelector('.photo-upload-content');
+								if (popupContent) {
+									popupContent.classList.add('has-result');
+								}
+								
+								console.log('更新后的结果:', recognitionResult.value);
+							}, 100);
 						});
 						
 						uni.showToast({
@@ -1015,7 +1183,7 @@
 							icon: 'success'
 						});
 					} else {
-						uni.showToast({
+							uni.showToast({
 							title: result.msg || '识别失败',
 							icon: 'none'
 						});
@@ -1045,26 +1213,15 @@
 	const handlePopupChange = (e) => {
 		console.log('弹出层状态变化:', e);
 		if (!e.show) {
-			// 弹出层关闭时重置识别结果
+			// 弹出层关闭时重置识别结果和类名
 			recognitionResult.value = null;
+			const popupContent = document.querySelector('.photo-upload-content');
+			if (popupContent) {
+				popupContent.classList.remove('has-result');
+			}
 			imagePath.value = '';
 		}
 	};
-
-	// const toBeDeveloped = (type) => {
-	// 	if (type === 'catRecognition') {
-	// 		// 重置状态
-	// 		imagePath.value = '';
-	// 		recognitionResult.value = null;
-	// 		// 打开拍照识猫弹出层
-	// 		popupPhotoUpload.value.open();
-	// 	} else {
-	// 		uni.showToast({
-	// 			title: '待开发',
-	// 			icon: 'error'
-	// 		});
-	// 	}
-	// };
 
 	// 添加页面显示/隐藏的生命周期钩子
 	onActivated(() => {
@@ -1076,236 +1233,898 @@
 			});
 		}
 	});
+
+	const isRefreshing = ref(false);
+
+	// 添加刷新功能
+	const handleRefresh = async () => {
+		if (isRefreshing.value) return;
+		
+		isRefreshing.value = true;
+		isLoading.value = true;
+		loadingText.value = '正在刷新页面...';
+		
+		try {
+			// 重新获取猫咪信息
+			await getCatInfoDetail();
+			// 更新猫咪选择器数据
+			dataListCat.value = [{
+				text: '全部',
+				value: 'all'
+			}];
+			dataListCat.value.push(...appStore.catList.map(item =>({
+				text: item.catname,
+				value: item.catId
+			})));
+			uni.setStorageSync("catList", appStore.catList);
+			
+			// 重新获取位置信息
+			await getCatLocationLatest();
+			responseData.value = appStore.catLocations;
+			mapDrawMode.value = 'point';
+			path.value = responseData.value
+				.filter(item => item.longitude != null && item.latitude != null)
+				.map(item => [
+					parseFloat((item.longitude || 0).toFixed(6)),
+					parseFloat((item.latitude || 0).toFixed(6)),
+					item.catName || '未知猫咪'
+				]);
+			
+			// 重新绘制地图
+			if (path.value.length > 0) {
+				map1?.clearMap();
+				map2?.clearMap();
+				mapDraw();
+			}
+			
+			uni.showToast({
+				title: '刷新成功',
+				icon: 'success'
+			});
+		} catch (error) {
+			console.error('刷新失败:', error);
+			uni.showToast({
+				title: '刷新失败',
+				icon: 'error'
+			});
+		} finally {
+			isRefreshing.value = false;
+			isLoading.value = false;
+		}
+	};
+
+	// 添加返回函数
+	const goBack = () => {
+		uni.navigateBack();
+	}
+
+	// 添加时间格式化函数
+	const formatTime = (timestamp) => {
+		if (!timestamp) return '时间未知';
+		const date = new Date(timestamp);
+		return `${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${date.getMinutes()}`;
+	}
+
+	// 底部面板相关
+	const isBottomExpanded = ref(false);
+	const startY = ref(0);
+	const isDragging = ref(false);
+	const bottomContent = ref(null);
+	let touchStartTime = 0;
+	let initialTouchY = 0;
+	let lastContentScrollTop = 0;
+	let lastTouchY = 0;
+	let isContentDragging = false;
+	let contentTouchStartY = 0;
+
+	// 检查是否是内容区域的点击
+	const isContentArea = (e) => {
+		// 获取事件触发的元素信息
+		if (!e || !e.currentTarget) return false;
+		
+		// 检查事件的目标元素
+		const currentTarget = e.currentTarget;
+		const mpTarget = e.mp?.target;  // 获取小程序的target信息
+		
+		// 检查是否包含特定的类名
+		const checkClassName = (className) => {
+			if (typeof className === 'string') {
+				// 检查是否是可滚动内容区域
+				return className.includes('bottom-content') && 
+					   (className.includes('function-buttons') ||
+					    className.includes('filter-section') ||
+					    className.includes('track-info'));
+			}
+			return false;
+		};
+		
+		// 检查当前元素和父元素
+		if (currentTarget) {
+			if (checkClassName(currentTarget.className)) return true;
+		}
+		
+		// 检查小程序target信息
+		if (mpTarget) {
+			if (checkClassName(mpTarget.className)) return true;
+		}
+		
+		return false;
+	};
+
+	// 处理内容区域的触摸事件
+	const handleContentTouch = (e) => {
+		const scrollView = bottomContent.value;
+		if (!scrollView) return;
+		
+		contentTouchStartY = e.touches[0].clientY;
+		isContentDragging = true;
+		lastContentScrollTop = scrollView.scrollTop || 0;
+		
+		// 同时记录拖动起始位置
+		touchStartTime = Date.now();
+		initialTouchY = contentTouchStartY;
+		isDragging.value = true;
+	};
+
+	const handleContentMove = (e) => {
+		if (!isContentDragging) return;
+		
+		const scrollView = bottomContent.value;
+		if (!scrollView) return;
+		
+		const currentY = e.touches[0].clientY;
+		const deltaY = currentY - contentTouchStartY;
+		
+		// 如果内容已经滚动到顶部，并且继续下拉
+		if (scrollView.scrollTop <= 0 && deltaY > 0) {
+			if (deltaY > 30 && isBottomExpanded.value) { // 添加一个阈值，避免轻微触摸就收起
+				isBottomExpanded.value = false;
+				isContentDragging = false;
+				isDragging.value = false;
+			}
+		}
+		// 如果内容已经滚动到底部，并且继续上拉
+		else if (scrollView.scrollHeight - scrollView.scrollTop <= scrollView.clientHeight + 1 && deltaY < 0) {
+			if (deltaY < -30 && !isBottomExpanded.value) {
+				isBottomExpanded.value = true;
+				isContentDragging = false;
+				isDragging.value = false;
+			}
+		}
+	};
+
+	const handleContentEnd = (e) => {
+		if (!isContentDragging) return;
+		
+		const scrollView = bottomContent.value;
+		if (!scrollView) return;
+		
+		const currentY = e.changedTouches[0].clientY;
+		const deltaY = currentY - contentTouchStartY;
+		const duration = Date.now() - touchStartTime;
+		const velocity = Math.abs(deltaY) / duration;
+		
+		// 如果是在顶部或底部的快速滑动
+		if (velocity > 0.3 || Math.abs(deltaY) > 50) {
+			if (scrollView.scrollTop <= 0 && deltaY > 0 && isBottomExpanded.value) {
+				isBottomExpanded.value = false;
+			} else if (scrollView.scrollHeight - scrollView.scrollTop <= scrollView.clientHeight + 1 && 
+					   deltaY < 0 && !isBottomExpanded.value) {
+				isBottomExpanded.value = true;
+			}
+		}
+		
+		isContentDragging = false;
+		isDragging.value = false;
+	};
+
+	// 开始拖动（底部区域）
+	const startDrag = (e) => {
+		touchStartTime = Date.now();
+		initialTouchY = e.touches[0].clientY;
+		lastTouchY = initialTouchY;
+		isDragging.value = true;
+	};
+
+	// 拖动中（底部区域）
+	const onDrag = (e) => {
+		if (!isDragging.value) return;
+		
+		const currentY = e.touches[0].clientY;
+		const deltaY = currentY - initialTouchY;
+		
+		// 向上拖动超过阈值时展开
+		if (deltaY < -30 && !isBottomExpanded.value) {
+			isBottomExpanded.value = true;
+			isDragging.value = false;
+		}
+		// 向下拖动超过阈值时收起
+		else if (deltaY > 30 && isBottomExpanded.value) {
+			isBottomExpanded.value = false;
+			isDragging.value = false;
+		}
+	};
+
+	// 结束拖动（底部区域）
+	const endDrag = (e) => {
+		if (!isDragging.value) return;
+		
+		const currentY = e.changedTouches[0].clientY;
+		const deltaY = currentY - initialTouchY;
+		const duration = Date.now() - touchStartTime;
+		const velocity = Math.abs(deltaY) / duration;
+		
+		// 快速滑动或大幅度滑动时触发
+		if (velocity > 0.3 || Math.abs(deltaY) > 50) {
+			if (deltaY > 0 && isBottomExpanded.value) {
+				isBottomExpanded.value = false;
+			} else if (deltaY < 0 && !isBottomExpanded.value) {
+				isBottomExpanded.value = true;
+			}
+		}
+		
+		isDragging.value = false;
+		lastTouchY = 0;
+	};
+
+	// 打开上传表单
+	const openUploadForm = () => {
+		// 先关闭底部功能区
+		isBottomExpanded.value = false;
+		// 延迟一下再打开新弹窗，避免动画冲突
+		setTimeout(() => {
+			popupFromUpload.value?.open();
+		}, 300);
+	};
+
+	// 打开拍照识别
+	const openPhotoUpload = () => {
+		// 先关闭底部功能区
+		isBottomExpanded.value = false;
+		// 延迟一下再打开新弹窗，避免动画冲突
+		setTimeout(() => {
+			popupPhotoUpload.value?.open();
+		}, 300);
+	};
+
+	// 添加关闭弹窗方法
+	const closeUploadPopup = () => {
+		popupFromUpload.value?.close();
+		// 重置表单数据
+		baseFormData1.value = {
+			catId: '',
+			longitude: '',
+			latitude: '',
+			name: ''
+		};
+	};
+
+	// 地图相关
+	const map1Height = ref(window.innerHeight * 0.37);
+	const map2Height = ref(window.innerHeight * 0.30);
+	const startHeight1 = ref(0);
+	const startHeight2 = ref(0);
+	const isMapDragging = ref(false);
+
+	// 开始拖动地图分隔条
+	const startResize = (e) => {
+		isMapDragging.value = true;
+		startY.value = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+		startHeight1.value = map1Height.value;
+		startHeight2.value = map2Height.value;
+		document.body.style.cursor = 'row-resize';
+	};
+
+	// 拖动地图分隔条
+	const onResize = (e) => {
+		if (!isMapDragging.value) return;
+		e.preventDefault();
+		
+		const currentY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+		const deltaY = currentY - startY.value;
+		const totalHeight = startHeight1.value + startHeight2.value;
+		
+		// 计算新高度
+		let newHeight1 = startHeight1.value + deltaY;
+		let newHeight2 = startHeight2.value - deltaY;
+		
+		// 限制最小高度为总高度的20%
+		const minHeight = totalHeight * 0.2;
+		if (newHeight1 < minHeight) {
+			newHeight1 = minHeight;
+			newHeight2 = totalHeight - minHeight;
+		} else if (newHeight2 < minHeight) {
+			newHeight2 = minHeight;
+			newHeight1 = totalHeight - minHeight;
+		}
+		
+		map1Height.value = newHeight1;
+		map2Height.value = newHeight2;
+		
+		// 实时更新地图大小
+		if (map1 && map2) {
+			map1.resize();
+			map2.resize();
+		}
+	};
+
+	// 结束拖动地图分隔条
+	const endResize = () => {
+		if (!isMapDragging.value) return;
+		isMapDragging.value = false;
+		document.body.style.cursor = '';
+	};
+
+	// 处理日期选择器点击事件
+	const handleDatePickerClick = () => {
+		// 展开底部区域
+		isBottomExpanded.value = true;
+		// 设置日期选择器打开状态
+		isDatePickerOpen.value = true;
+		// 直接设置功能按钮区的层级
+		const functionButtons = document.querySelector('.function-buttons');
+		if (functionButtons) {
+			functionButtons.classList.add('date-picker-open');
+		}
+	};
+
+	// 监听日期选择器关闭
+	watch(selectedDate, (newVal, oldVal) => {
+		if (newVal !== oldVal) {
+			// 日期已选择，关闭日期选择器
+			isDatePickerOpen.value = false;
+			// 恢复功能按钮区的层级
+			const functionButtons = document.querySelector('.function-buttons');
+			if (functionButtons) {
+				functionButtons.classList.remove('date-picker-open');
+			}
+		}
+	});
+
+	// 添加日期选择器取消事件处理
+	const handleDatePickerCancel = () => {
+		isDatePickerOpen.value = false;
+		// 恢复功能按钮区的层级
+		const functionButtons = document.querySelector('.function-buttons');
+		if (functionButtons) {
+			functionButtons.classList.remove('date-picker-open');
+		}
+	};
+
+	// 处理布局点击事件
+	const handleLayoutClick = (e) => {
+		// 检查点击的目标元素是否在功能区内
+		const target = e.target;
+		const bottomArea = document.querySelector('.bottom-area');
+		
+		// 如果功能区已展开，且点击的不是功能区内的元素，则收起功能区
+		if (isBottomExpanded.value && bottomArea && !bottomArea.contains(target)) {
+			isBottomExpanded.value = false;
+		}
+	};
 </script>
 
 <style lang="scss" scoped>
 .container {
-	width: 750rpx;
-	height: 94vh;
-	background-color: #f5f5f5;
+	width: 100%;
+	height: 100vh;
+	background-color: #f8f9fa;
+	position: fixed; /* 改为fixed定位 */
+	left: 0;
+	top: 0;
+	overflow: hidden;
+	touch-action: none; /* 禁用所有触摸行为 */
 }
 
 .layout {
-	width: 100%;
 	height: 100%;
 	display: flex;
 	flex-direction: column;
-	// padding-bottom: 140rpx; /* 为悬浮按钮预留空间 */
-}
-
-/* 顶部搜索区域 */
-.header-section {
-	background: #fff;
-	padding: 20rpx;
-	margin: 20rpx;
-	border-radius: 16rpx;
-	box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
-}
-
-.search-container {
-	display: flex;
-	gap: 20rpx;
-}
-
-.search-row {
-	flex: 1;
-	background: #f8f9fa;
-	border-radius: 12rpx;
-	padding: 16rpx;
-}
-
-.search-item {
-	display: flex;
-	align-items: center;
-}
-
-.icon-label {
-	display: flex;
-	align-items: center;
-	margin-right: 12rpx;
-}
-
-.icon {
-	width: 32rpx;
-	height: 32rpx;
-	margin-right: 8rpx;
-}
-
-.label {
-	font-size: 24rpx;
-	color: #666;
-}
-
-.picker-container {
-	flex: 1;
-}
-
-/* 地图区域 */
-.map-container {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	gap: 16rpx;
-	padding: 0 20rpx;
-	height: calc(94vh - 200rpx); /* 减去顶部搜索区域的高度 */
-	overflow: hidden; /* 添加此行 */
-}
-
-// #ifdef H5
-.map-section {
-	flex: 1;
-	min-height: 400rpx; /* 增加最小高度 */
-	background: #fff;
-	border-radius: 16rpx;
 	position: relative;
 	overflow: hidden;
-	margin-bottom: 16rpx;
-	display: flex; /* 添加此行 */
-	flex-direction: column; /* 添加此行 */
+	touch-action: none;
+}
+
+.header-section {
+    /* 取消边框,只保留上下左右的外边距 */
+    margin: 0rpx 30rpx 0rpx 30rpx;
+}
+
+/* 标题栏样式 */
+.title-bar {
+	height: 44px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #fff;
+	position: relative;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.title {
+	font-size: 18px;
+	font-weight: 600;
+	color: #333;
+}
+
+.refresh-button {
+	position: absolute;
+	right: 12px;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	background: rgba(0,0,0,0.05);
 	
-	&:first-child {
-		flex: 1.1; /* 让3D地图稍大一些 */
+	&.refreshing {
+		animation: spin 1s linear infinite;
 	}
-	
-	&:last-child {
-		flex: 0.9;
-		margin-bottom: 0; /* 修改此行 */
-	}
+}
+
+/* 刷新按钮图标样式 */
+.refresh-icon {
+	width: 40rpx;
+	height: 40rpx;
+    background-color: #ffe6eb;
+    border-radius: 50rpx; /* 增大圆角半径,使背景圈圈更大 */
+    // padding: 10rpx; /* 添加内边距使背景圈圈更大 */
+    // margin-bottom: 10rpx;
+}
+
+/* 地图容器样式 */
+.map-container {
+	flex: 1;
+	position: relative;
+	overflow: hidden !important;
+	overscroll-behavior: none;
+	touch-action: none !important;
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-touch-callout: none;
+	-webkit-overflow-scrolling: none;
+}
+
+.map1-section {
+	position: relative;
+	background: #fff;
+	transition: height 0.2s ease;
+	margin: 20rpx 20rpx 10rpx 20rpx;
+	border-radius: 20px;
+	overflow: hidden !important;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	touch-action: none !important;
+	-webkit-overflow-scrolling: none;
+}
+
+.map2-section {
+	position: relative;
+	background: #fff;
+	transition: height 0.2s ease;
+	margin: 10rpx 20rpx 10rpx 20rpx;
+	border-radius: 20px;
+	overflow: hidden !important;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	touch-action: none !important;
+	-webkit-overflow-scrolling: none;
 }
 
 .map-title {
 	position: absolute;
-	top: 12rpx;
-	left: 12rpx;
-	font-size: 24rpx;
+	top: 8px;
+	left: 8px;
+	font-size: 12px;
 	color: #666;
 	background: rgba(255,255,255,0.9);
-	padding: 6rpx 16rpx;
-	border-radius: 6rpx;
+	padding: 4px 8px;
+	border-radius: 4px;
 	z-index: 1;
-	font-weight: 500;
 }
 
-#mymap, #mymap2 {
+.map-box {
 	width: 100%;
 	height: 100%;
-	min-height: 400rpx;
-	position: relative; /* 添加此行 */
-}
-// #endif
-
-.map-divider {
-	height: 0rpx;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	border-radius: 20px;
+	touch-action: none !important;
+	pointer-events: auto;
+	overflow: hidden !important;
+	-webkit-overflow-scrolling: none;
 }
 
-/* 统计面板 */
-.stats-panel {
+/* 拖动手柄样式 */
+.map-resizer {
+	height: 10px;
 	background: #fff;
-	margin: 0 20rpx;
-	padding: 16rpx;
-	border-radius: 16rpx;
-	display: flex;
-	justify-content: space-around;
-	box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
+	position: relative;
+	cursor: row-resize;
+	touch-action: none;
+	user-select: none;
+	z-index: 10;
 }
 
-.stats-item {
+.resizer-line {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 50%;
+	height: 1px;
+	background: #eee;
+}
+
+.resizer-handle {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
 	display: flex;
-	flex-direction: column;
+	gap: 3px;
+}
+
+.handle-dot {
+	width: 4px;
+	height: 4px;
+	background: #999;
+	border-radius: 50%;
+}
+
+/* 底部区域样式 */
+.bottom-area {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: #fff;
+	border-radius: 20px 20px 0 0;
+	z-index: 100;
+	height: 64vh;
+	transform: translateY(calc(100% - 23vh));
+	box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	touch-action: pan-y;
+	overflow: hidden; /* 添加overflow:hidden确保内容不会超出圆角 */
+	
+	/* 展开状态 */
+	&.expanded {
+		transform: translateY(calc(100% - 64vh));
+		.drag-handle {
+            // 旋转拖动手柄
+			transform: rotate(180deg);
+		}
+	}
+}
+
+.drag-bar {
+	height: 20px;
+	display: flex;
+	justify-content: center;
 	align-items: center;
-	gap: 4rpx;
+	background: transparent; /* 改为透明背景 */
+	position: absolute; /* 改为absolute定位 */
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 1;
+	touch-action: none;
 }
 
-.stats-label {
-	font-size: 22rpx;
-	color: #666;
+.drag-handle {
+	width: 32px;
+	height: 4px;
+	background: #e0e0e0;
+	border-radius: 2px;
+	transition: transform 0.3s ease;
 }
 
-.stats-value {
-	font-size: 28rpx;
+.icon {
+	width: 60rpx;
+	height: 60rpx;
+}
+
+// 底部内容
+.bottom-content {
+	height: calc(100% - 20px);
+	position: relative;
+	padding: 0 0px 16px;
+	background: transparent; /* 改为透明背景 */
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+	overscroll-behavior: contain;
+	margin-top: 20px; /* 添加顶部边距 */
+	
+	/* 隐藏滚动条 */
+	&::-webkit-scrollbar {
+		display: none;
+	}
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+/* 筛选区域样式 */
+.filter-section {
+    background: #fff;
+    z-index: 5; /* 提高筛选区域的层级 */
+    margin: 10rpx 30rpx 10rpx 30rpx;
+    padding: 10px;
+    border-radius: 20rpx;
+    box-shadow: 0 12rpx 32rpx rgba(0, 0, 0, 0.12), 0 4rpx 8rpx rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    position: relative; /* 添加相对定位 */
+}
+
+// 筛选行
+.filter-row {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 16px;  // 增加间距
+	background: #f8f9fa;  // 改变背景色
+	border-radius: 16px;  // 增加圆角
+	padding: 10px;  // 增加内边距
+	border: 1px solid #eee;
+	transition: all 0.3s ease;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);  // 增加基础阴影
+	
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+
+// 筛选图标
+.filter-icon {
+	width: 24px;
+	height: 24px;
+	
+	image {
+		width: 100%;
+		height: 100%;
+		opacity: 0.6;
+	}
+}
+
+// 需要的
+.filter-input {
+	flex: 1;
+	position: static !important;  // 修改定位方式
+}
+
+// 选择器滚动
+::v-deep .uni-select__selector-scroll {
+	max-height: 60vh !important;
+}
+
+/* 轨迹信息样式 */
+.track-timeline {
+    position: sticky;
+    top: 0;
+    background: linear-gradient(135deg, #fff, #f8f9fa);
+    z-index: 3;  // 保持轨迹信息的层级较低
+    margin: 15rpx 16px 10rpx 16px;
+    padding: 24px 24px 24px 44px;
+    border-radius: 20rpx;
+    box-shadow: 0 16rpx 40rpx rgba(0, 0, 0, 0.15), 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 20px;
+    padding-bottom: 20px;
+    
+    &:last-child {
+        padding-bottom: 40px; /* 为最后一个项目添加额外的底部内边距 */
+    }
+    
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 20px;
+        bottom: 0;
+        width: 1px;
+        background: #eee;
+    }
+}
+
+// 时间轴点
+.timeline-dot {
+	position: absolute;
+	left: -4px;
+	top: 8px;
+	width: 10px;  // 增加大小
+	height: 10px;
+	background: #999;
+	border-radius: 50%;
+	border: 2px solid #fff;
+	box-shadow: 0 0 0 4px rgba(153, 153, 153, 0.2);  // 增加外发光范围
+	
+	&.start {
+		background: #4cd964;
+		width: 12px;  // 增加大小
+		height: 12px;
+		left: -5px;
+		border-color: #fff;
+		box-shadow: 0 0 0 4px rgba(76, 217, 100, 0.25);  // 增加外发光范围和强度
+	}
+	
+	&.end {
+		background: #ff6b81;
+		width: 12px;  // 增加大小
+		height: 12px;
+		left: -5px;
+		border-color: #fff;
+		box-shadow: 0 0 0 4px rgba(255, 107, 129, 0.25);  // 增加外发光范围和强度
+	}
+}
+
+.timeline-content {
+	background: #fff;
+	border-radius: 16rpx;  // 增加圆角
+	padding: 20rpx;  // 增加内边距
+	border: 1px solid #eee;
+	transition: all 0.3s ease;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);  // 增加基础阴影
+	margin-bottom: 4px;  // 添加底部间距
+	
+	&:hover {
+		border-color: #ff6b81;
+		background: linear-gradient(135deg, #fff, #fff8f9);  // 添加悬停时的渐变背景
+		box-shadow: 0 12rpx 32rpx rgba(255, 107, 129, 0.25);  // 加重悬停时的阴影
+		transform: translateY(-2px) scale(1.02);  // 增加上浮距离并稍微放大
+	}
+}
+
+.location-name {
+	font-size: 14px;
 	color: #333;
 	font-weight: 500;
+	margin-bottom: 4px;
 }
 
-/* 悬浮按钮样式 */
-::v-deep .uni-fab {
-	.uni-fab__content {
-		bottom: 120rpx !important;
-	}
-	
-	.uni-fab__item {
-		width: 110rpx !important;
-		height: 110rpx !important;
-		background: transparent !important;
-	}
-	
-	.uni-fab__circle {
-		width: 110rpx !important;
-		height: 110rpx !important;
-		background: #fff !important;
-		box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.1) !important;
-	}
-	
-	.uni-fab__icon {
-		width: 56rpx !important;
-		height: 56rpx !important;
-	}
+.location-time {
+	font-size: 12px;
+	color: #999;
 }
 
-/* 地图标注样式 */
-::v-deep .mapLabelInfo {
-	color: #333;
-	background: rgba(255,255,255,0.9);
-	padding: 4rpx 12rpx;
-	border-radius: 4rpx;
-	font-size: 20rpx;
-	font-weight: 500;
-    opacity: 0.8;
-}
-
-/* 去除地图logo */
-::v-deep .amap-logo,
-::v-deep .amap-copyright {
-	display: none !important;
-}
-
-.popup-wrapper {
-	.popup-content {
-		min-height: 65vh;
-		max-height: 85vh;
-		padding: 40rpx;
-		border-radius: 40rpx 40rpx 0 0;
-		background: #fff;
-		transition: all 0.3s ease;
-		overflow-y: auto;
+/* 弹窗样式 */
+.popup-content {
+    background: #fff;
+	border-radius: 20px 20px 0 0;
+	position: relative;
+	min-height: 60vh;
+	will-change: transform;
+	touch-action: pan-y;
+	z-index: inherit;
+	transition: min-height 0.3s ease; // 添加高度过渡动画
+    // 照片上传
+	&.photo-upload-content {
+		min-height: 60vh; // 初始高度
 		
-		&.photo-upload-content {
-			display: flex;
-			flex-direction: column;
-			gap: 20rpx;
-			
-			.popup-header {
-				flex-shrink: 0;
+		&.has-result {
+			min-height: 76vh; // 有结果时的高度
+		}
+		
+		.popup-header {
+			text-align: center;
+			margin: 40rpx 0 20rpx;
+			.popup-title {
+				font-size: 36rpx;
+				font-weight: 600;
+				color: #333;
+				display: block;
+				margin-bottom: 10rpx;
 			}
 			
-			.photo-container {
-				flex-shrink: 0;
+			.popup-subtitle {
+				font-size: 28rpx;
+				color: #666;
+				display: block;
+				margin-bottom: 16rpx;
 			}
 			
-			.recognition-result {
-				// margin-top: 20rpx;
+			.popup-tips {
+				font-size: 24rpx;
+				color: #999;
+				display: block;
+				line-height: 1.5;
 				padding: 20rpx;
 				background: #f8f9fa;
-				border-radius: 16rpx;
-				animation: slideUp 0.3s ease-out;
+				border-radius: 12rpx;
+				margin: 0 20rpx;
+			}
+		}
+	}
+    // 表单上传
+	&.form-upload-content {
+		.popup-header {
+			text-align: center;
+			margin: 40rpx 0 20rpx;  // 修改这里，添加顶部间距
+			
+			.popup-title {
+				font-size: 36rpx;
+				font-weight: 600;
+				color: #333;
+				display: block;
+				margin-bottom: 10rpx;
+			}
+			
+			.popup-subtitle {
+				font-size: 28rpx;
+				color: #666;
+				display: block;
+				margin-bottom: 16rpx;
+			}
+		}
+
+		.form-container {
+			padding: 20rpx;
+			
+			::v-deep .uni-forms-item {
+				margin-bottom: 30rpx;
+				
+				.uni-forms-item__label {
+					font-size: 28rpx;
+					color: #333;
+					margin-bottom: 12rpx;
+					font-weight: 500;
+				}
+				
+				.uni-easyinput__content,
+				.uni-data-select {
+					background: #f8f9fa;
+					border-radius: 16rpx;
+					border: 2rpx solid #eee;
+					height: 80rpx;
+					padding: 0 24rpx;
+					transition: all 0.3s ease;
+					
+					&:focus-within {
+						border-color: #ff6b81;
+						box-shadow: 0 0 0 2rpx rgba(255,107,129,0.1);
+						background: #fff;
+					}
+				}
+			}
+
+			.location-inputs {
+				display: flex;
+				gap: 24rpx;
+				
+				::v-deep .uni-easyinput__content {
+					flex: 1;
+				}
+			}
+
+			.submit-btn {
+				width: 100%;
+				height: 90rpx;
+				background: linear-gradient(135deg, #ff6b81, #ffa5b5);
+				border: none;
+				border-radius: 45rpx;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				margin-top: 50rpx;
+				box-shadow: 0 8rpx 20rpx rgba(255,107,129,0.2);
+				transition: all 0.3s ease;
+				
+				&:active {
+					transform: scale(0.98);
+					box-shadow: 0 4rpx 10rpx rgba(255,107,129,0.2);
+				}
+
+				.btn-text {
+					color: #fff;
+					font-size: 32rpx;
+					font-weight: 600;
+					letter-spacing: 2rpx;
+				}
 			}
 		}
 	}
 }
 
+// 弹窗动画
 @keyframes slideUp {
 	from {
 		transform: translateY(100%);
@@ -1317,121 +2136,221 @@
 	}
 }
 
-// 优化滚动条样式
-::-webkit-scrollbar {
-	width: 6rpx;
+// 拖动指示器
+.drag-indicator {
+	width: 36px;
+	height: 4px;
+	background: #e0e0e0;
+	border-radius: 2px;
+	position: absolute;
+	top: 12px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 1;
 }
 
-::-webkit-scrollbar-track {
-	background: transparent;
+// 关闭按钮
+.popup-close {
+	position: absolute;
+	right: 16px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: 24px;
+	color: #999;
+	line-height: 1;
 }
 
-::-webkit-scrollbar-thumb {
-	background: #ddd;
-	border-radius: 3rpx;
-}
-
-::-webkit-scrollbar-thumb:hover {
-	background: #ccc;
-}
-
-.popup-header {
-	text-align: center;
-	margin-bottom: 50rpx;
-	position: relative;
-	
-	&::after {
-		content: '';
-		position: absolute;
-		bottom: -20rpx;
-		left: 50%;
-		transform: translateX(-50%);
-		width: 60rpx;
-		height: 6rpx;
-		background: linear-gradient(to right, #ff6b81, #ffa5b5);
-		border-radius: 3rpx;
-	}
-}
-
-.popup-title {
-	font-size: 40rpx;
-	font-weight: 600;
-	color: #333;
-	display: block;
-	margin-bottom: 12rpx;
-}
-
-.popup-subtitle {
-	font-size: 26rpx;
-	color: #666;
-}
-
+/* 表单样式 */
 .form-container {
-	::v-deep .uni-forms-item {
-		margin-bottom: 30rpx;
-		
-		.uni-forms-item__label {
-			font-size: 28rpx;
-			color: #333;
-			margin-bottom: 12rpx;
-			font-weight: 500;
-		}
-		
-		.uni-easyinput__content,
-		.uni-data-select {
-			background: #f8f9fa;
-			border-radius: 16rpx;
-			border: 2rpx solid #eee;
-			height: 80rpx;
-			padding: 0 24rpx;
-			transition: all 0.3s ease;
-			
-			&:focus-within {
-				border-color: #ff6b81;
-				box-shadow: 0 0 0 2rpx rgba(255,107,129,0.1);
-				background: #fff;
-			}
-			
-			.uni-easyinput__placeholder-class {
-				color: #999;
-			}
-		}
-	}
+	padding: 16px;
+	background: #fff;
+	height: auto;
 }
 
+// 位置输入
 .location-inputs {
 	display: flex;
-	gap: 24rpx;
-	
-	::v-deep .uni-easyinput__content {
-		flex: 1;
-	}
+	gap: 12px;
 }
 
 .submit-btn {
+	margin-top: 24px;
 	width: 100%;
-	height: 90rpx;
-	background: linear-gradient(135deg, #ff6b81, #ffa5b5);
+	height: 44px;
+	background: linear-gradient(135deg, #ff6b81, #ff8e9e);
 	border: none;
-	border-radius: 45rpx;
+	border-radius: 22px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	margin-top: 50rpx;
-	box-shadow: 0 8rpx 20rpx rgba(255,107,129,0.2);
-	transition: all 0.3s ease;
-	
-	&:active {
-		transform: scale(0.98);
-		box-shadow: 0 4rpx 10rpx rgba(255,107,129,0.2);
-	}
 }
 
 .btn-text {
-	color: #da5757;
-	font-size: 32rpx;
-	font-weight: 600;
-	letter-spacing: 2rpx;
+	color: #fff;
+	font-size: 16px;
+	font-weight: 500;
+}
+
+.upload-icon {
+	width: 40px;
+	height: 40px;
+	opacity: 0.5;
+}
+
+.result-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	background: #f8f9fa;
+	border-radius: 8px;
+	margin-bottom: 8px;
+	
+	&.top-result {
+		background: linear-gradient(135deg, #ff6b81, #ff8e9e);
+		
+		.result-rank {
+			background: rgba(255,255,255,0.2);
+            width: 24px;
+            height: 24px;
+            background: #eee;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #666;
+		}
+		
+		.result-name, .result-confidence {
+			color: #fff;
+		}
+	}
+}
+
+.result-info {
+	flex: 1;
+}
+
+.result-name {
+	font-size: 14px;
+	color: #333;
+	font-weight: 500;
+	margin-bottom: 4px;
+}
+
+.result-confidence {
+	font-size: 12px;
+	color: #999;
+}
+// 旋转动画
+@keyframes spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
+}
+
+/* 功能按钮样式 */
+.function-buttons {
+	position: sticky;
+	top: 0;
+	background: #fff;
+	z-index: 6;
+	padding: 5px 0;
+	border-bottom: 1px solid #f5f5f5;
+	margin: 0 -16px;
+	padding-left: 16px;
+	padding-right: 16px;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	
+	&.date-picker-open {
+		z-index: 5;
+	}
+}
+
+.function-btn {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	flex: 1;
+}
+
+.btn-icon {
+	width: 40rpx;
+	height: 40rpx;
+	opacity: 0.8;
+}
+
+.btn-text {
+	font-size: 12px;
+	color: #666;
+	white-space: nowrap;
+}
+
+/* 添加阴影效果增强层次感 */
+.function-buttons,
+.filter-section,
+.track-timeline {
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 确保内容区域在固定元素下方可以滚动 */
+.bottom-content {
+	& > *:last-child {
+		margin-bottom: 200px; /* 添加底部空间确保内容可以完全滚动 */
+	}
+}
+
+/* 修改加载动画样式 */
+.loading-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: var(--window-bottom); /* 使用系统变量，避免遮挡底部导航栏 */
+	background-color: rgba(255, 255, 255, 0.95);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 9999;
+}
+
+.loading-content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+	transform: translateY(-15%); /* 稍微向上偏移更多，避免被底部功能区遮挡 */
+	padding-bottom: 100px; /* 为底部功能区预留空间 */
+}
+
+.loading-image {
+	width: 120px;
+	height: 120px;
+	object-fit: contain;
+}
+
+.loading-text {
+	font-size: 14px;
+	color: #666;
+	text-align: center;
+}
+
+// /* 确保弹窗内容区域可以滚动 */
+// ::v-deep .uni-popup__wrapper {
+// 	// display: flex;
+// 	// flex-direction: column;
+// 	// max-height: 85vh !important;
+//     // min-height: 45vh !important;
+// 	overflow: hidden !important;
+// }
+
+/* 修改底部安全区域 */
+::v-deep .uni-popup-bottom .uni-popup__wrapper-box {
+	padding-bottom: constant(safe-area-inset-bottom);
+	padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* 拍照识猫弹出层样式 */
@@ -1439,10 +2358,7 @@
 	.photo-container {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		gap: 20rpx;
-		// margin: 20rpx 0;
-		
+		// 图片容器
 		.image-container {
 			width: 100%;
 			height: 360rpx;
@@ -1453,13 +2369,13 @@
 			border-radius: 20rpx;
 			overflow: hidden;
 		}
-
+        // 预览图片
 		.preview-image {
 			width: 100%;
 			height: 100%;
 			object-fit: contain;
 		}
-
+        // 上传图片占位
 		.upload-placeholder {
 			width: 100%;
 			height: 100%;
@@ -1469,18 +2385,18 @@
 			justify-content: center;
 			gap: 20rpx;
 		}
-
+        // 相机图标
 		.camera-icon {
 			width: 80rpx;
 			height: 80rpx;
 			opacity: 0.5;
 		}
-
+        // 上传图片文字
 		.upload-text {
 			font-size: 28rpx;
 			color: #999;
 		}
-
+        // 按钮组
 		.button-group {
 			display: flex;
 			flex-direction: column;
@@ -1511,7 +2427,7 @@
 				font-size: 28rpx;
 			}
 		}
-
+        // 识别按钮
 		.recognition-btn {
 			width: 300rpx;
 			height: 80rpx;
@@ -1537,21 +2453,36 @@
 			}
 		}
 	}
-
+    // 识别结果
 	.recognition-result {
 		width: 100%;
 		background: #f8f9fa;
 		border-radius: 16rpx;
 		padding: 20rpx;
 		margin-top: 0rpx;
-
+		opacity: 0;
+		transform: translateY(20px);
+		animation: slideUpFade 0.3s ease forwards;
+		
+		@keyframes slideUpFade {
+			from {
+				opacity: 0;
+				transform: translateY(20px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+        
+        // 结果标题 
 		.result-title {
 			font-size: 28rpx;
 			color: #666;
 			margin-bottom: 16rpx;
 			display: block;
 		}
-
+        // 结果内容
 		.result-content {
             width: 90%;
 			display: flex;
@@ -1577,13 +2508,13 @@
 				margin-bottom: 0;
 			}
 		}
-
+        // 结果左侧
 		.result-left {
 			display: flex;
 			align-items: center;
 			gap: 12rpx;
 		}
-
+        // 排名徽章
 		.rank-badge {
 			width: 40rpx;
 			height: 40rpx;
@@ -1596,13 +2527,13 @@
 			color: #666;
 			font-weight: bold;
 		}
-
+        // 猫名
 		.cat-name {
 			font-size: 32rpx;
 			color: #333;
 			font-weight: 600;
 		}
-
+        // 置信度
 		.confidence {
 			font-size: 28rpx;
 			color: #666;
@@ -1611,71 +2542,137 @@
 	}
 }
 
-.popup-content {
-	&.photo-upload-content {
-		.popup-header {
-			text-align: center;
-			margin-bottom: 20rpx;
-			
-			.popup-title {
-				font-size: 36rpx;
-				font-weight: 600;
-				color: #333;
-				display: block;
-				margin-bottom: 10rpx;
-			}
-			
-			.popup-subtitle {
-				font-size: 28rpx;
-				color: #666;
-				display: block;
-				margin-bottom: 16rpx;
-			}
-			
-			.popup-tips {
-				font-size: 24rpx;
-				color: #999;
-				display: block;
-				line-height: 1.5;
-				padding: 20rpx;
-				background: #f8f9fa;
-				border-radius: 12rpx;
-				margin: 0 20rpx;
-			}
-		}
+
+// 需要的
+/* 修改弹出层样式 */
+::v-deep .uni-popup {
+	z-index: 9999997 !important;  // 确保基础弹出层在适当的层级
+}
+
+// 全局滚动条隐藏
+::v-deep ::-webkit-scrollbar {
+    display: none !important;
+}
+::v-deep {
+    scrollbar-width: none !important;  /* Firefox */
+    -ms-overflow-style: none !important;  /* IE and Edge */
+}
+
+// 修改弹出层的滚动条
+::v-deep .uni-popup__wrapper {
+    &::-webkit-scrollbar {
+        display: none !important;
+    }
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+// 修改选择器的滚动条
+::v-deep .uni-select__selector-scroll {
+    &::-webkit-scrollbar {
+        display: none !important;
+    }
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.container {
+    &::-webkit-scrollbar {
+        display: none !important;
+    }
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.bottom-content {
+    &::-webkit-scrollbar {
+        display: none !important;
+    }
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.track-timeline {
+    &::-webkit-scrollbar {
+        display: none !important;
+    }
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+/* 添加地图标签样式 */
+::v-deep .mapLabelInfo {
+	padding: 2px 6px;
+	background: rgba(255, 255, 255, 0.7); // 修改透明度为50%
+	border-radius: 3px;
+	font-size: 11px;
+	color: #333;
+	font-weight: 400;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	white-space: nowrap;
+	
+	/* 添加一个小尾巴 */
+	position: relative;
+	
+	&::after {
+		content: '';
+		position: absolute;
+		left: -3px;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 0;
+		height: 0;
+		border-top: 3px solid transparent;
+		border-bottom: 3px solid transparent;
+		border-right: 3px solid rgba(255, 255, 255, 0.5); // 修改尾巴透明度为50%
 	}
 }
 
-// 添加加载动画样式
-.loading-overlay {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	height: 94vh;
-	background-color: rgba(255, 255, 255, 0.9);
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	z-index: 9999;
+::v-deep .amap-geo {
+	background-color: #fff !important;
+	border-radius: 4px !important;
+	width: 28px !important;
+	height: 28px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	
+	img {
+		width: 16px !important;
+		height: 16px !important;
+		opacity: 0.7 !important;
+	}
 }
 
-.loading-content {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 20rpx;
-	margin-bottom: 100rpx;
-}
-
-.loading-image {
-	width: 200rpx;
-	height: 200rpx;
-}
-
-.loading-text {
-	font-size: 28rpx;
+/* 添加地图类型标识样式 */
+.map-type-label {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	background: rgba(255, 255, 255, 0.9);
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 12px;
 	color: #666;
-	text-align: center;
+	z-index: 100;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+// 在样式部分添加鼠标样式
+::v-deep .mapLabelInfo {
+    cursor: pointer;
+}
+
+/* 修改日期选择器样式 */
+::v-deep .uni-date__x-input {
+    height: 100%;
+    line-height: normal;
+    padding-right: 30px !important; /* 为清除按钮留出空间 */
+}
+
+::v-deep .uni-date__icon-clear {
+    top: 50% !important;
+    right: 8px !important;
 }
 </style>

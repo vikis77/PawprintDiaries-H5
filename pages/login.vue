@@ -74,21 +74,27 @@
         </view>
         
         <view class="test-accounts">
-          <view class="test-account-item" @click="handleLoginTest('tttt', '1234')">
-            <view class="account-info">
-              <text class="account-type">超级管理员</text>
-              <text class="account-credentials">tttt / 1234</text>
+            <view class="test-account-item" @click="handleLoginTest('iur', 'iur')">
+                <view class="account-info">
+                <text class="account-type">用户</text>
+                <text class="account-credentials">iur / iur</text>
+                </view>
+                <uni-icons type="forward" size="16" color="#999"></uni-icons>
             </view>
-            <uni-icons type="forward" size="16" color="#999"></uni-icons>
-          </view>
-          
-          <view class="test-account-item" @click="handleLoginTest('admin4', '4444')">
-            <view class="account-info">
-              <text class="account-type">超级管理员</text>
-              <text class="account-credentials">admin4 / 4444</text>
+            <view class="test-account-item" @click="handleLoginTest('admin4', '4444')">
+                <view class="account-info">
+                <text class="account-type">管理员1</text>
+                <text class="account-credentials">iuradmin / iuradmin</text>
+                </view>
+                <uni-icons type="forward" size="16" color="#999"></uni-icons>
             </view>
-            <uni-icons type="forward" size="16" color="#999"></uni-icons>
-          </view>
+            <view class="test-account-item" @click="handleLoginTest('tttt', '1234')">
+                <view class="account-info">
+                <text class="account-type">管理员2</text>
+                <text class="account-credentials">tttt / 1234</text>
+                </view>
+                <uni-icons type="forward" size="16" color="#999"></uni-icons>
+            </view>
         </view>
       </view>
     </view>
@@ -100,6 +106,10 @@ import { ref, reactive, nextTick } from 'vue'
 import { jwtDecode } from "jwt-decode";
 import { API_general_request_url } from '@/src/config/index.js'
 import { STATUS_CODE } from '@/src/constant/constant.js'
+import { useAppStore } from '@/store/modules/app'
+
+// 创建 store 实例
+const appStore = useAppStore()
 
 // 响应式变量
 const email = ref('')
@@ -154,6 +164,11 @@ const handleLogin = async () => {
 
   // 开始加载
   isLoading.value = true
+  // 清除用户资料
+  appStore.setUserInfoNull()
+  // 清除token
+  uni.removeStorageSync('token')
+  uni.removeStorageSync('tokenDetail')
 
   try {
     const res = await uni.request({
@@ -181,6 +196,9 @@ const handleLogin = async () => {
       } catch (error) {
         console.error("Token 解码失败:", error)
       }
+      // 调用全局方法：请求用户个人资料
+      await getUserProfile()
+      console.log("请求用户个人资料成功")
 
       uni.showToast({
         title: '登录成功',
@@ -194,9 +212,7 @@ const handleLogin = async () => {
         })
       }, 1500)
 
-      // 调用全局方法：请求用户个人资料
-      getUserProfile()
-      console.log("请求用户个人资料成功")
+      
     } else {
       uni.showToast({
         title: res.data.msg || '登录失败',
@@ -205,7 +221,7 @@ const handleLogin = async () => {
     }
   } catch (error) {
     uni.showToast({
-      title: '网络错误，请重试',
+      title: '系统开小差，请稍后再试',
       icon: 'none'
     })
   } finally {

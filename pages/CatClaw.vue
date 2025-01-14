@@ -596,15 +596,39 @@ onMounted(() => {
 // 每次页面加载时（包括首次加载）
 onShow(() => {
     console.log("onShow")
+
+    // 检查用户token是否过期
+    const token = uni.getStorageSync('token');
+    if (token) {
+        try {
+            // 解析token获取过期时间
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            const expTime = tokenData.exp * 1000; // 转换为毫秒
+            
+            // 判断token是否过期
+            if (Date.now() >= expTime) {
+                // token已过期,清除本地存储的token和用户信息
+                uni.removeStorageSync('token');
+                uni.removeStorageSync('userInfo');
+                console.log('token已过期,已清除用户登录信息');
+            }
+        } catch (error) {
+            console.error('token解析失败:', error);
+            // token格式错误,清除token
+            uni.removeStorageSync('token');
+            uni.removeStorageSync('userInfo');
+        }
+    }
+
     // 确保每次显示页面时分段器都在推荐状态
     currentArea.value = 0;
 
     // 如果是从Card页面返回
-    if (isFromCard.value) {
-        isFromCard.value = false;  // 重置标记
-        console.log('从Card页面返回，不重新获取数据');
-        return;
-    }
+    // if (isFromCard.value) {
+    //     isFromCard.value = false;  // 重置标记
+    //     console.log('从Card页面返回，不重新获取数据');
+    //     return;
+    // }
 
     // 其他情况，获取猫猫数据
     console.log('不是从Card页面返回，获取新的猫猫数据');
@@ -798,7 +822,7 @@ const ensureNumber = (value) => {
 const fetchDataAnalysis = async () => {
     try {
         // 调用API获取数据
-        getCatAnalyseData();
+        await getCatAnalyseData();
         // 从appStore获取数据
         const newData = appStore.catDataAnalysisData;
         
@@ -1612,8 +1636,10 @@ function editFundRecord(index) {
         
     fundForm.value = { 
         ...record,
-        type: recordType
+        type: recordType,
+        id: record.id
     };
+    console.log(fundForm.value)
     
     // 根据当前资金类型设置表单类型选项
     if (currentFundType.value === 'income') {
@@ -1646,11 +1672,14 @@ function deleteFundRecord(index) {
                     header: {
                         'Authorization': `Bearer ${uni.getStorageSync('token')}`
                     },
-                    success: (res) => {
+                    success: async (res) => {
                         if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                             console.log("删除资金记录成功")
                             console.log(res)
                             fundRecords.value.splice(index, 1);
+                            // 删除完之后，请求一次全局方法，刷新数据
+                            await fetchCatData();
+                            await fetchDataAnalysis();
                             uni.showToast({
                                 title: '删除成功',
                                 icon: 'success'
@@ -1698,7 +1727,7 @@ function submitFundRecord() {
         ...fundForm.value,
         type: fundForm.value.type === 'income' ? 1 : 2
     };
-    
+    console.log(submitData)
     uni.request({
         url: `${API_general_request_url.value}/api/cat/analysis/fund/add`,
         method: 'POST',
@@ -1706,7 +1735,7 @@ function submitFundRecord() {
             'Authorization': `Bearer ${uni.getStorageSync('token')}`
         },
         data: submitData,
-        success: (res) => {
+        success: async (res) => {
             if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
                 console.log(res);
                 // 如果是编辑，则更新记录
@@ -1721,7 +1750,13 @@ function submitFundRecord() {
                         ...fundForm.value,
                         type: fundForm.value.type === 'income' ? '收入' : '支出'
                     });
+                    // 刷新资金记录 -- 为了拿到最新添加那条数据的id，便于接着编辑操作
+                    showFundRecords(currentFundType.value);
                 }
+                // 添加或修改完之后，请求一次全局方法，刷新数据
+                await fetchCatData();
+                await fetchDataAnalysis();
+                
                 
                 // 按日期排序
                 fundRecords.value.sort((a, b) => new Date(b.date) - new Date(a.date));

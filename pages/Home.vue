@@ -113,7 +113,7 @@
 
 			<view class="content" id="top" v-else>
 				<view v-for="(post, index) in posts" 
-					:key="post.postId"  
+					:key="post.postId"
 					class="box"
 					:style="{ 
 						animation: `fadeInUp 0.5s ease-out forwards`,
@@ -170,7 +170,7 @@
 	const status = ref('more'); // 加载更多的状态
 
 	
-	// 声明弹窗的内
+	// 声明弹窗的内容
 	const dialogContent = ref(`
 		<p>本应用为演示应用，旨在展示个学习和开发的项目。特此声明：</p>
 		<p>1. 非商业用途：本项目仅用于学习和展示，所有功能和内容均为个人开发，不得用于商业目的。</p>
@@ -179,18 +179,56 @@
 		<p>4. 功能稳定性：本应用处于学习开发阶段，可能存在不稳定或未完善的功能，使用者需自行承担风险。</p>
 		<p>5. 免版权资源：项目中的所有图片资源均为免版权可使用，展示的数据均为测试数据，不涉及任何真实用户或实际情况。</p>
 		<p>6. 反馈与建议：欢迎用户提供反馈和建议，以帮助开发者不断改进本项目。</p>
-		<br/>
-		<p>PC端访问建议F12切换模拟设备，为方便用户体验，提供以下测试账号：</p>
-		<p>测试账号：tttt<br>密码：1234</p>
-		<p>测试账号：admin4<br>密码：4444</p>
+		<p>7. PC端访问建议F12切换模拟设备。</p>
+        <br/>
+        <p>点击查看 <a href="javascript:void(0)" onclick="document.dispatchEvent(new CustomEvent('goToAbout'))">关于平台和开发者</a></p>
 		<br/>
 		<p>联系开发者:</p>
 		<p>
-			GitHub: <a href="https://github.com/vikis77" target="_blank">https://github.com/vikis77</a><br>
-			Blog: <a href="https://luckyiur.com" target="_blank">https://luckyiur.com</a><br>
-			Email: <a href="mailto:qin2607994895@gmail.com">qin2607994895@gmail.com</a>
+			GitHub: <a href="javascript:void(0)" onclick="document.dispatchEvent(new CustomEvent('openUrl', {detail: 'https://github.com/vikis77'}))">https://github.com/vikis77</a><br>
+			Blog: <a href="javascript:void(0)" onclick="document.dispatchEvent(new CustomEvent('openUrl', {detail: 'https://luckyiur.com'}))">https://luckyiur.com</a><br>
+			Email: <a href="javascript:void(0)" onclick="document.dispatchEvent(new CustomEvent('openUrl', {detail: 'mailto:qin2607994895@gmail.com'}))">qin2607994895@gmail.com</a>
 		</p>
 	`)
+
+	// 跳转到About页面
+	const goToAbout = () => {
+		// 先关闭弹窗
+		popup.value?.close()
+		// 延迟跳转,等待弹窗关闭动画完成
+		setTimeout(() => {
+			uni.navigateTo({
+				url: '/pages/About',
+				success: () => {
+					console.log('成功跳转到About页面')
+				},
+				fail: (err) => {
+					console.error('跳转失败:', err)
+					showToast('页面跳转失败')
+				}
+			})
+		}, 300)
+	}
+
+	// 打开外部链接
+	const openUrl = (url) => {
+		// #ifdef H5
+		window.open(url, '_blank')
+		// #endif
+		
+		// #ifdef APP-PLUS
+		plus.runtime.openURL(url)
+		// #endif
+		
+		// #ifdef MP
+		uni.setClipboardData({
+			data: url,
+			success: () => {
+				showToast('链接已复制到剪贴板')
+			}
+		})
+		// #endif
+	}
 	
 	// 处理确认按钮点击
 	const dialogConfirm = () => {
@@ -208,7 +246,29 @@
         const debug = uni.getSystemInfoSync()
         console.log('系统信息：', debug)
         // #endif
-
+        
+        // 检查用户token是否过期
+        const token = uni.getStorageSync('token');
+        if (token) {
+            try {
+                // 解析token获取过期时间
+                const tokenData = JSON.parse(atob(token.split('.')[1]));
+                const expTime = tokenData.exp * 1000; // 转换为毫秒
+                
+                // 判断token是否过期
+                if (Date.now() >= expTime) {
+                    // token已过期,清除本地存储的token和用户信息
+                    uni.removeStorageSync('token');
+                    uni.removeStorageSync('userInfo');
+                    console.log('token已过期,已清除用户登录信息');
+                }
+            } catch (error) {
+                console.error('token解析失败:', error);
+                // token格式错误,清除token
+                uni.removeStorageSync('token');
+                uni.removeStorageSync('userInfo');
+            }
+        }
         // 调用全局方法：获取首页帖子数据
         getPosts(undefined, undefined, true, true);
         
@@ -240,6 +300,10 @@
         setTimeout(() => {
             loading.value = false
         }, 1000)
+
+        // 添加事件监听器
+        document.addEventListener('goToAbout', goToAbout);
+        document.addEventListener('openUrl', (event) => openUrl(event.detail));
 	});
 	
 

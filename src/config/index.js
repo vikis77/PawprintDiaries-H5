@@ -12,9 +12,13 @@ export const Suffix_1002 = ref('')
 // #ifdef H5
 if (process.env.NODE_ENV === 'development') {
     // H5开发环境
-    pic_general_request_url.value = "http://localhost:8000"
+    // pic_general_request_url.value = "http://localhost:8000"
+    pic_general_request_url.value = "https://cdn.luckyiur.com/catcat"
     API_general_request_url.value = "http://localhost:8080"
+    // API_general_request_url.value = "https://pawprintdiaries.luckyiur.com"
     Suffix_1001.value = ""
+    Suffix_1001.value = "-small35" // 压缩为35%
+    Suffix_1002.value = "-small15" // 压缩为15%
 } else {
     // H5生产环境
     pic_general_request_url.value = "https://cdn.luckyiur.com/catcat"

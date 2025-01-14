@@ -5,7 +5,8 @@
 			<NavBar1001
 				title="发布帖子"
 				:showLeft="true"
-				:showRight="false"
+				:showRight="true"
+                @onRightClick = "uploadImages"
 			/>
 			<view class="input-section">
 				<uni-easyinput 
@@ -64,9 +65,9 @@
 						></uni-file-picker>
 					</view>
 				</uni-section>
-				<button class="submit-btn" @click="uploadImages">
+				<!-- <button class="submit-btn" @click="uploadImages">
 					<text class="btn-text">立即发表</text>
-				</button>
+				</button> -->
 			</view>
 		</view>
 	</view>
@@ -182,16 +183,25 @@
 				throw new Error('帖子创建失败');
 			}
 
+            console.log('原始文件名顺序：')
+            console.log(postData.files)
 			// 3. 处理文件名映射
 			const fileNameConvertMap = postResponse.data.data.fileNameConvertMap;
-			const convertedFiles = postData.files.map((file, index) => {
-				const convertedName = Object.values(fileNameConvertMap)[index];
-				return {
-					...file,
-					name: convertedName
-				};
-			});
-
+            console.log('后端拿到的文件名映射1：')
+            console.log(fileNameConvertMap)
+			const convertedFiles = postData.files.map(file => {
+                // 使用原始文件名作为key去查找转换后的文件名
+                const convertedName = fileNameConvertMap[file.name];
+                if (!convertedName) {
+                    console.error(`未找到文件 ${file.name} 对应的转换名称`);
+                }
+                return {
+                    ...file,
+                    name: convertedName
+                };
+            });
+            console.log('转换后的文件名：')
+            console.log(convertedFiles)
 			// 4. 获取七牛云上传凭证
 			const tokenResponse = await uni.request({
 				url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,
@@ -218,7 +228,7 @@
 							token: qiniuToken,
 							key: `catcat/post_pics/${file.name}`
 						},
-						success: (res) => {
+						success: async (res) => {
 							if (res.statusCode === 200) {
 								resolve(res);
 							} else {
@@ -242,6 +252,11 @@
 			throw error;
 		}
 	};
+
+    // 点击子组件后，触发父组件的handleSendPost
+    // const handleSendPost = () => {
+    //     return uploadImages()
+    // }
 	
 	// 处理发布逻辑
 	const uploadImages = async () => {
@@ -288,8 +303,10 @@
 			files: [...selectedTempFiles.value]
 		};
 
-		// 立即返回上一页
+		// 先返回上一页,再在后台处理上传
 		uni.navigateBack();
+		// 发送发帖成功通知,让My页面重新获取数据
+		uni.$emit('postUploadSuccess');
 
 		// 在后台异步处理上传
 		handleAsyncUpload(postData).catch(error => {
@@ -314,63 +331,22 @@
 	.container {
 		width: 750rpx;
 		min-height: 100vh;
-		background: linear-gradient(135deg, #f6f8fa 0%, #e8edf2 100%);
-		padding: 20rpx 0;
+		background-color: #ffffff;
 		box-sizing: border-box;
-		position: relative;
-		overflow: hidden;
-		
-		&::before {
-			content: '';
-			position: absolute;
-			top: -50%;
-			left: -50%;
-			width: 200%;
-			height: 200%;
-			background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 60%);
-			animation: rotate 45s linear infinite;
-			z-index: 1;
-		}
 		
 		.layout {
-			width: 94%;
-			margin: 0 auto;
-			min-height: calc(100vh - 40rpx);
+			width: 100%;
+			min-height: 100vh;
 			background-color: #ffffff;
-			border-radius: 40rpx;
-			box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.08);
-			padding: 30rpx;
+			padding: 0;
 			box-sizing: border-box;
 			position: relative;
-			z-index: 2;
-			animation: slideUp 0.6s ease-out;
-		}
-	}
-
-	@keyframes rotate {
-		from { transform: rotate(0deg); }
-		to { transform: rotate(360deg); }
-	}
-
-	@keyframes slideUp {
-		from {
-			opacity: 0;
-			transform: translateY(40rpx);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
 		}
 	}
 
 	.input-section {
-		margin: 30rpx 0;
-		padding: 30rpx;
-		background: #ffffff;
-		border-radius: 24rpx;
-		box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.03);
+		margin: 20rpx 32rpx;
 		position: relative;
-		overflow: hidden;
 		
 		&::after {
 			content: '';
@@ -378,154 +354,101 @@
 			bottom: 0;
 			left: 0;
 			width: 100%;
-			height: 2rpx;
-			background: linear-gradient(90deg, 
-				rgba(116, 185, 255, 0) 0%,
-				rgba(116, 185, 255, 0.5) 50%,
-				rgba(116, 185, 255, 0) 100%
-			);
+			height: 1px;
+			background-color: #f2f2f2;
 		}
 	}
 
 	::v-deep .uni-easyinput {
-		margin: 20rpx 0;
+		margin: 16rpx 0;
 		
 		.uni-easyinput__content {
-			background-color: #f8f9fa;
-			border-radius: 16rpx;
-			padding: 24rpx;
-			border: 2rpx solid #e9ecef;
-			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			background-color: #ffffff;
+			padding: 24rpx 0;
+			border: none;
 			
 			&:focus-within {
-				background-color: #fff;
-				box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.06);
-				border-color: #74b9ff;
-				transform: translateY(-2rpx) scale(1.002);
+				background-color: #ffffff;
+				box-shadow: none;
 			}
 		}
 		
 		.uni-easyinput__placeholder-class {
-			color: #adb5bd;
-			font-size: 28rpx;
-			transition: all 0.3s ease;
+			color: #bbbbc2;
+			font-size: 32rpx;
+			font-weight: 400;
 		}
 
 		textarea {
-			font-size: 30rpx;
-			color: #2d3436;
-			line-height: 1.6;
+			font-size: 32rpx;
+			color: #333333;
+			line-height: 1.5;
+			font-weight: 400;
 		}
 	}
 
 	.title-input {
 		::v-deep .uni-easyinput__content {
-			background-color: #fff;
-			border-bottom: 2rpx solid #e9ecef;
-			margin-bottom: 20rpx;
-			padding: 20rpx 24rpx !important;
+			padding: 24rpx 0 16rpx 0 !important;
 			
-			&:focus-within {
-				border-bottom-color: #9370db;
-			}
-
 			.uni-easyinput__content-textarea {
-				min-height: 60rpx;
-				max-height: 120rpx;
-				line-height: 1.5;
+				min-height: 48rpx;
+				font-size: 36rpx;
+				font-weight: 500;
 			}
 		}
 	}
 
 	.word-count {
 		font-size: 24rpx;
-		color: #999;
-		margin-right: 20rpx;
+		color: #bbbbc2;
+		margin-right: 0;
 		position: absolute;
 		right: 0;
-		bottom: 10rpx;
-		transition: all 0.3s ease;
+		bottom: 16rpx;
 		
 		&--limit {
-			color: #ff6b6b;
-			font-weight: 500;
-			transform: scale(1.05);
+			color: #ff4d4f;
 		}
 	}
 
 	.upload-section {
-		margin-top: 40rpx;
-		animation: fadeIn 0.6s ease-out;
-	}
-
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
+		margin: 32rpx;
 	}
 
 	::v-deep .uni-section {
 		.uni-section-header {
-			padding: 24rpx 20rpx;
+			padding: 24rpx 0;
 			
 			.uni-section-header__content {
-				font-size: 32rpx;
-				font-weight: 600;
-				color: #2d3436;
-				position: relative;
-				padding-left: 24rpx;
+				font-size: 28rpx;
+				font-weight: 400;
+				color: #666666;
+				padding-left: 0;
 				
 				&::before {
-					content: '';
-					position: absolute;
-					left: 0;
-					top: 50%;
-					transform: translateY(-50%);
-					width: 6rpx;
-					height: 32rpx;
-					background: linear-gradient(45deg, #0984e3, #74b9ff);
-					border-radius: 6rpx;
-					transition: all 0.3s ease;
-				}
-				
-				&:hover::before {
-					height: 40rpx;
-					background: linear-gradient(45deg, #0984e3, #00a8ff);
+					display: none;
 				}
 			}
 		}
 	}
 
 	.example-body {
-		padding: 30rpx;
+		padding: 0;
 		background: #ffffff;
-		border-radius: 24rpx;
-		box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
-		transition: all 0.3s ease;
-		
-		&:hover {
-			box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
-			transform: translateY(-2rpx);
-		}
 		
 		::v-deep .uni-file-picker {
 			.is-add {
-				border: 2rpx dashed #74b9ff;
-				border-radius: 16rpx;
-				transition: all 0.3s ease;
-				cursor: pointer;
+				border: 1px dashed #e5e5e5;
+				border-radius: 8rpx;
 				
 				&:hover {
-					background-color: rgba(241, 243, 245, 0.8);
-					border-color: #0984e3;
+					border-color: #666666;
 				}
 			}
 
 			.file-picker__box-content {
-				border-radius: 16rpx;
+				border-radius: 8rpx;
 				overflow: hidden;
 				
 				image {
@@ -538,36 +461,39 @@
 	}
 
 	.submit-btn {
-		width: 40%;
-		height: 88rpx;
-		margin: 60rpx auto 30rpx;
-		background: #9370db;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		height: 98rpx;
+		background: #7db3f4;
 		border: none;
-		border-radius: 12rpx;
-		box-shadow: 0 6rpx 16rpx rgba(147, 112, 219, 0.15);
+		border-radius: 0;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		transition: all 0.3s ease;
+		z-index: 99;
 		
-		&:hover {
-			transform: translateY(-2rpx);
-			box-shadow: 0 8rpx 20rpx rgba(147, 112, 219, 0.2);
-			background: #8a2be2;
+		&::before {
+			display: none;
 		}
 		
 		&:active {
-			transform: translateY(2rpx);
-			box-shadow: 0 4rpx 12rpx rgba(147, 112, 219, 0.15);
+			opacity: 0.9;
 		}
 		
 		.btn-text {
-			color: #fff;
+			color: #ffffff;
 			font-size: 32rpx;
-			font-weight: 500;
-			letter-spacing: 4rpx;
-			font-family: "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+			font-weight: 400;
+			letter-spacing: 2rpx;
 		}
+	}
+
+	// 安全区适配
+	.safe-area-inset-bottom {
+		padding-bottom: constant(safe-area-inset-bottom);
+		padding-bottom: env(safe-area-inset-bottom);
 	}
 </style>
 </```

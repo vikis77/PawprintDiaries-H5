@@ -31,6 +31,36 @@
                     </scroll-view>
                 </view>
             </uni-popup>
+
+            <!-- 添加分享弹窗 -->
+            <uni-popup ref="sharePopup" type="bottom" background-color="#fff">
+                <view class="share-popup">
+                    <view class="share-header">
+                        <text class="title">分享到</text>
+                        <view class="close-btn" @click="closeSharePopup">
+                            <uni-icons type="closeempty" size="24" color="#666"></uni-icons>
+                        </view>
+                    </view>
+                    <view class="share-options">
+                        <view class="share-item" @click="shareToWeChat">
+                            <image src="https://cdn.luckyiur.com/catcat/static_image/wechat.png" mode="aspectFit" class="share-icon"></image>
+                            <text>微信</text>
+                        </view>
+                        <view class="share-item" @click="shareToMoments">
+                            <image src="https://cdn.luckyiur.com/catcat/static_image/moments.png" mode="aspectFit" class="share-icon"></image>
+                            <text>朋友圈</text>
+                        </view>
+                        <!-- <view class="share-item" @click="shareToQQ">
+                            <image src="/static/share/qq.png" mode="aspectFit" class="share-icon"></image>
+                            <text>QQ</text>
+                        </view> -->
+                        <view class="share-item" @click="copyLink">
+                            <image src="https://cdn.luckyiur.com/catcat/static_image/link.png" mode="aspectFit" class="share-icon"></image>
+                            <text>复制链接</text>
+                        </view>
+                    </view>
+                </view>
+            </uni-popup>
         </view>
 
         <view class="layout">
@@ -85,10 +115,10 @@
 
                 <view class="text-content">
                     <view class="post-title">
-                        {{ currentPost.title }}
+                        <text class="output-text">{{ currentPost.title }}</text>
                     </view>
                     <view class="text">
-                        {{ currentPost.article }}
+                        <text class="output-text">{{ currentPost.article }}</text>
                     </view>
                     <view class="data">
                         {{ formatDate(currentPost.send_time) }}
@@ -135,12 +165,13 @@
                                 </view>
                                 <text class="comment-text">{{ comment.commentContext }}</text>
                                 <view class="comment-actions">
-                                    <view class="action-item" @click="likeComment(index)">
+                                    <!-- // TODO 先搁置点赞功能 -->
+                                    <!-- <view class="action-item" @click="likeComment(index)">
                                         <uni-icons :type="comment.liked ? 'heart-filled' : 'heart'" size="14"
                                             :color="comment.liked ? '#ff4d4f' : '#999'">
                                         </uni-icons>
-                                        <text :class="{ 'active': comment.liked }">{{ comment.likes }}</text>
-                                    </view>
+                                        <text :class="{ 'active': comment.liked }">{{ comment.likeCount }}</text>
+                                    </view> -->
                                 </view>
                             </view>
                         </view>
@@ -213,6 +244,7 @@ const touchMoveY = ref(0);
 const popupTranslateY = ref(0);
 const comments = ref([]);
 const downloadPopup = ref(null);
+const sharePopup = ref(null);
 
 // 创建响应式的当前帖子对象
 const currentPost = ref({
@@ -533,7 +565,106 @@ const handleFollow = () => {
 
 // 分享功能
 const handleShare = () => {
-    showToast('分享功能开发中');
+    sharePopup.value.open();
+};
+
+// 关闭分享弹窗
+const closeSharePopup = () => {
+    sharePopup.value.close();
+};
+
+// 分享到微信
+const shareToWeChat = () => {
+    // #ifdef APP-PLUS
+    uni.share({
+        provider: 'weixin',
+        scene: 'WXSceneSession',
+        type: 0,
+        title: currentPost.value.title,
+        summary: currentPost.value.article,
+        imageUrl: currentPost.value.images && currentPost.value.images.length > 0 
+            ? `${pic_general_request_url.value}/post_pics/${currentPost.value.images[0].picture}${Suffix_1002}`
+            : '',
+        success: function (res) {
+            showToast('分享成功');
+            closeSharePopup();
+        },
+        fail: function (err) {
+            showToast('分享失败');
+        }
+    });
+    // #endif
+    
+    // #ifdef H5
+    // showToast('请在APP中使用此功能');
+    // 调用全局方法分享
+    getWechatConfig()
+    // #endif
+};
+
+// 分享到朋友圈
+const shareToMoments = () => {
+    // #ifdef APP-PLUS
+    uni.share({
+        provider: 'weixin',
+        scene: 'WXSceneTimeline',
+        type: 0,
+        title: currentPost.value.title,
+        summary: currentPost.value.article,
+        imageUrl: currentPost.value.images && currentPost.value.images.length > 0 
+            ? `${pic_general_request_url.value}/post_pics/${currentPost.value.images[0].picture}${Suffix_1002}`
+            : '',
+        success: function (res) {
+            showToast('分享成功');
+            closeSharePopup();
+        },
+        fail: function (err) {
+            showToast('分享失败');
+        }
+    });
+    // #endif
+    
+    // #ifdef H5
+    showToast('请在APP中使用此功能');
+    // #endif
+};
+
+// 分享到QQ
+const shareToQQ = () => {
+    // #ifdef APP-PLUS
+    uni.share({
+        provider: 'qq',
+        type: 0,
+        title: currentPost.value.title,
+        summary: currentPost.value.article,
+        imageUrl: currentPost.value.images && currentPost.value.images.length > 0 
+            ? `${pic_general_request_url.value}/post_pics/${currentPost.value.images[0].picture}${Suffix_1002}`
+            : '',
+        success: function (res) {
+            showToast('分享成功');
+            closeSharePopup();
+        },
+        fail: function (err) {
+            showToast('分享失败');
+        }
+    });
+    // #endif
+    
+    // #ifdef H5
+    showToast('请在APP中使用此功能');
+    // #endif
+};
+
+// 复制链接
+const copyLink = () => {
+    const shareUrl = `${window.location.origin}/pages/Post?postId=${currentPost.value.postId}`;
+    uni.setClipboardData({
+        data: shareUrl,
+        success: function () {
+            showToast('链接已复制');
+            closeSharePopup();
+        }
+    });
 };
 
 // 日期格式化函数
@@ -896,12 +1027,20 @@ const downloadImage = (index) => {
                     color: #333;
                     line-height: 1.5;
                     margin-bottom: 20rpx;
+                    .output-text {
+                        white-space: pre-wrap; /* 保留换行和空格 */
+                        word-wrap: break-word; /* 自动换行 */
+                    }
                 }
 
                 .text {
                     font-size: 32rpx;
                     color: #333;
                     line-height: 1.5;
+                    .output-text {
+                        white-space: pre-wrap; /* 保留换行和空格 */
+                        word-wrap: break-word; /* 自动换行 */
+                    }
                 }
 
                 .data {
@@ -1253,6 +1392,52 @@ const downloadImage = (index) => {
             
             &:active {
                 background-color: #f9f9f9;
+            }
+        }
+    }
+}
+
+.share-popup {
+    padding: 30rpx;
+    
+    .share-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 20rpx;
+        border-bottom: 1px solid #f0f0f0;
+        
+        .title {
+            font-size: 32rpx;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .close-btn {
+            padding: 10rpx;
+        }
+    }
+    
+    .share-options {
+        display: flex;
+        justify-content: space-around;
+        padding: 40rpx 0;
+        
+        .share-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10rpx;
+            
+            .share-icon {
+                width: 40rpx;
+                height: 40rpx;
+                border-radius: 50%;
+            }
+            
+            text {
+                font-size: 24rpx;
+                color: #666;
             }
         }
     }

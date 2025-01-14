@@ -17,6 +17,7 @@
     "@qiun/vue-ucharts": "^2.5.0-20230101",
     "@qiun/wx-ucharts": "^2.5.0-20230101",
     "axios": "^1.7.7",
+    "jweixin-module": "^1.6.0",
     "jwt-decode": "^4.0.0",
     "pawprint-diaries": "file:",
     "pinia": "^2.1.7",

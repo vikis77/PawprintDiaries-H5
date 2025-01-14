@@ -62,11 +62,11 @@ const gridList = ref([
 	}
 ])
 
-onShow(() => {
+onShow(async () => {
 	uni.showLoading({ title: '加载中...' });
 	// const catList = uni.getStorageSync('catList') != null ? uni.getStorageSync('catList') : [];
     // 调用全局方法：获取猫猫列表
-    getCatInfoDetail()
+    await getCatInfoDetail()
     const catList = appStore.catList
 	console.log(catList);
 

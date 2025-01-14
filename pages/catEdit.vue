@@ -9,7 +9,7 @@
 			
 			<!-- 表单区域 -->
 			<view class="form-container">
-				<uni-forms ref="baseForm" :modelValue="catBaseFormData" class="cat-form">
+				<uni-forms ref="baseFormRef" :modelValue="catBaseFormData" :rules="rules" class="cat-form">
 					<!-- 基本信息 -->
 					<view class="form-section">
 						<view class="section-title">基本信息 提示：仅限管理员编辑保存</view>
@@ -18,7 +18,9 @@
 								v-model="catBaseFormData.catname" 
 								placeholder="请输入姓名"
 								class="custom-input"
+								maxlength="20"
 							/>
+							<view class="word-count">{{catBaseFormData.catname?.length || 0}}/20</view>
 						</uni-forms-item>
 						
 						<uni-forms-item label="头像" required class="avatar-item">
@@ -63,10 +65,11 @@
 							</uni-file-picker>
 						</uni-forms-item>
 						
-						<uni-forms-item label="年龄" required>
+						<uni-forms-item label="年龄">
 							<uni-easyinput 
 								v-model="catBaseFormData.age" 
-								placeholder="请输入年龄(月)"
+								placeholder="请输入年龄(月)，例如：12"
+								type="number"
 								class="custom-input"
 							/>
 						</uni-forms-item>
@@ -79,20 +82,24 @@
 							/>
 						</uni-forms-item>
 						
-						<uni-forms-item label="品种" required>
+						<uni-forms-item label="品种">
 							<uni-easyinput 
 								v-model="catBaseFormData.breed" 
 								placeholder="请输入猫咪品种"
 								class="custom-input"
+								maxlength="50"
 							/>
+							<view class="word-count">{{catBaseFormData.breed?.length || 0}}/50</view>
 						</uni-forms-item>
 						
-						<uni-forms-item label="常居地" required>
+						<uni-forms-item label="常居地">
 							<uni-easyinput 
 								v-model="catBaseFormData.area" 
 								placeholder="请输入猫咪常居地"
 								class="custom-input"
+								maxlength="100"
 							/>
+							<view class="word-count">{{catBaseFormData.area?.length || 0}}/100</view>
 						</uni-forms-item>
 					</view>
 					
@@ -127,28 +134,34 @@
 					<!-- 性格与习性 -->
 					<view class="form-section">
 						<view class="section-title">性格与习性</view>
-						<uni-forms-item label="性格特征" required>
+						<uni-forms-item label="性格特征">
 							<uni-easyinput 
 								v-model="catBaseFormData.catCharacter" 
 								placeholder="请描述猫猫性格"
 								class="custom-input"
+								maxlength="200"
 							/>
+							<view class="word-count">{{catBaseFormData.catCharacter?.length || 0}}/200</view>
 						</uni-forms-item>
 						
-						<uni-forms-item label="食物偏好" required>
+						<uni-forms-item label="食物偏好">
 							<uni-easyinput 
 								v-model="catBaseFormData.food" 
-								placeholder="喜欢吃什么呢？"
+								placeholder="例如：喜欢吃猫罐头、小鱼干等，最多200字"
 								class="custom-input"
+								maxlength="200"
 							/>
+							<view class="word-count">{{catBaseFormData.food?.length || 0}}/200</view>
 						</uni-forms-item>
 						
-						<uni-forms-item label="禁忌" required>
+						<uni-forms-item label="禁忌">
 							<uni-easyinput 
 								v-model="catBaseFormData.taboo" 
-								placeholder="有什么需要注意的吗？"
+								placeholder="例如：不能吃某些食物、特殊注意事项等，最多200字"
 								class="custom-input"
+								maxlength="200"
 							/>
+							<view class="word-count">{{catBaseFormData.taboo?.length || 0}}/200</view>
 						</uni-forms-item>
 					</view>
 					
@@ -159,18 +172,22 @@
 							<uni-easyinput 
 								type="textarea" 
 								v-model="catBaseFormData.badRecord" 
-								placeholder="记录一下不良行为..."
+								placeholder="记录一下不良行为，最多500字..."
 								class="custom-textarea"
+								maxlength="500"
 							/>
+							<view class="word-count">{{catBaseFormData.badRecord?.length || 0}}/500</view>
 						</uni-forms-item>
 						
 						<uni-forms-item label="撸猫指南">
 							<uni-easyinput 
 								type="textarea" 
 								v-model="catBaseFormData.catGuide" 
-								placeholder="如何正确撸猫呢..."
+								placeholder="如何正确撸猫，注意事项等，最多500字..."
 								class="custom-textarea"
+								maxlength="500"
 							/>
+							<view class="word-count">{{catBaseFormData.catGuide?.length || 0}}/500</view>
 						</uni-forms-item>
 					</view>
 					
@@ -210,6 +227,7 @@
 	});
 	const selectedTempFilePaths = ref([]); // 存储已选择的图片的路径
 	const selectedTempFiles = ref([]); // 存储已选择的图片信息
+	const baseFormRef = ref(null); // 添加表单ref
 	const sexs =ref(
 		[{
 			text: '雄性',
@@ -218,7 +236,7 @@
 			text: '雌性',
 			value: 1
 		}, {
-			text: '保密/不确定',
+			text: '不确定',
 			value: 2
 		}]
 	)
@@ -256,6 +274,78 @@
 		}]
 	)
 	const filePicker = ref(null);
+	
+	// 添加表单校验规则
+	const rules = {
+		catname: {
+			rules: [{
+				required: true,
+				errorMessage: '请输入猫咪名字'
+			}, {
+				maxLength: 20,
+				errorMessage: '名字不能超过20个字符'
+			}]
+		},
+		age: {
+			rules: [{
+				pattern: /^[0-9]+$/,
+				errorMessage: '年龄必须是数字'
+			}, {
+				validateFunction: function(rule, value, data, callback) {
+					if (!value) return true; // 如果为空则跳过验证
+					if (value > 360) {
+						callback('年龄不能超过360个月(30年)')
+					}
+					if (value < 0) {
+						callback('年龄不能小于0')
+					}
+					return true
+				}
+			}]
+		},
+		breed: {
+			rules: [{
+				maxLength: 50,
+				errorMessage: '品种名称不能超过50个字符'
+			}]
+		},
+		area: {
+			rules: [{
+				maxLength: 100,
+				errorMessage: '地址不能超过100个字符'
+			}]
+		},
+		food: {
+			rules: [{
+				maxLength: 200,
+				errorMessage: '食物偏好描述不能超过200个字符'
+			}]
+		},
+		taboo: {
+			rules: [{
+				maxLength: 200,
+				errorMessage: '禁忌信息不能超过200个字符'
+			}]
+		},
+		catCharacter: {
+			rules: [{
+				maxLength: 200,
+				errorMessage: '性格特征描述不能超过200个字符'
+			}]
+		},
+		badRecord: {
+			rules: [{
+				maxLength: 500,
+				errorMessage: '不良记录不能超过500个字符'
+			}]
+		},
+		catGuide: {
+			rules: [{
+				maxLength: 500,
+				errorMessage: '撸猫指南不能超过500个字符'
+			}]
+		}
+	};
 	
 	onMounted(() => {
 		const urlCatId = new URLSearchParams(window.location.search).get('catId');
@@ -343,14 +433,23 @@
 			return;
 		}
 
+		// 表单校验
+		try {
+			await baseFormRef.value?.validate();
+		} catch (e) {
+            uni.showToast({
+                title: '表单错误：' + e,
+                icon: 'none'
+            });
+			console.log('表单错误：', e);
+			return;
+		}
+
 		console.log(catBaseFormData.value)
 		// 校验必填项
-		if (!catBaseFormData.value.catname || !catBaseFormData.value.age 
-			|| !catBaseFormData.value.food || !catBaseFormData.value.taboo || !catBaseFormData.value.catCharacter 
-			|| !catBaseFormData.value.healthStatus || !catBaseFormData.value.sterilizationStatus 
-			|| !catBaseFormData.value.vaccinationStatus || !catBaseFormData.value.breed || !catBaseFormData.value.area) {
+		if (!catBaseFormData.value.catname) {
 			uni.showToast({
-				title: '请填写所有必填项',
+				title: '请填写猫咪名字',
 				icon: 'none'
 			});
 			return;
@@ -390,20 +489,21 @@
 			postData.avatar = selectedTempFiles.value[0].name;
 		}
 		
+        console.log(catId.value)
 		// 1、服务器持久化数据
 		try {
 			const postResponse = await uni.request({  
 				url: `${API_general_request_url.value}/api/cat`,  
 				method: catId.value ? 'PUT' : 'POST',  // 根据是否有catId决定是更新还是新增
 				header: {  
-					'Authorization': `Bearer ${token}`,
-					'Content-Type': 'application/json'
+					'Authorization': `Bearer ${token}`
 				},  
 				data: postData
 			});  
 			if (postResponse.statusCode === 200 && postResponse.data.code === STATUS_CODE.SUCCESS) {
                 // 请求一次获取猫猫详情
-                fetchCatDetails(catId.value);
+                console.log(postResponse.data.data.catId)
+                fetchCatDetails(catId.value != null ? catId.value : postResponse.data.data.catId);
 				console.log("持久化完成")  
 			} else {
 				console.log(postResponse.data)
@@ -693,5 +793,21 @@
 			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 		}
 	}
+}
+
+.word-count {
+	text-align: right;
+	font-size: 24rpx;
+	color: #999;
+	margin-top: 4rpx;
+	padding-right: 10rpx;
+}
+
+.custom-input {
+	margin-bottom: 0;
+}
+
+.custom-textarea {
+	margin-bottom: 0;
 }
 </style>
