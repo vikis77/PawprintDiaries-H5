@@ -33,8 +33,15 @@ interface CatLocation {
     catName: string;
 }
 
+// 定义月份列表
+interface MonthList {
+    month: number;
+    // monthName: string;
+}
+
 // 定义猫咪数据分析接口
 interface CatDataAnalysis {
+    monthList: number[]; // 月份列表
     adoptionCount: number; // 领养数量
     sterilizationRatio: {
         '已绝育': number; // 已绝育数量
@@ -232,6 +239,8 @@ export const useAppStore = defineStore('app', () => {
 
     // 数据分析相关状态
     const catDataAnalysisData = ref<CatDataAnalysis>({
+        // 初始化
+        monthList: [],
         adoptionCount: 0,
         sterilizationRatio: { '已绝育': 0, '未绝育': 0 },
         vaccinationRatio: { '已接种': 0, '未接种': 0 },

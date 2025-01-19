@@ -1107,42 +1107,45 @@ const submitAdoptForm = () => {
         })
         return
     }
-    // 将小猫名字映射为catId
-    // adoptFormsData.value.catId = adoptFormsData.value.catName;
-    console.log(adoptFormsData.value)
+    // 将小猫名字映射为catId - 在appStore.catList中找到对应的catId
+    adoptFormsData.value.catId = appStore.catList.find(cat => cat.catname === adoptFormsData.value.catName)?.catId;
+    console.log('当前领养表单数据:', adoptFormsData.value)
     
-    uni.showToast({
-        title: '提交成功，申请会尽快处理！',
-        icon: 'success',
-        duration: 1500 // 弹窗提示时间1.5秒
+    
+    // 发送领养申请
+    uni.request({
+        url: `${API_general_request_url.value}/api/cat/adopt/apply`,
+        method: 'POST',
+        data: adoptFormsData.value,
+        success: (res) => {
+            if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
+                // uni.showToast({
+                //     title: '申请提交成功',
+                //     icon: 'success'
+                // })
+                // closeAdoptPopup()
+                uni.showToast({
+                    title: '提交成功，申请会尽快处理！',
+                    icon: 'success',
+                    duration: 1500 // 弹窗提示时间1.5秒
+                })
+                closeAdoptPopup()
+            } else {
+                uni.showToast({
+                    title: res.data.msg,
+                    icon: 'none'
+                })
+            }
+        },
+        fail: (err) => {
+            uni.showToast({
+                title: '提交失败，请稍后重试',
+                icon: 'none'
+            })
+        }
     })
-    closeAdoptPopup()
-    // TODO 发送领养申请
-    // uni.request({
-    //     url: `${API_general_request_url.value}/adopt/apply`,
-    //     method: 'POST',
-    //     data: adoptFormsData.value,
-    //     success: (res) => {
-    //         if (res.data.code === 200) {
-    //             uni.showToast({
-    //                 title: '申请提交成功',
-    //                 icon: 'success'
-    //             })
-    //             closeAdoptPopup()
-    //         } else {
-    //             uni.showToast({
-    //                 title: res.data.msg,
-    //                 icon: 'none'
-    //             })
-    //         }
-    //     },
-    //     fail: (err) => {
-    //         uni.showToast({
-    //             title: '提交失败，请稍后重试',
-    //             icon: 'none'
-    //         })
-    //     }
-    // })
+
+    
 }
 
 // 添加猫咪选择列表数据
@@ -1178,7 +1181,14 @@ const showGridDetail = async (item) => {
         case '本月新增':
             const newCatData = [1, 2, 0, 2, 1, catDataAnalysisData.value.monthlyNewCount || 0];
             selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                categories: [
+                    `${String(appStore.catDataAnalysisData.monthList[5])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[4])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[3])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[2])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[1])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[0])}月`
+                ],
                 series: [{
                     name: "每月新增数量",
                     data: newCatData
@@ -1198,7 +1208,14 @@ const showGridDetail = async (item) => {
         case '已领养数量':
             const adoptData = [2, 1, 3, 2, 2, appStore.catDataAnalysisData.adoptionCount || 0];
             selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                categories: [
+                    `${String(appStore.catDataAnalysisData.monthList[5])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[4])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[3])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[2])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[1])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[0])}月`
+                ],
                 series: [{
                     name: "每月领养数量",
                     data: adoptData
@@ -1224,7 +1241,14 @@ const showGridDetail = async (item) => {
         case '已绝育数量':
             const sterilizedData = [8, 10, 12, 15, 15, catDataAnalysisData.value.sterilizationRatio['已绝育'] || 0];
             selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                categories: [
+                    `${String(appStore.catDataAnalysisData.monthList[5])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[4])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[3])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[2])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[1])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[0])}月`
+                ],
                 series: [{
                     name: "已绝育数量变化",
                     data: sterilizedData
@@ -1244,7 +1268,14 @@ const showGridDetail = async (item) => {
         case '已打疫苗':
             const vaccinatedData = [1, 2, 2, 3, 5, catDataAnalysisData.value.vaccinationRatio['已接种'] || 0];
             selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                categories: [
+                    `${String(appStore.catDataAnalysisData.monthList[5])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[4])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[3])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[2])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[1])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[0])}月`
+                ],
                 series: [{
                     name: "已接种疫苗数量",
                     data: vaccinatedData
@@ -1264,7 +1295,14 @@ const showGridDetail = async (item) => {
         case '健康数量':
             const healthyData = [10, 15, 12, 15, 15, catDataAnalysisData.value.healthStatus['健康'] || 0];
             selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                categories: [
+                    `${String(appStore.catDataAnalysisData.monthList[5])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[4])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[3])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[2])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[1])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[0])}月`
+                ],
                 series: [{
                     name: "健康猫咪数量",
                     data: healthyData
@@ -1293,7 +1331,14 @@ const showGridDetail = async (item) => {
                 appStore.fundCalculateData[0].remainingFund || 0
             ];
             selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                categories: [
+                    `${String(appStore.catDataAnalysisData.monthList[5])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[4])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[3])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[2])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[1])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[0])}月`
+                ],
                 series: [{
                     name: "资金余额变化",
                     data: fundData
@@ -1323,7 +1368,14 @@ const showGridDetail = async (item) => {
                 appStore.fundCalculateData[0].totalExpenses || 0
             ];
             selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                categories: [
+                    `${String(appStore.catDataAnalysisData.monthList[5])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[4])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[3])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[2])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[1])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[0])}月`
+                ],
                 series: [{
                     name: "月度支出",
                     data: expenseData
@@ -1353,7 +1405,14 @@ const showGridDetail = async (item) => {
                 appStore.fundCalculateData[0].totalIncome || 0
             ];
             selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                categories: [
+                    `${String(appStore.catDataAnalysisData.monthList[5])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[4])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[3])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[2])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[1])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[0])}月`
+                ],
                 series: [{
                     name: "月度收入",
                     data: incomeData
@@ -1375,7 +1434,14 @@ const showGridDetail = async (item) => {
         case '在校小猫数量':
             const catCountData = [25, 28, 25, 17, 24, catList.value.length];
             selectedGrid.value.chartData = {
-                categories: ["5月", "6月", "7月", "8月", "9月", "10月"],
+                categories: [
+                    `${String(appStore.catDataAnalysisData.monthList[5])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[4])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[3])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[2])}月`, 
+                    `${String(appStore.catDataAnalysisData.monthList[1])}月`,
+                    `${String(appStore.catDataAnalysisData.monthList[0])}月`
+                ],
                 series: [{
                     name: "校内小猫总数量",
                     data: catCountData

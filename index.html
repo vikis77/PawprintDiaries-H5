@@ -2,21 +2,53 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="https://cdn.luckyiur.com/catcat/static_image/webLogo.ico">
-    <!-- <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script> -->
+    <link rel="icon" href="https://cdn.luckyiur.com/catcat/static_image/webLogo.ico" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    
+    <!-- Open Graph meta tags -->
+    <meta property="og:title" content="校猫日记" />
+    <meta property="og:description" content="校猫日记，记录校园的点点滴滴" />
+    <meta property="og:image" content="https://cdn.luckyiur.com/catcat/static_image/webLogo.ico" />
+    
+    <title>校猫日记</title>
+    
+    <!-- 引入微信 JS-SDK -->
+    <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
     <script>
-      var coverSupport = 'CSS' in window && typeof CSS.supports === 'function' && (CSS.supports('top: env(a)') ||
-        CSS.supports('top: constant(a)'))
-      document.write(
-        '<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0' +
-        (coverSupport ? ', viewport-fit=cover' : '') + '" />')
+    //   wx.config({
+    //     debug: false,
+    //     appId: '你的AppID',
+    //     timestamp: 123456789,
+    //     nonceStr: '随机字符串',
+    //     signature: '签名',
+    //     jsApiList: ['updateAppMessageShareData', 'updateTimelineShareData']
+    //   });
+
+    //   wx.ready(function () {
+    //     wx.updateAppMessageShareData({
+    //       title: '你的分享标题',
+    //       desc: '分享描述',
+    //       link: window.location.href,
+    //       imgUrl: '分享时的图标链接',
+    //       success: function () {
+    //         console.log('分享内容设置成功');
+    //       }
+    //     });
+
+    //     wx.updateTimelineShareData({
+    //       title: '你的分享标题',
+    //       desc: '分享描述',
+    //       link: window.location.href,
+    //       imgUrl: '分享时的图标链接',
+    //       success: function () {
+    //         console.log('分享内容设置成功');
+    //       }
+    //     });
+    //   });
     </script>
-    <title></title>
-    <!--preload-links-->
-    <!--app-context-->
   </head>
   <body>
-    <div id="app"><!--app-html--></div>
+    <div id="app"></div>
     <script type="module" src="/main.js"></script>
   </body>
 </html>

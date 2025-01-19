@@ -10,7 +10,7 @@
             <uni-popup ref="downloadPopup" type="bottom" background-color="#fff">
                 <view class="download-popup">
                     <view class="download-header">
-                        <text class="title">选择要下载的图片</text>
+                        <text class="title">选择要下载的图片（微信长按帖子即可）</text>
                         <view class="close-btn" @click="closeDownloadPopup">
                             <uni-icons type="closeempty" size="24" color="#666"></uni-icons>
                         </view>
@@ -42,22 +42,34 @@
                         </view>
                     </view>
                     <view class="share-options">
-                        <view class="share-item" @click="shareToWeChat">
-                            <image src="https://cdn.luckyiur.com/catcat/static_image/wechat.png" mode="aspectFit" class="share-icon"></image>
-                            <text>微信</text>
+                        <view class="share-item" @click="qrCode">
+                            <image src="https://cdn.luckyiur.com/catcat/static_image/二维码分享.png" mode="aspectFit" class="share-icon"></image>
+                            <text>二维码分享</text>
                         </view>
-                        <view class="share-item" @click="shareToMoments">
-                            <image src="https://cdn.luckyiur.com/catcat/static_image/moments.png" mode="aspectFit" class="share-icon"></image>
-                            <text>朋友圈</text>
-                        </view>
-                        <!-- <view class="share-item" @click="shareToQQ">
-                            <image src="/static/share/qq.png" mode="aspectFit" class="share-icon"></image>
-                            <text>QQ</text>
-                        </view> -->
                         <view class="share-item" @click="copyLink">
                             <image src="https://cdn.luckyiur.com/catcat/static_image/link.png" mode="aspectFit" class="share-icon"></image>
                             <text>复制链接</text>
                         </view>
+                    </view>
+                </view>
+            </uni-popup>
+
+            <!-- 修改二维码预览弹窗 -->
+            <uni-popup ref="qrCodePopup" type="center" background-color="#fff">
+                <view class="qrcode-popup">
+                    <view class="qrcode-header">
+                        <text class="title">分享这个帖子</text>
+                        <view class="close-btn" @click="closeQrCodePopup">
+                            <uni-icons type="closeempty" size="24" color="#666"></uni-icons>
+                        </view>
+                    </view>
+                    <view class="qrcode-content">
+                        <image v-if="qrCodeUrl" :src="qrCodeUrl" mode="aspectFit" class="qrcode-image" @click="changeQRStyle"></image>
+                        <text class="qrcode-tip">点击二维码切换样式 ({{ qrCodeStyles[qrCodeStyle].name }})</text>
+                        <text class="qrcode-tip">扫描二维码查看详情</text>
+                    </view>
+                    <view class="qrcode-footer">
+                        <button class="download-btn" @click="downloadQrCode">保存二维码，微信请长按或截图</button>
                     </view>
                 </view>
             </uni-popup>
@@ -231,6 +243,8 @@ import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1
 import { STATUS_CODE } from '@/src/constant/constant.js'
 import { toBeDeveloped, showToast } from '@/src/utils/toast'
 import { useAppStore } from '@/store/modules/app'
+import QRCode from 'qrcode'
+
 const appStore = useAppStore()
 
 
@@ -268,6 +282,49 @@ const currentPost = ref({
 const newComment = ref('');
 const isLikeAnimating = ref(false);
 const isCollectAnimating = ref(false);
+
+// 添加二维码相关的响应式变量
+const qrCodePopup = ref(null);
+const qrCodeUrl = ref('');
+
+// 在 setup 中添加新的响应式变量
+const qrCodeStyle = ref(0); // 当前二维码样式索引
+
+// 定义二维码样式列表
+const qrCodeStyles = [
+    {
+        name: '经典黑',
+        gradient: () => ({
+            r: 0,
+            g: 0,
+            b: 0
+        })
+    },
+    {
+        name: '猫咪紫',
+        gradient: () => ({
+            r: 141,
+            g: 93,
+            b: 163
+        })
+    },
+    {
+        name: '红绿渐变',
+        gradient: (progress) => ({
+            r: Math.round(255 * (1 - progress)),
+            g: Math.round(100 * progress),
+            b: Math.round(50 * progress)
+        })
+    },
+    {
+        name: '海洋蓝',
+        gradient: (progress) => ({
+            r: Math.round(30 * (1 - progress)),
+            g: Math.round(144 * (1 - progress) + 200 * progress),
+            b: Math.round(255 * progress)
+        })
+    }
+];
 
 onShow(() => {
     userId.value = uni.getStorageSync('tokenDetail').userId;
@@ -573,98 +630,156 @@ const closeSharePopup = () => {
     sharePopup.value.close();
 };
 
-// 分享到微信
-const shareToWeChat = () => {
-    // #ifdef APP-PLUS
-    uni.share({
-        provider: 'weixin',
-        scene: 'WXSceneSession',
-        type: 0,
-        title: currentPost.value.title,
-        summary: currentPost.value.article,
-        imageUrl: currentPost.value.images && currentPost.value.images.length > 0 
-            ? `${pic_general_request_url.value}/post_pics/${currentPost.value.images[0].picture}${Suffix_1002}`
-            : '',
-        success: function (res) {
-            showToast('分享成功');
-            closeSharePopup();
-        },
-        fail: function (err) {
-            showToast('分享失败');
-        }
-    });
-    // #endif
-    
-    // #ifdef H5
-    // showToast('请在APP中使用此功能');
-    // 调用全局方法分享
-    getWechatConfig()
-    // #endif
-};
+// 二维码分享
+const qrCode = async () => {
+    try {
+        // 获取当前页面URL
+        const url = `${window.location.origin}/pages/Post?postId=${currentPost.value.postId}`;
+        
+        uni.showLoading({
+            title: '生成二维码中...'
+        });
 
-// 分享到朋友圈
-const shareToMoments = () => {
-    // #ifdef APP-PLUS
-    uni.share({
-        provider: 'weixin',
-        scene: 'WXSceneTimeline',
-        type: 0,
-        title: currentPost.value.title,
-        summary: currentPost.value.article,
-        imageUrl: currentPost.value.images && currentPost.value.images.length > 0 
-            ? `${pic_general_request_url.value}/post_pics/${currentPost.value.images[0].picture}${Suffix_1002}`
-            : '',
-        success: function (res) {
-            showToast('分享成功');
-            closeSharePopup();
-        },
-        fail: function (err) {
-            showToast('分享失败');
-        }
-    });
-    // #endif
-    
-    // #ifdef H5
-    showToast('请在APP中使用此功能');
-    // #endif
-};
+        // 创建渐变色二维码
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const size = 240;
+        canvas.width = size;
+        canvas.height = size;
 
-// 分享到QQ
-const shareToQQ = () => {
-    // #ifdef APP-PLUS
-    uni.share({
-        provider: 'qq',
-        type: 0,
-        title: currentPost.value.title,
-        summary: currentPost.value.article,
-        imageUrl: currentPost.value.images && currentPost.value.images.length > 0 
-            ? `${pic_general_request_url.value}/post_pics/${currentPost.value.images[0].picture}${Suffix_1002}`
-            : '',
-        success: function (res) {
-            showToast('分享成功');
-            closeSharePopup();
-        },
-        fail: function (err) {
-            showToast('分享失败');
+        // 生成基础二维码
+        const baseQR = await QRCode.toCanvas(canvas, url, {
+            width: size,
+            margin: 4,
+            color: {
+                dark: '#000000',
+                light: '#ffffff'
+            },
+            errorCorrectionLevel: 'H',
+            maskPattern: 0,
+            version: 5
+        });
+
+        // 获取二维码数据
+        const imageData = ctx.getImageData(0, 0, size, size);
+        const data = imageData.data;
+
+        // 获取当前选择的样式
+        const currentStyle = qrCodeStyles[qrCodeStyle.value];
+
+        // 创建渐变色效果
+        for (let i = 0; i < data.length; i += 4) {
+            if (data[i] === 0) { // 如果是黑色像素点
+                const x = (i / 4) % size;
+                const y = Math.floor((i / 4) / size);
+                const progress = (x + y) / (size * 2);
+                
+                // 使用选择的渐变样式
+                const color = currentStyle.gradient(progress);
+                data[i] = color.r;     // R
+                data[i + 1] = color.g; // G
+                data[i + 2] = color.b; // B
+                data[i + 3] = 255;     // Alpha
+            }
         }
-    });
-    // #endif
-    
-    // #ifdef H5
-    showToast('请在APP中使用此功能');
-    // #endif
+
+        ctx.putImageData(imageData, 0, 0);
+
+        // 先下载Logo图片到本地
+        const logoRes = await new Promise((resolve, reject) => {
+            uni.downloadFile({
+                url: 'https://cdn.luckyiur.com/catcat/static_image/logo002.jpg',
+                success: (res) => {
+                    if (res.statusCode === 200) {
+                        resolve(res.tempFilePath);
+                    } else {
+                        reject(new Error('下载Logo失败'));
+                    }
+                },
+                fail: reject
+            });
+        });
+
+        // 获取图片信息
+        const imgInfo = await new Promise((resolve, reject) => {
+            uni.getImageInfo({
+                src: logoRes,
+                success: resolve,
+                fail: reject
+            });
+        });
+
+        // 创建新的Image对象
+        await new Promise((resolve, reject) => {
+            const logo = new Image();
+            logo.onload = () => {
+                try {
+                    // 在右下角绘制Logo
+                    const logoSize = size * 0.25; // Logo大小为二维码的25%
+                    const padding = size * 0.05; // 边距为二维码的5%
+                    const x = size - logoSize - padding;
+                    const y = size - logoSize - padding;
+                    
+                    // 绘制白色背景
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(x - 2, y - 2, logoSize + 4, logoSize + 4);
+                    
+                    // 绘制Logo
+                    ctx.drawImage(logo, x, y, logoSize, logoSize);
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            logo.onerror = reject;
+            logo.src = imgInfo.path;
+        });
+
+        // 转换为base64
+        const dataUrl = canvas.toDataURL('image/png');
+        
+        // 保存二维码URL并显示弹窗
+        qrCodeUrl.value = dataUrl;
+        uni.hideLoading();
+        closeSharePopup();
+        qrCodePopup.value.open();
+    } catch (error) {
+        console.error('生成二维码失败:', error);
+        uni.hideLoading();
+        showToast('生成二维码失败');
+    }
 };
 
 // 复制链接
 const copyLink = () => {
-    const shareUrl = `${window.location.origin}/pages/Post?postId=${currentPost.value.postId}`;
-    uni.setClipboardData({
-        data: shareUrl,
-        success: function () {
-            showToast('链接已复制');
-            closeSharePopup();
+    // const shareOriginUrl = `${window.location.origin}/pages/Post?postId=${currentPost.value.postId}`;
+    const shareOriginUrl = `postId=${currentPost.value.postId}`
+    uni.request({
+        url: `${API_general_request_url.value}/api/shotLinkShare/getShotLinkShare?url=${shareOriginUrl}`,
+        method: 'GET',
+        // header: {
+        //     'Authorization': `Bearer ${uni.getStorageSync('token')}`
+        // },
+        success: (res) => {
+            if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
+                uni.setClipboardData({
+                    data: res.data.data.urlString,
+                    success: function () {
+                        showToast('链接已复制，请分享给你的好友吧！');
+                        closeSharePopup();
+                    }
+                });
+                console.log("复制链接成功");
+                console.log(res.data);
+            } else {
+                showToast(res.data.msg || '复制链接失败');
+            }
+        },
+        fail: (err) => {
+            console.log(err);
+            showToast('复制链接失败');
         }
-    });
+    })
 };
 
 // 日期格式化函数
@@ -832,6 +947,7 @@ const closeDownloadPopup = () => {
 // 下载选中的图片
 const downloadImage = (index) => {
     const selectedImage = currentPost.value.images[index];
+    // 使用高清图片URL，确保正确访问pic_general_request_url的值
     const imageUrl = `${pic_general_request_url.value}/post_pics/${selectedImage.picture}`;
     
     // 显示下载进度
@@ -839,20 +955,84 @@ const downloadImage = (index) => {
         title: '下载中...'
     });
     
-    // 下载图片
+    // #ifdef H5
+    // H5端使用a标签下载
+    try {
+        const a = document.createElement('a');
+        // 使用fetch先获取图片blob
+        fetch(imageUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const blobUrl = window.URL.createObjectURL(blob);
+                a.href = blobUrl;
+                a.download = selectedImage.picture || 'downloaded_image.jpg';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(blobUrl);
+                uni.hideLoading();
+                showToast('开始下载图片，如果在微信中，会下载失败');
+                closeDownloadPopup();
+            })
+            .catch(error => {
+                console.error('下载失败:', error);
+                uni.hideLoading();
+                showToast('下载图片失败');
+            });
+    } catch (error) {
+        console.error('下载出错:', error);
+        uni.hideLoading();
+        showToast('下载图片失败');
+    }
+    // #endif
+
+    // #ifdef APP-PLUS
+    // APP端使用plus.downloader
+    plus.downloader.createDownload(imageUrl, {
+        filename: `_doc/download/${selectedImage.picture}`
+    }, (download, status) => {
+        if (status === 200) {
+            uni.saveImageToPhotosAlbum({
+                filePath: download.filename,
+                success: () => {
+                    uni.hideLoading();
+                    showToast('图片已保存到相册');
+                    closeDownloadPopup();
+                },
+                fail: (err) => {
+                    uni.hideLoading();
+                    if (err.errMsg.includes('auth deny')) {
+                        showToast('请授权保存图片到相册的权限');
+                    } else {
+                        showToast('保存图片失败');
+                    }
+                }
+            });
+        } else {
+            uni.hideLoading();
+            showToast('下载图片失败');
+        }
+    }).start();
+    // #endif
+
+    // #ifdef MP-WEIXIN
+    // 微信小程序端
     uni.downloadFile({
         url: imageUrl,
         success: (res) => {
             if (res.statusCode === 200) {
-                // 保存图片到相册
                 uni.saveImageToPhotosAlbum({
                     filePath: res.tempFilePath,
-                    success: function () {
+                    success: () => {
                         uni.hideLoading();
                         showToast('图片已保存到相册');
                         closeDownloadPopup();
                     },
-                    fail: function (err) {
+                    fail: (err) => {
                         uni.hideLoading();
                         if (err.errMsg.includes('auth deny')) {
                             showToast('请授权保存图片到相册的权限');
@@ -871,6 +1051,67 @@ const downloadImage = (index) => {
             showToast('下载图片失败');
         }
     });
+    // #endif
+};
+
+// 关闭二维码弹窗
+const closeQrCodePopup = () => {
+    qrCodePopup.value.close();
+};
+
+// 下载二维码
+const downloadQrCode = () => {
+    if (!qrCodeUrl.value) {
+        showToast('二维码未生成');
+        return;
+    }
+
+    // #ifdef H5
+    const a = document.createElement('a');
+    a.href = qrCodeUrl.value;
+    a.download = `qrcode_${currentPost.value.postId}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('二维码已下载，如果在微信中，会下载失败');
+    // #endif
+
+    // #ifdef APP-PLUS || MP-WEIXIN
+    // 将base64转换为本地临时文件
+    const base64Data = qrCodeUrl.value.split(',')[1];
+    const arrayBuffer = uni.base64ToArrayBuffer(base64Data);
+    const tempFilePath = `_doc/qrcode_${Date.now()}.png`;
+    
+    // 写入文件
+    plus.io.requestFileSystem(plus.io.PRIVATE_DOC, (fs) => {
+        fs.root.getFile(tempFilePath, { create: true }, (fileEntry) => {
+            fileEntry.createWriter((writer) => {
+                writer.onwrite = () => {
+                    // 保存到相册
+                    uni.saveImageToPhotosAlbum({
+                        filePath: fileEntry.fullPath,
+                        success: () => {
+                            showToast('二维码已保存到相册');
+                        },
+                        fail: () => {
+                            showToast('保存二维码失败');
+                        }
+                    });
+                };
+                writer.onerror = () => {
+                    showToast('保存二维码失败');
+                };
+                writer.write(new Blob([arrayBuffer]));
+            });
+        });
+    });
+    // #endif
+};
+
+// 添加切换样式的函数
+const changeQRStyle = () => {
+    qrCodeStyle.value = (qrCodeStyle.value + 1) % qrCodeStyles.length;
+    qrCode(); // 重新生成二维码
 };
 </script>
 
@@ -1432,12 +1673,88 @@ const downloadImage = (index) => {
             .share-icon {
                 width: 40rpx;
                 height: 40rpx;
-                border-radius: 50%;
+                // border-radius: 50%;
             }
             
             text {
                 font-size: 24rpx;
                 color: #666;
+            }
+        }
+    }
+}
+
+// 添加二维码弹窗样式
+.qrcode-popup {
+    width: 600rpx;
+    padding: 40rpx;
+    border-radius: 20rpx;
+    background-color: #fff;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+    
+    .qrcode-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30rpx;
+        
+        .title {
+            font-size: 32rpx;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .close-btn {
+            padding: 10rpx;
+        }
+    }
+    
+    .qrcode-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10rpx 0;
+        background: linear-gradient(145deg, #f6f0f8, #ffffff);
+        border-radius: 16rpx;
+        
+        .qrcode-image {
+            width: 480rpx;
+            height: 480rpx;
+            margin-bottom: 20rpx;
+            padding: 20rpx;
+            background: #ffffff;
+            border-radius: 12rpx;
+            box-shadow: 0 2rpx 8rpx rgba(141, 93, 163, 0.1);
+        }
+        
+        .qrcode-tip {
+            font-size: 26rpx;
+            color: #8d5da3;
+            margin-top: 20rpx;
+            text-align: center;
+            line-height: 1.5;
+        }
+    }
+    
+    .qrcode-footer {
+        margin-top: 40rpx;
+        
+        .download-btn {
+            width: 100%;
+            height: 88rpx;
+            line-height: 88rpx;
+            text-align: center;
+            background: linear-gradient(135deg, #9b6db6, #8d5da3);
+            color: #fff;
+            border-radius: 44rpx;
+            font-size: 28rpx;
+            font-weight: 500;
+            box-shadow: 0 4rpx 12rpx rgba(141, 93, 163, 0.2);
+            transition: all 0.3s ease;
+            
+            &:active {
+                transform: scale(0.98);
+                box-shadow: 0 2rpx 6rpx rgba(141, 93, 163, 0.1);
             }
         }
     }

@@ -6,68 +6,85 @@
 				title="发布帖子"
 				:showLeft="true"
 				:showRight="true"
-                @onRightClick = "uploadImages"
-			/>
-			<view class="input-section">
-				<uni-easyinput 
-					:inputBorder="false" 
-					v-model="uploadTitle"  
-					type="textarea"
-					autoHeight
-					:styles="{
-						minHeight: '80rpx',
-						maxHeight: '160rpx'
-					}"
-					placeholder="添加标题" 
-					class="title-input"
-					@input="handleTitleInput"
-					@keydown="handleTitleKeydown"
-					:maxlength="30"
-					trim="true"
-					confirmType="done"
-				>
-					<template #right>
+                @onRightClick="uploadImages"
+			>
+				<template #right>
+					<view class="nav-right">
+						<text class="publish-text">发布</text>
+					</view>
+				</template>
+			</NavBar1001>
+			
+			<view class="content-wrapper">
+				<!-- 输入区域 -->
+				<view class="input-section">
+					<view class="title-box">
+						<uni-easyinput 
+							:inputBorder="false" 
+							v-model="uploadTitle"  
+							type="textarea"
+							autoHeight
+							placeholder="添加标题" 
+							class="title-input"
+							@input="handleTitleInput"
+							@keydown="handleTitleKeydown"
+							:maxlength="30"
+							trim="true"
+							confirmType="done"
+						/>
 						<text class="word-count" :class="{ 'word-count--limit': titleLength >= 30 }">{{titleLength}}/30</text>
-					</template>
-				</uni-easyinput>
-				<uni-easyinput 
-					:inputBorder="false" 
-					type="textarea" 
-					autoHeight 
-					v-model="uploadArticle" 
-					maxlength="800"
-					placeholder="添加内容"
-					class="content-input"
-					@input="handleArticleInput"
-					@keydown="handleArticleKeydown"
-					trim="true"
-					confirmType="done"
-				>
-					<template #right>
-						<text class="word-count" :class="{ 'word-count--limit': articleLength >= 800 }">{{articleLength}}/800</text>
-					</template>
-				</uni-easyinput>
-			</view>
-			<!-- 图片上传区 -->
-			<view class="upload-section">
-				<uni-section title="请选择要上传的图片" type="line">
-					<view class="example-body">
+					</view>
+					
+					<view class="divider"></view>
+					
+					<view class="content-box">
+						<uni-easyinput 
+							:inputBorder="false" 
+							type="textarea" 
+							autoHeight 
+							v-model="uploadArticle" 
+							maxlength="800"
+							placeholder="添加内容，记录你的故事..."
+							class="content-input"
+							@input="handleArticleInput"
+							@keydown="handleArticleKeydown"
+							trim="true"
+							confirmType="done"
+						/>
+						<text class="word-count content-count" :class="{ 'word-count--limit': articleLength >= 800 }">{{articleLength}}/800</text>
+					</view>
+				</view>
+				
+				<!-- 图片上传区 -->
+				<view class="upload-section">
+					<view class="upload-header">
+						<text class="upload-title">添加图片</text>
+						<text class="upload-subtitle">至少选择1张，最多选择9张</text>
+					</view>
+					<view class="upload-area">
 						<uni-file-picker 
 							limit="9" 
-							title="至少选择1张，最多选择9张"
 							:auto-upload="false"
 							fileMediatype="image" 
 							mode="grid" 
 							@delete="handleDelete"
 							@select="select" 
 							@success="success" 
-							@fail="fail" 
-						></uni-file-picker>
+							@fail="fail"
+							:image-styles="{
+								width: '220rpx',
+								height: '220rpx'
+							}"
+						>
+							<template #default>
+								<view class="custom-upload-box">
+									<uni-icons type="camera-filled" size="24" color="#666"></uni-icons>
+									<text class="upload-text">上传图片</text>
+								</view>
+							</template>
+						</uni-file-picker>
 					</view>
-				</uni-section>
-				<!-- <button class="submit-btn" @click="uploadImages">
-					<text class="btn-text">立即发表</text>
-				</button> -->
+				</view>
 			</view>
 		</view>
 	</view>
@@ -222,11 +239,11 @@
 				return new Promise((resolve, reject) => {
 					uni.uploadFile({
 						url: 'https://upload-z2.qiniup.com',
-						filePath: file.path,
-						name: 'file',
+						filePath: file.path, // 文件路径
+						name: 'file', // 文件名
 						formData: {
-							token: qiniuToken,
-							key: `catcat/post_pics/${file.name}`
+							token: qiniuToken, // 上传凭证
+							key: `catcat/post_pics/${file.name}` // 文件名
 						},
 						success: async (res) => {
 							if (res.statusCode === 200) {
@@ -304,7 +321,9 @@
 		};
 
 		// 先返回上一页,再在后台处理上传
-		uni.navigateBack();
+        setTimeout(() => {
+            uni.navigateBack();
+        }, 1500);
 		// 发送发帖成功通知,让My页面重新获取数据
 		uni.$emit('postUploadSuccess');
 
@@ -328,173 +347,191 @@
 </script>
 
 <style lang="scss" scoped>
-	.container {
-		width: 750rpx;
-		min-height: 100vh;
-		background-color: #ffffff;
-		box-sizing: border-box;
-		
-		.layout {
-			width: 100%;
-			min-height: 100vh;
-			background-color: #ffffff;
-			padding: 0;
-			box-sizing: border-box;
-			position: relative;
-		}
-	}
-
-	.input-section {
-		margin: 20rpx 32rpx;
-		position: relative;
-		
-		&::after {
-			content: '';
-			position: absolute;
-			bottom: 0;
-			left: 0;
-			width: 100%;
-			height: 1px;
-			background-color: #f2f2f2;
-		}
-	}
-
-	::v-deep .uni-easyinput {
-		margin: 16rpx 0;
-		
-		.uni-easyinput__content {
-			background-color: #ffffff;
-			padding: 24rpx 0;
-			border: none;
-			
-			&:focus-within {
-				background-color: #ffffff;
-				box-shadow: none;
-			}
-		}
-		
-		.uni-easyinput__placeholder-class {
-			color: #bbbbc2;
-			font-size: 32rpx;
-			font-weight: 400;
-		}
-
-		textarea {
-			font-size: 32rpx;
-			color: #333333;
-			line-height: 1.5;
-			font-weight: 400;
-		}
-	}
-
-	.title-input {
-		::v-deep .uni-easyinput__content {
-			padding: 24rpx 0 16rpx 0 !important;
-			
-			.uni-easyinput__content-textarea {
-				min-height: 48rpx;
-				font-size: 36rpx;
-				font-weight: 500;
-			}
-		}
-	}
-
-	.word-count {
-		font-size: 24rpx;
-		color: #bbbbc2;
-		margin-right: 0;
-		position: absolute;
-		right: 0;
-		bottom: 16rpx;
-		
-		&--limit {
-			color: #ff4d4f;
-		}
-	}
-
-	.upload-section {
-		margin: 32rpx;
-	}
-
-	::v-deep .uni-section {
-		.uni-section-header {
-			padding: 24rpx 0;
-			
-			.uni-section-header__content {
-				font-size: 28rpx;
-				font-weight: 400;
-				color: #666666;
-				padding-left: 0;
-				
-				&::before {
-					display: none;
-				}
-			}
-		}
-	}
-
-	.example-body {
-		padding: 0;
-		background: #ffffff;
-		
-		::v-deep .uni-file-picker {
-			.is-add {
-				border: 1px dashed #e5e5e5;
-				border-radius: 8rpx;
-				
-				&:hover {
-					border-color: #666666;
-				}
-			}
-
-			.file-picker__box-content {
-				border-radius: 8rpx;
-				overflow: hidden;
-				
-				image {
-					width: 100%;
-					height: 100%;
-					object-fit: cover;
-				}
-			}
-		}
-	}
-
-	.submit-btn {
-		position: fixed;
-		bottom: 0;
-		left: 0;
+.container {
+	width: 750rpx;
+	min-height: 100vh;
+	background-color: #f8f9fa;
+	
+	.layout {
 		width: 100%;
-		height: 98rpx;
-		background: #7db3f4;
+		min-height: 100vh;
+		position: relative;
+	}
+}
+
+.nav-right {
+	padding: 16rpx 32rpx;
+	
+	.publish-text {
+		font-size: 32rpx;
+		color: #007AFF;
+		font-weight: 500;
+	}
+}
+
+.content-wrapper {
+	padding: 24rpx;
+}
+
+.input-section {
+	margin-bottom: 24rpx;
+	background: #ffffff;
+	border-radius: 16rpx;
+	box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+	padding: 24rpx;
+	
+	.title-box {
+		min-height: 36rpx;
+		margin-bottom: 32rpx;
+	}
+	
+	.content-box {
+		min-height: 120rpx;
+        // margin-top: 12rpx;
+		margin-bottom: 20rpx;
+	}
+}
+
+.divider {
+	height: 1rpx;
+	background: #f0f0f0;
+	margin: 3rpx 0;
+}
+
+::v-deep .uni-easyinput {
+	.uni-easyinput__content {
+		background-color: transparent;
+		padding: 0;
 		border: none;
-		border-radius: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 99;
 		
-		&::before {
-			display: none;
+		&:focus-within {
+			background-color: transparent;
+			box-shadow: none;
 		}
-		
-		&:active {
-			opacity: 0.9;
-		}
-		
-		.btn-text {
-			color: #ffffff;
-			font-size: 32rpx;
-			font-weight: 400;
-			letter-spacing: 2rpx;
-		}
+	}
+	
+	.uni-easyinput__placeholder-class {
+		color: #bbbbc2;
+		font-size: 28rpx;
 	}
 
-	// 安全区适配
-	.safe-area-inset-bottom {
-		padding-bottom: constant(safe-area-inset-bottom);
-		padding-bottom: env(safe-area-inset-bottom);
+	textarea {
+		font-size: 28rpx;
+		color: #333333;
+		line-height: 1.5;
+		padding: 0;
+		min-height: 36rpx;
 	}
+}
+
+.title-input {
+	::v-deep .uni-easyinput__content {
+		min-height: 36rpx !important;
+		
+		textarea {
+			font-size: 28rpx;
+			font-weight: 500;
+			color: #333333;
+			line-height: 1.2;
+			min-height: 36rpx;
+		}
+	}
+}
+
+.word-count {
+	position: absolute;
+	right: 40rpx;
+    // bottom: 10rpx;
+	font-size: 24rpx;
+	color: #999999;
+	padding: 0rpx 8rpx;
+	// margin-top: 8rpx;
+	
+	&.content-count {
+		margin-top: 8rpx;
+	}
+	
+	&--limit {
+		color: #ff4d4f;
+	}
+}
+
+.upload-section {
+	background: #ffffff;
+	border-radius: 16rpx;
+	padding: 24rpx;
+	box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+	
+	.upload-header {
+		margin-bottom: 24rpx;
+		
+		.upload-title {
+			font-size: 28rpx;
+			color: #333333;
+			font-weight: 500;
+			margin-bottom: 8rpx;
+			display: block;
+		}
+		
+		.upload-subtitle {
+			font-size: 24rpx;
+			color: #999999;
+		}
+	}
+}
+
+.upload-area {
+	::v-deep .uni-file-picker {
+		.is-add {
+			border: none !important;
+			background-color: #f8f9fa;
+			border-radius: 12rpx;
+			transition: all 0.3s ease;
+			
+			&:active {
+				background-color: #f0f0f0;
+			}
+		}
+		
+		.file-picker__box-content {
+			border-radius: 12rpx;
+			overflow: hidden;
+		}
+		
+		.file-picker__progress {
+			display: none !important;
+		}
+		
+		.file-picker__box {
+			// margin: 0 0rpx 20rpx 0;
+			
+			&:nth-child(3n) {
+				margin-right: 0;
+			}
+		}
+	}
+}
+
+.custom-upload-box {
+	width: 210rpx;
+	height: 210rpx;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background-color: #f8f9fa;
+	border-radius: 12rpx;
+	
+	.upload-text {
+		font-size: 24rpx;
+		color: #666666;
+		margin-top: 16rpx;
+	}
+}
+
+.safe-area-inset-bottom {
+	padding-bottom: constant(safe-area-inset-bottom);
+	padding-bottom: env(safe-area-inset-bottom);
+}
 </style>
 </```
-rewritten_file>

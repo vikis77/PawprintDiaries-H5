@@ -3,6 +3,9 @@
  -->
  <template>
 	<view class="container">
+		<!-- 全局遮罩层 -->
+		<view v-if="showMenu" class="mask" @click.stop="showMenu = false"></view>
+		
 		<scroll-view scroll-y="true" class="scroll-container">
 			<view class="layout">
 				<!-- 头部导航 -->
@@ -17,8 +20,6 @@
 						<uni-col :span="8" class="header-right">
 							<view class="more-menu">
 								<img src="../static/more.png" @click.stop="toggleMenu" class="header-icon"/>
-								<!-- 遮罩层 -->
-								<view v-if="showMenu" class="mask" @click.stop="showMenu = false"></view>
 								<!-- 悬浮菜单 -->
 								<view class="floating-menu" v-if="showMenu">
 									<view class="menu-item" @click.stop="handleEdit">
@@ -64,6 +65,9 @@
 									<uni-icons type="chat" size="24" color="#666"></uni-icons>
 									<text class="comment-count">{{commentCount}}</text>
 								</view>
+								<view class="interaction-item" @click="handleShare">
+									<uni-icons type="paperplane" size="24" color="#666"></uni-icons>
+								</view>
 							</view>
 						</view>
 						<!-- 右边信息区域 -->
@@ -77,6 +81,9 @@
 								</view>
 								<view class="tzv88">
 									<text class="cat-gender">性别：{{ cat.gender === 1 ? '雄性' : '雌性' }}</text>
+								</view>
+								<view class="tzv88">
+									<text class="cat-adopt-status" :class="{'adopted': cat.isAdopted === 1}">状态：{{ cat.isAdopted === 1 ? '已被领养' : '等待领养' }}</text>
 								</view>
 								<view class="timeline-btn" @click="showTimeline">
 									<uni-icons type="flag" size="24" color="#666"></uni-icons>
@@ -161,11 +168,29 @@
 					<view class="t4 animate-fade-in">
 						<view class="t00zc">
 							<view class="t23rx">
-								<uni-section class="t8qfv" title="照片（最多展示9张）" type="square" ></uni-section>
+								<uni-section class="t8qfv" title="照片（最多展示8张）" type="square" ></uni-section>
 								<view class="t9hz9">
 									<view class="t09row">
+										<!-- 添加上传按钮 -->
+										<view class="t9j0a upload-box" @click="handleUpload" v-if="isAdmin">
+											<view class="upload-content">
+												<uni-icons type="plusempty" size="40" color="#999"></uni-icons>
+												<text>上传图片（管理员）</text>
+											</view>
+										</view>
 										<view class="t9j0a" v-for="(item, index) in picUrlDatas" :key="index">
-											<image class="i23qh" :src="`${pic_general_request_url}/cat_pics/${item.url}${Suffix_1002}`" mode="aspectFill" @click="previewImage(picUrlDatas.map(pic => `${pic_general_request_url}/cat_pics/${pic.url}`), index)"></image>
+											<view class="image-container">
+												<image class="i23qh" :src="`${pic_general_request_url}/cat_pics/${item.url}${Suffix_1002}`" mode="aspectFill" @click="previewImage(picUrlDatas.map(pic => `${pic_general_request_url}/cat_pics/${pic.url}`), index)"></image>
+												<!-- 添加图片操作按钮 -->
+												<view class="image-actions" v-if="isAdmin">
+													<view class="action-btn edit-btn" @click.stop="handleEditImage(index)">
+														<uni-icons type="compose" size="20" color="#fff"></uni-icons>
+													</view>
+													<view class="action-btn delete-btn" @click.stop="handleDeleteImage(index)">
+														<uni-icons type="trash" size="20" color="#fff"></uni-icons>
+													</view>
+												</view>
+											</view>
 										</view>
 									</view>
 								</view>
@@ -378,6 +403,47 @@
 				</view>
 			</uni-popup>
 		</scroll-view>
+
+		<!-- 分享弹窗 -->
+		<uni-popup ref="sharePopup" type="bottom" background-color="#fff">
+			<view class="share-popup">
+				<view class="share-header">
+					<text class="title">分享到</text>
+					<view class="close-btn" @click="closeSharePopup">
+						<uni-icons type="closeempty" size="24" color="#666"></uni-icons>
+					</view>
+				</view>
+				<view class="share-options">
+					<view class="share-item" @click="qrCode">
+						<image src="https://cdn.luckyiur.com/catcat/static_image/二维码分享.png" mode="aspectFit" class="share-icon"></image>
+						<text>二维码分享</text>
+					</view>
+					<view class="share-item" @click="copyLink">
+						<image src="https://cdn.luckyiur.com/catcat/static_image/link.png" mode="aspectFit" class="share-icon"></image>
+						<text>复制链接</text>
+					</view>
+				</view>
+			</view>
+		</uni-popup>
+
+		<!-- 二维码预览弹窗 -->
+		<uni-popup ref="qrCodePopup" type="center" background-color="#fff">
+			<view class="qrcode-popup">
+				<view class="qrcode-header">
+					<text class="title">分享二维码</text>
+					<view class="close-btn" @click="closeQrCodePopup">
+						<uni-icons type="closeempty" size="24" color="#666"></uni-icons>
+					</view>
+				</view>
+				<view class="qrcode-content">
+					<image v-if="qrCodeUrl" :src="qrCodeUrl" mode="aspectFit" class="qrcode-image"></image>
+					<text class="qrcode-tip">扫描二维码查看详情</text>
+				</view>
+				<view class="qrcode-footer">
+					<button class="download-btn" @click="downloadQrCode">保存二维码，微信请使用截图</button>
+				</view>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 
@@ -386,6 +452,7 @@
 	import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
     import { STATUS_CODE } from '@/src/constant/constant.js'
 	const appStore = useAppStore()
+	import QRCode from 'qrcode'
 	
 	// 添加数据加载状态
 	const isDataLoaded = ref(false);
@@ -466,6 +533,10 @@
 		description: ''
 	});
 	
+	const sharePopup = ref(null);  // 添加分享弹窗引用
+	const qrCodePopup = ref(null); // 添加二维码弹窗引用
+	const qrCodeUrl = ref('');     // 添加二维码URL引用
+	
 	onShow(async () => {
 		try {
 			let catId;
@@ -518,6 +589,7 @@
 						if (response.statusCode === 200 && response.data.code === STATUS_CODE.SUCCESS) {
 							picUrlDatas.value = response.data.data;
 							console.log('获取小猫图片成功')
+                            console.log(picUrlDatas.value)
 							resolve();
 						} else {
 							uni.showToast({
@@ -876,7 +948,7 @@
 	}
 	
 	// 提交评论
-	function submitComment() {
+	async function submitComment() {
 		// 检查登录
 		if (!checkLogin()) {
 			return;
@@ -885,6 +957,10 @@
 		if (!newComment.value.trim()) return;
 		// 获取当前用户信息
         console.log(appStore.userInfo)
+        if (appStore.userInfo == null) {
+            // 尝试获取用户信息
+            await getUserInfo()
+        }
 		const comment = {
 			nickName: appStore.userInfo.nickName, // 应该使用实际的用户信息
 			avatar: appStore.userInfo.avatar,
@@ -1002,29 +1078,10 @@
 	}
 	
 	// 显示时间轴
-	function showTimeline() {
-        uni.request({
-            url: `${API_general_request_url.value}/api/cat/timeline/${cat.value.catId}`,
-            method: 'GET',
-            success: (res) => {
-                if(res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS){
-                    timelineEvents.value = res.data.data
-                    console.log('获取小猫时间轴数据成功')
-                    console.log(timelineEvents.value)
-                }
-                else{
-                    console.log(res.data)
-                    uni.showToast({
-                        title: res.data.msg || '获取小猫时间轴数据失败',
-                        icon: 'none'
-                    });
-                }
-            },
-            fail: (err) => {
-                console.log('获取小猫时间轴数据失败')
-                console.log(err)
-            }
-        })
+	async function showTimeline() {
+        // 调用全局方法：获取小猫时间轴数据
+        const timelineData = await getCatTimeline(cat.value.catId)
+        timelineEvents.value = timelineData
 		timelinePopup.value.open();
 	}
 	
@@ -1066,7 +1123,7 @@
                         header: {
                             'Authorization': `Bearer ${uni.getStorageSync('token')}`
                         },
-                        success: (res) => {
+                        success: async (res) => {
                             if(res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS){
                                 console.log('删除事件成功')
                                 console.log(res.data)
@@ -1075,6 +1132,9 @@
                                     title: '删除成功',
                                     icon: 'success'
                                 });
+                                // 调用全局方法：刷新时间轴
+                                const timelineData = await getCatTimeline(cat.value.catId)
+                                timelineEvents.value = timelineData
                             }
                             else{
                                 console.log('删除事件失败')
@@ -1129,17 +1189,20 @@
                 header: {
                     'Authorization': `Bearer ${uni.getStorageSync('token')}`
                 },
-                success: (res) => {
+                success: async (res) => {
                     if(res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS){
                         console.log('更新现有事件成功')
                         console.log(res.data)
                         closeEventForm();
                         // 更新现有事件
-			            timelineEvents.value[currentEditIndex.value] = { ...eventForm.value };
+			            // timelineEvents.value[currentEditIndex.value] = { ...eventForm.value };
                         uni.showToast({
                             title: '编辑成功',
                             icon: 'success'
                         });
+                        // 调用全局方法：刷新时间轴
+                        const timelineData = await getCatTimeline(cat.value.catId)
+                        timelineEvents.value = timelineData
                     }
                     else{
                         console.log('更新现有事件失败')
@@ -1166,17 +1229,20 @@
                 header: {
                     'Authorization': `Bearer ${uni.getStorageSync('token')}`
                 },
-                success: (res) => {
+                success: async (res) => {
                     if(res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS){
                         console.log('添加新事件成功')
                         console.log(res.data)
                         closeEventForm();
                         // 添加新事件
-			            timelineEvents.value.push({ ...eventForm.value });
+			            // timelineEvents.value.push({ ...eventForm.value });
                         uni.showToast({
                             title: '添加成功',
                             icon: 'success'
                         });
+                        // 调用全局方法：刷新时间轴
+                        const timelineData = await getCatTimeline(cat.value.catId)
+                        timelineEvents.value = timelineData
                     }
                     else{
                         console.log('添加新事件失败')
@@ -1200,6 +1266,463 @@
 		
 		
 	}
+
+	// 图片操作相关函数：上传
+	async function handleUpload() {
+		// 检查登录状态
+		if (!checkLogin()) {
+			return;
+		}
+		
+		// 计算当前还可以上传的图片数量
+		const remainingSlots = 8 - picUrlDatas.value.length;
+		if (remainingSlots <= 0) {
+			uni.showToast({
+				title: '最多只能上传8张图片',
+				icon: 'none'
+			});
+			return;
+		}
+
+		uni.chooseImage({
+			count: remainingSlots, // 最多可选择的图片数量为剩余槽位数
+			sizeType: ['original', 'compressed'],
+			sourceType: ['album', 'camera'],
+			success: async (res) => {
+				const tempFilePaths = res.tempFilePaths;
+				const tempFiles = res.tempFiles;
+				console.log('上传图片')
+				console.log(tempFilePaths)
+				console.log(tempFiles)
+				
+				// 遍历选择的图片进行上传
+				for (let i = 0; i < tempFiles.length; i++) {
+					const tempFilePath = tempFilePaths[i];
+					const tempFile = tempFiles[i];
+					
+					try {
+						// 1. 先获取文件名映射
+						const uploadResponse = await uni.request({
+							url: `${API_general_request_url.value}/api/cat/photo/upload/${cat.value.catId}`,
+							method: 'POST',
+							header: {
+								'Authorization': `Bearer ${uni.getStorageSync('token')}`,
+								'Content-Type': 'application/json'
+							},
+							data: {
+								pictrueName: tempFile.name
+							}
+						});
+						
+						if (uploadResponse.statusCode !== 200 || uploadResponse.data.code !== STATUS_CODE.SUCCESS) {
+							uni.showToast({
+								title: uploadResponse.data.msg || '获取文件名映射失败',
+								icon: 'none'
+							});
+							continue; // 跳过当前图片，继续处理下一张
+						}
+						
+						const convertedFileName = uploadResponse.data.data.fileNameConvertMap;
+						console.log('文件名映射：')
+						console.log(convertedFileName)
+						const fileName = convertedFileName[tempFile.name]
+						console.log('转换后的文件名：')
+						console.log(fileName)
+						
+						// 2. 获取七牛云上传凭证
+						const tokenResponse = await uni.request({
+							url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,
+							method: 'GET',
+							header: {
+								'Authorization': `Bearer ${uni.getStorageSync('token')}`
+							}
+						});
+						
+						if (tokenResponse.statusCode !== 200 || tokenResponse.data.code !== STATUS_CODE.SUCCESS) {
+							uni.showToast({
+								title: tokenResponse.data.msg || '获取上传凭证失败',
+								icon: 'none'
+							});
+							continue;
+						} else {
+							console.log('获取上传凭证成功')
+						}
+						
+						const qiniuToken = tokenResponse.data.data.qiniuToken;
+						
+						// 3. 上传文件到七牛云
+						await uni.uploadFile({
+							url: 'https://upload-z2.qiniup.com',
+							filePath: tempFilePath,
+							name: 'file',
+							formData: {
+								token: qiniuToken,
+								key: `catcat/cat_pics/${fileName}`
+							},
+							success: (res) => {
+								if (res.statusCode === 200) {
+									if (i === tempFiles.length - 1) {
+										// 所有图片上传完成后显示提示
+										uni.showToast({
+											title: '上传成功',
+											icon: 'success'
+										});
+										// 刷新图片列表
+										refreshPicList();
+									}
+								} else {
+									uni.showToast({
+										title: '图片上传失败',
+										icon: 'none'
+									});
+								}
+							},
+							fail: (err) => {
+								uni.showToast({
+									title: '图片上传失败',
+									icon: 'none'
+								});
+							}
+						});
+						
+					} catch (error) {
+						console.error('上传过程中发生错误:', error);
+						uni.showToast({
+							title: '上传失败，请重试',
+							icon: 'none'
+						});
+					}
+				}
+			}
+		});
+	}
+
+	// 图片操作相关函数：修改
+	async function handleEditImage(index) {
+		// 检查登录状态
+		if (!checkLogin()) {
+			return;
+		}
+		
+		uni.chooseImage({
+			count: 1,
+			sizeType: ['original', 'compressed'],
+			sourceType: ['album', 'camera'],
+			success: async (res) => {
+				const tempFilePath = res.tempFilePaths[0];
+				const tempFile = res.tempFiles[0];
+				console.log('修改图片')
+				console.log(tempFilePath)
+				console.log(tempFile)
+				try {
+					// 1. 先删除原图片，获取新的文件名映射，路径参数为原图片ID，data为新文件名
+					const updateResponse = await uni.request({
+						url: `${API_general_request_url.value}/api/cat/photo/update/${picUrlDatas.value[index].id}`,
+						method: 'PUT',
+						header: {
+							'Authorization': `Bearer ${uni.getStorageSync('token')}`,
+							'Content-Type': 'application/json'
+						},
+						data: {
+							pictrueName: tempFile.name
+						}
+					});
+					console.log('更新图片')
+                    console.log(updateResponse)
+
+					if (updateResponse.statusCode !== 200 || updateResponse.data.code !== STATUS_CODE.SUCCESS) {
+                        uni.showToast({
+                            title: updateResponse.data.msg || '更新图片失败',
+                            icon: 'none'
+                        });
+					}
+					
+					const convertedFileName = updateResponse.data.data.fileNameConvertMap;
+					console.log('文件名映射：')
+                    console.log(convertedFileName)
+                    const fileName = convertedFileName[tempFile.name]
+                    console.log('转换后的文件名：')
+                    console.log(fileName)
+					
+					// 2. 获取七牛云上传凭证
+					const tokenResponse = await uni.request({
+						url: `${API_general_request_url.value}/api/upload/qiniuUploadToken`,
+						method: 'GET',
+						header: {
+							'Authorization': `Bearer ${uni.getStorageSync('token')}`
+						}
+					});
+					
+					if (tokenResponse.statusCode !== 200 || tokenResponse.data.code !== STATUS_CODE.SUCCESS) {
+						uni.showToast({
+							title: tokenResponse.data.msg || '获取上传凭证失败',
+							icon: 'none'
+						});
+					}
+					
+					const qiniuToken = tokenResponse.data.data.qiniuToken;
+					
+					// 3. 上传新文件到七牛云
+					await uni.uploadFile({
+						url: 'https://upload-z2.qiniup.com',
+						filePath: tempFilePath,
+						name: 'file',
+						formData: {
+							token: qiniuToken,
+							key: `catcat/cat_pics/${fileName}`
+						},
+						success: (res) => {
+							if (res.statusCode === 200) {
+								uni.showToast({
+									title: '修改成功',
+									icon: 'success'
+								});
+								// 刷新图片列表
+								refreshPicList();
+							} else {
+								uni.showToast({
+									title: '图片上传失败',
+									icon: 'none'
+								});
+							}
+						},
+						fail: (err) => {
+							uni.showToast({
+								title: '图片上传失败',
+								icon: 'none'
+							});
+						}
+					});
+					
+				} catch (error) {
+					console.error('修改过程中发生错误:', error);
+					// 如果出错，刷新列表以确保显示正确的状态
+					refreshPicList();
+				}
+			}
+		});
+	}
+
+	// 图片操作相关函数：删除
+	function handleDeleteImage(index) {
+		// 检查登录状态
+		if (!checkLogin()) {
+			return;
+		}
+		
+		uni.showModal({
+			title: '确认删除',
+			content: '确定要删除这张图片吗？',
+			success: (res) => {
+				if (res.confirm) {
+					uni.request({
+						url: `${API_general_request_url.value}/api/cat/photo/delete/${picUrlDatas.value[index].id}`,
+						method: 'DELETE',
+						header: {
+							'Authorization': `Bearer ${uni.getStorageSync('token')}`
+						},
+						success: (res) => {
+							if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
+								uni.showToast({
+									title: '删除成功',
+									icon: 'success'
+								});
+								// 刷新图片列表
+								refreshPicList();
+							} else {
+								uni.showToast({
+									title: res.data.msg || '删除失败',
+									icon: 'none'
+								});
+							}
+						},
+						fail: (err) => {
+							uni.showToast({
+								title: '删除失败',
+								icon: 'none'
+							});
+						}
+					});
+				}
+			}
+		});
+	}
+
+	// 刷新图片列表
+	function refreshPicList() {
+		uni.request({
+			url: `${API_general_request_url.value}/api/cat/photo/${cat.value.catId}`,
+			method: 'GET',
+			success: (response) => {
+				if (response.statusCode === 200 && response.data.code === STATUS_CODE.SUCCESS) {
+					picUrlDatas.value = response.data.data;
+					console.log('刷新小猫图片列表成功')
+				} else {
+					uni.showToast({
+						title: response.data.msg || '获取小猫图片失败',
+						icon: 'none'
+					});
+				}
+			},
+			fail: (error) => {
+				uni.showToast({
+					title: '请求获取小猫图片失败，请重试',
+					icon: 'none'
+				});
+			}
+		});
+	}
+
+    // 分享功能
+    const handleShare = () => {
+        sharePopup.value.open();
+    };
+
+    // 关闭分享弹窗
+    const closeSharePopup = () => {
+        sharePopup.value.close();
+    };
+
+    // 二维码分享
+    const qrCode = async () => {
+        try {
+            // 获取当前猫咪页面URL
+            const url = `${window.location.origin}/pages/Card?catId=${cat.value.catId}`;
+            
+            uni.showLoading({
+                title: '生成二维码中...'
+            });
+            
+            // 使用QRCode生成二维码数据URL
+            const dataUrl = await QRCode.toDataURL(url, {
+                width: 200,
+                margin: 2,
+                color: {
+                    dark: '#000000',
+                    light: '#ffffff'
+                }
+            });
+            
+            // 保存二维码URL并显示弹窗
+            qrCodeUrl.value = dataUrl;
+            uni.hideLoading();
+            closeSharePopup();
+            qrCodePopup.value.open();
+        } catch (error) {
+            console.error('生成二维码失败:', error);
+            uni.hideLoading();
+            uni.showToast({
+                title: '生成二维码失败',
+                icon: 'none'
+            });
+        }
+    };
+
+    // 复制链接
+    const copyLink = () => {
+        const shareOriginUrl = `catId=${cat.value.catId}`;
+        uni.request({
+            url: `${API_general_request_url.value}/api/shotLinkShare/getShotLinkShare?url=${shareOriginUrl}`,
+            method: 'GET',
+            success: (res) => {
+                if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
+                    uni.setClipboardData({
+                        data: res.data.data.urlString,
+                        success: function () {
+                            uni.showToast({
+                                title: '链接已复制，请分享给你的好友吧！',
+                                icon: 'none'
+                            });
+                            closeSharePopup();
+                        }
+                    });
+                    console.log("复制链接成功");
+                    console.log(res.data);
+                } else {
+                    uni.showToast({
+                        title: res.data.msg || '复制链接失败',
+                        icon: 'none'
+                    });
+                }
+            },
+            fail: (err) => {
+                console.log(err);
+                uni.showToast({
+                    title: '复制链接失败',
+                    icon: 'none'
+                });
+            }
+        })
+    };
+
+    // 关闭二维码弹窗
+    const closeQrCodePopup = () => {
+        qrCodePopup.value.close();
+    };
+
+    // 下载二维码
+    const downloadQrCode = () => {
+        if (!qrCodeUrl.value) {
+            uni.showToast({
+                title: '二维码未生成',
+                icon: 'none'
+            });
+            return;
+        }
+
+        // #ifdef H5
+        const a = document.createElement('a');
+        a.href = qrCodeUrl.value;
+        a.download = `qrcode_${cat.value.catId}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        uni.showToast({
+            title: '二维码已下载，如果在微信中，会下载失败',
+            icon: 'none'
+        });
+        // #endif
+
+        // #ifdef APP-PLUS || MP-WEIXIN
+        // 将base64转换为本地临时文件
+        const base64Data = qrCodeUrl.value.split(',')[1];
+        const arrayBuffer = uni.base64ToArrayBuffer(base64Data);
+        const tempFilePath = `_doc/qrcode_${Date.now()}.png`;
+        
+        // 写入文件
+        plus.io.requestFileSystem(plus.io.PRIVATE_DOC, (fs) => {
+            fs.root.getFile(tempFilePath, { create: true }, (fileEntry) => {
+                fileEntry.createWriter((writer) => {
+                    writer.onwrite = () => {
+                        // 保存到相册
+                        uni.saveImageToPhotosAlbum({
+                            filePath: fileEntry.fullPath,
+                            success: () => {
+                                uni.showToast({
+                                    title: '二维码已保存到相册',
+                                    icon: 'none'
+                                });
+                            },
+                            fail: () => {
+                                uni.showToast({
+                                    title: '保存二维码失败',
+                                    icon: 'none'
+                                });
+                            }
+                        });
+                    };
+                    writer.onerror = () => {
+                        uni.showToast({
+                            title: '保存二维码失败',
+                            icon: 'none'
+                        });
+                    };
+                    writer.write(new Blob([arrayBuffer]));
+                });
+            });
+        });
+        // #endif
+    };
 </script>
 
 <style lang="scss" scoped>
@@ -1323,7 +1846,7 @@
 						// padding-top: 60rpx;
 						.tzv88{ //文字view
 							width: 100%;
-							height: 74rpx;
+							height: 50rpx;
 							display: flex;
 							align-items: center;
 							padding-left: 80rpx;
@@ -1332,14 +1855,86 @@
                             .cat-name{
                                 font-size: 32rpx;
                                 font-weight: 700;
+                                color: #333;
+                                position: relative;
+                                padding-left: 20rpx;
+                                
+                                &::before {
+                                    content: '';
+                                    position: absolute;
+                                    left: 0;
+                                    top: 50%;
+                                    transform: translateY(-50%);
+                                    width: 6rpx;
+                                    height: 24rpx;
+                                    background: linear-gradient(to bottom, #C13584, #E1306C);
+                                    border-radius: 3rpx;
+                                }
                             }
                             .cat-age{
                                 font-size: 32rpx;
                                 font-weight: 700;
+                                color: #f56040;
+                                position: relative;
+                                padding-left: 20rpx;
+                                
+                                &::before {
+                                    content: '';
+                                    position: absolute;
+                                    left: 0;
+                                    top: 50%;
+                                    transform: translateY(-50%);
+                                    width: 6rpx;
+                                    height: 24rpx;
+                                    background: linear-gradient(to bottom, #f56040, #ff9c6e);
+                                    border-radius: 3rpx;
+                                }
                             }
                             .cat-gender{
                                 font-size: 32rpx;
                                 font-weight: 700;
+                                color: #8d5da3;
+                                position: relative;
+                                padding-left: 20rpx;
+                                
+                                &::before {
+                                    content: '';
+                                    position: absolute;
+                                    left: 0;
+                                    top: 50%;
+                                    transform: translateY(-50%);
+                                    width: 6rpx;
+                                    height: 24rpx;
+                                    background: linear-gradient(to bottom, #8d5da3, #a679c7);
+                                    border-radius: 3rpx;
+                                }
+                            }
+                            .cat-adopt-status {
+                                font-size: 32rpx;
+                                font-weight: 700;
+                                color: #ff9c6e;
+                                position: relative;
+                                padding-left: 20rpx;
+                                
+                                &::before {
+                                    content: '';
+                                    position: absolute;
+                                    left: 0;
+                                    top: 50%;
+                                    transform: translateY(-50%);
+                                    width: 6rpx;
+                                    height: 24rpx;
+                                    background: linear-gradient(to bottom, #ff9c6e, #ffd591);
+                                    border-radius: 3rpx;
+                                }
+                                
+                                &.adopted {
+                                    color: #52c41a;
+                                    
+                                    &::before {
+                                        background: linear-gradient(to bottom, #52c41a, #95de64);
+                                    }
+                                }
                             }
 						}
 						.timeline-btn {
@@ -1549,24 +2144,27 @@
 							height: 100rpx;
 						}
 						.t9hz9{ //照片box
-							width: 100%;
+							// width: 100%;
 							height: auto;
 							display: flex;
 							flex-wrap: wrap; // 允许自动换行
 							justify-content: space-between; // 保持间距均匀
+                            margin: 0 10rpx;
 							.t09row{ //一张张照片
 								width: 100%;
 								height: auto;
 								display: flex;
 								flex-wrap: wrap; // 保证换行
-								justify-content: space-between;
+								justify-content: flex-start;
 								.t9j0a{ //image-box
-									width: 32%; // 设置每张照片盒子的宽度为容器的 32% (保证三张照片加间距不超出100%)
-									height: 240rpx;
-									margin-bottom: 10rpx; // 图片之间的垂直间距
+									// width: 30%; // 设置每张照片盒子的宽度为容器的 32% (保证三张照片加间距不超出100%)
+									height: 230rpx;
+                                    width: 230rpx;
+									// margin-bottom: 10rpx; // 图片之间的垂直间距
+                                    margin: 5rpx 5rpx;
 									.i23qh{ //image
-										width: 240rpx;
-										height: 240rpx;
+										width: 230rpx;
+										height: 230rpx;
 									}
 								}
 							}
@@ -1604,6 +2202,7 @@
 	
 	.more-menu {
 		position: relative;
+		z-index: 20;
 	}
 	
 	.floating-menu {
@@ -1613,7 +2212,7 @@
 		background-color: #fff;
 		border-radius: 8rpx;
 		box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-		z-index: 999;
+		z-index: 20;
 		margin-top: 10rpx;
 		min-width: 160rpx;
 		
@@ -1710,14 +2309,16 @@
 		}
 	}
 	
-	// 添加新的样式
+	// 导航菜单弹窗遮罩层
 	.mask {
 		position: fixed;
 		top: 0;
 		left: 0;
 		right: 0;
 		bottom: 0;
-		z-index: 998;
+		z-index: 10;
+		background-color: rgba(0, 0, 0, 0.1);
+		// backdrop-filter: blur(2px); // 模糊效果
 	}
 	
 	.popup-box {
@@ -1828,12 +2429,13 @@
         justify-content: center;
 		padding: 20rpx 0;
 		margin-top: 20rpx;
+        margin-left: 45rpx;
 		
 		.interaction-item {
 			display: flex;
 			align-items: center;
-			gap: 8rpx;
-            padding: 0 10rpx;
+			gap: 0rpx;
+            padding: 0 5rpx;
 			text {
 				font-size: 28rpx;
 				color: #666;
@@ -2448,6 +3050,210 @@
 		align-items: center;
 		padding: 40rpx;
 		min-height: 400rpx;
+	}
+
+	// 在 style 部分添加以下样式
+	.upload-box {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: #f5f5f5;
+		border: 2rpx dashed #ddd;
+		border-radius: 12rpx;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		
+		&:active {
+			background-color: #e8e8e8;
+		}
+		
+		.upload-content {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 10rpx;
+			
+			text {
+				font-size: 24rpx;
+				color: #999;
+			}
+		}
+	}
+	
+	.image-container {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		
+		.image-actions {
+			position: absolute;
+			top: 10rpx;
+			right: 10rpx;
+			display: flex;
+			gap: 16rpx;
+			opacity: 0;
+			transition: opacity 0.3s ease;
+			
+			.action-btn {
+				width: 60rpx;
+				height: 60rpx;
+				border-radius: 30rpx;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				background-color: rgba(0, 0, 0, 0.6);
+				backdrop-filter: blur(5px);
+				transition: all 0.3s ease;
+				
+				&:active {
+					transform: scale(0.95);
+				}
+				
+				&.edit-btn {
+					background-color: rgba(141, 93, 163, 0.8);
+				}
+				
+				&.delete-btn {
+					background-color: rgba(245, 108, 108, 0.8);
+				}
+			}
+		}
+		
+		&:hover {
+			.image-actions {
+				opacity: 1;
+			}
+		}
+		
+		.i23qh {
+			width: 100%;
+			height: 100%;
+			border-radius: 12rpx;
+			transition: transform 0.3s ease;
+			
+			&:hover {
+				transform: scale(1.02);
+			}
+		}
+	}
+	
+	// 修改原有的图片网格样式以适应新的布局
+	.t9j0a {
+		width: 32%;
+		height: 240rpx;
+		margin-bottom: 20rpx;
+		overflow: hidden;
+		border-radius: 12rpx;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+	}
+
+	// 添加分享弹窗样式
+	.share-popup {
+		padding: 30rpx;
+		
+		.share-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding-bottom: 20rpx;
+			border-bottom: 1px solid #f0f0f0;
+			
+			.title {
+				font-size: 32rpx;
+				font-weight: bold;
+				color: #333;
+			}
+			
+			.close-btn {
+				padding: 10rpx;
+			}
+		}
+		
+        .share-options {
+            display: flex;
+            justify-content: space-around;
+            padding: 40rpx 0;
+            
+            .share-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10rpx;
+                
+                .share-icon {
+                    width: 40rpx;
+                    height: 40rpx;
+                    // border-radius: 50%;
+                }
+                
+                text {
+                    font-size: 24rpx;
+                    color: #666;
+                }
+            }
+        }
+	}
+
+	// 添加二维码弹窗样式
+	.qrcode-popup {
+		width: 600rpx;
+		padding: 40rpx;
+		border-radius: 20rpx;
+		background-color: #fff;
+		
+		.qrcode-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 30rpx;
+			
+			.title {
+				font-size: 32rpx;
+				font-weight: bold;
+				color: #333;
+			}
+			
+			.close-btn {
+				padding: 10rpx;
+			}
+		}
+		
+		.qrcode-content {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			padding: 20rpx 0;
+			
+			.qrcode-image {
+				width: 400rpx;
+				height: 400rpx;
+				margin-bottom: 20rpx;
+			}
+			
+			.qrcode-tip {
+				font-size: 26rpx;
+				color: #666;
+			}
+		}
+		
+		.qrcode-footer {
+			margin-top: 30rpx;
+			
+			.download-btn {
+				width: 100%;
+				height: 80rpx;
+				line-height: 80rpx;
+				text-align: center;
+				background: #8d5da3;
+				color: #fff;
+				border-radius: 40rpx;
+				font-size: 28rpx;
+				
+				&:active {
+					opacity: 0.9;
+				}
+			}
+		}
 	}
 </style>
 </```

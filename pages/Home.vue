@@ -6,7 +6,7 @@
 		<view class="layout-top">
 			<uni-popup ref="popup" type="dialog" border-radius="10px 10px 0 0" confirmText="确定">
 				<uni-popup-dialog 
-					style="width: 80vw; height: 1200rpx; overflow: auto; font-size: 27rpx; color: #6c6c6c; background-color: #ffffff;" 
+					style="width: 80vw; overflow: auto; font-size: 27rpx; color: #6c6c6c; background-color: #ffffff;" 
 					:type="msgType" 
 					cancelText="关闭" 
 					confirmText="已阅读"
@@ -74,12 +74,11 @@
 			</view>
 		</view>
 		
-		<view class="notice-container">
+		<view class="notice-container" @click="getMore">
 			<uni-notice-bar 
 				show-get-more 
 				show-icon 
-				text="本应用程序为个人项目演示，展开查看声明和帮助。" 
-				@getmore="getMore" 
+				text="点击查看声明和帮助。" 
 			/>
 		</view>
 		
@@ -169,10 +168,8 @@
 	
 	const status = ref('more'); // 加载更多的状态
 
-	
-	// 声明弹窗的内容
-	const dialogContent = ref(`
-		<p>本应用为演示应用，旨在展示个学习和开发的项目。特此声明：</p>
+	/* 
+    	<p>本应用为演示应用，旨在展示个学习和开发的项目。特此声明：</p>
 		<p>1. 非商业用途：本项目仅用于学习和展示，所有功能和内容均为个人开发，不得用于商业目的。</p>
 		<p>2. 知识产权：项目中使用的所有第三方库、组件和资源均归合法拥有者所有。项目不对其知识产权的合法性负责。</p>
 		<p>3. 数据隐私：本项目未涉及用户数据的收集和存储，用户在使用过程中请勿输入敏感个人信息。开发者不对任何因使用本应用而导致的隐私泄露或数据安全问题负责。</p>
@@ -180,8 +177,14 @@
 		<p>5. 免版权资源：项目中的所有图片资源均为免版权可使用，展示的数据均为测试数据，不涉及任何真实用户或实际情况。</p>
 		<p>6. 反馈与建议：欢迎用户提供反馈和建议，以帮助开发者不断改进本项目。</p>
 		<p>7. PC端访问建议F12切换模拟设备。</p>
+    */
+	// 声明弹窗的内容
+	const dialogContent = ref(`
+        <p>我把它命名为:<p style="font-size: 32rpx; font-weight: bold; color: #333; text-align: center; margin: 20rpx 0;">校猫日记（PawprintDiaries）。</p></p>
+        <p>一个结合校园流浪猫救助管理和社交分享的社区平台，通过记录和分享学校流浪猫的信息，
+            连接爱猫人士，共同为猫猫创造更好的生活环境，为救助工作提供信息支持，为学校管理提供数据参考。</p>
         <br/>
-        <p>点击查看 <a href="javascript:void(0)" onclick="document.dispatchEvent(new CustomEvent('goToAbout'))">关于平台和开发者</a></p>
+        <p>查看 <a href="javascript:void(0)" onclick="document.dispatchEvent(new CustomEvent('goToAbout'))">关于平台和开发者</a></p>
 		<br/>
 		<p>联系开发者:</p>
 		<p>
@@ -193,9 +196,11 @@
 
 	// 跳转到About页面
 	const goToAbout = () => {
-		// 先关闭弹窗
+		// 先关闭弹窗并确保完全关闭
 		popup.value?.close()
-		// 延迟跳转,等待弹窗关闭动画完成
+		uni.hideLoading() // 确保所有弹窗都被关闭
+		
+		// 延迟跳转,等待弹窗完全关闭
 		setTimeout(() => {
 			uni.navigateTo({
 				url: '/pages/About',
@@ -207,7 +212,7 @@
 					showToast('页面跳转失败')
 				}
 			})
-		}, 300)
+		}, 500) // 增加延迟时间确保弹窗完全关闭
 	}
 
 	// 打开外部链接

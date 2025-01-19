@@ -94,12 +94,13 @@
 						</view>
 						<view class="function-btn" @click="handleRefresh">
 							<image class="btn-icon refresh-icon" :class="{ 'refreshing': isRefreshing }" src="https://cdn.luckyiur.com/catcat/static_image/refresh.png" mode="aspectFit"></image>
-							<text class="btn-text">刷新数据</text>
+							<text class="btn-text">内容重置</text>
 						</view>
 					</view>
 
 					<!-- 筛选区域 -->
 					<view class="filter-section">
+                        <!-- 日期选择 -->
 						<view class="filter-row">
 							<view class="filter-icon">
 								<img class="icon" src="../static/time2.png" mode="aspectFill"/>
@@ -117,6 +118,8 @@
 								:border="false"
 							></uni-datetime-picker>
 						</view>
+
+                        <!-- 猫咪选择 -->
 						<view class="filter-row">
 							<view class="filter-icon">
 								<img class="icon" src="../static/cat007.png" mode="aspectFill"/>
@@ -173,7 +176,7 @@
                             <uni-forms-item label="小猫名字" required>
                                 <uni-data-select
                                     v-model="baseFormData1.catId"
-                                    :localdata="dataListCat"
+                                    :localdata="dataListCatForReport"
                                     @change="change"
                                     placeholder="你发现了哪一只小猫？"
                                 />
@@ -263,7 +266,16 @@
 	// 弹出层状态变化处理函数
 	const change = (e) => {
 		console.log('弹出层状态变化:', e);
-		// 可以在这里处理弹出层打开或关闭时的逻辑
+		// 当弹出层打开时
+		if (e.show) {
+			// 设置加载状态
+			baseFormData1.value.longitude = '获取位置中...';
+			baseFormData1.value.latitude = '获取位置中...';
+			baseFormData1.value.name = uni.getStorageSync('tokenDetail')?.username || '';
+			
+			// 获取位置信息
+			checkLocationPermission();
+		}
 	}
 	
 	// 添加悬浮uni-fab组件所需的配置
@@ -385,6 +397,7 @@
 	
 	// 校猫选择器 列表内容
 	const dataListCat = ref(); // text显示文(猫名)  value选中后的值   disable	是否禁用
+	const dataListCatForReport = ref(); // text显示文(猫名)  value选中后的值   disable	是否禁用
 	const selectedValueC = ref('all'); // 选中的猫
 	// 点击选中某只小猫，发送请求，小猫最近10条坐标
 	const onCatChange = (e) => { // e 即的小猫的value 也是catId
@@ -533,12 +546,17 @@
 
 		// 确保DOM已经渲染完成
 		await nextTick();
-		if (isFirstLoad.value) {
+        
+		if (isFirstLoad.value || 1) {
 			isLoading.value = true;
 			loadingText.value = '正在加载数据...';
 			
-			// 调用全局方法：查询全部小猫信息
-			await getCatInfoDetail()
+            // 调用全局方法：查询全部小猫信息
+            await getCatInfoDetail()
+            // 清除旧的猫猫信息
+            dataListCat.value = null
+            dataListCatForReport.value = []
+
 			// 添加"全部"选项为第一个选项
 			dataListCat.value = [{
 				text: '全部',
@@ -546,15 +564,21 @@
 			}];
 			// 将API返回的数据添加到列表中
 			dataListCat.value.push(...appStore.catList.map(item =>({
-				text: item.catname,
+				text: item.catname + ' - ' + (item.gender === 1 ? '公' : '母') + ' - ' + item.age + '个月',
 				value: item.catId
 			})));
-			uni.setStorageSync("catList",appStore.catList); // 同步存储整个猫猫列信息
+            // 报告小猫列表不需要"全部"选项
+            dataListCatForReport.value.push(...appStore.catList.map(item =>({
+				text: item.catname + ' - ' + (item.gender === 1 ? '公' : '母') + ' - ' + item.age + '个月',
+				value: item.catId
+			})));
+			// uni.setStorageSync("catList",appStore.catList); // 同步存储整个猫猫列信息
 			
 			loadingText.value = '正在获取位置信息...';
 			// 调用全局方法：请求全部小猫最新坐标
 			await getCatLocationLatest();
 			responseData.value = appStore.catLocations;
+
 			mapDrawMode.value = 'point';
 			// 添加数据验证和空值处理
 			path.value = responseData.value
@@ -881,10 +905,12 @@
 		
 		try {
 			if (mapDrawMode.value === 'point') {
-				// 清除之前的标记
+				// 清除之前的标记和事件监听器
 				map1.clearMap();
 				map2.clearMap();
 				
+				// 移除之前的事件监听器
+				const map1Container = document.getElementById('mymap');
 				path.value.forEach(marker => {
 					if (!marker || marker.length < 3) {
 						console.warn('无效的标记数据:', marker);
@@ -924,34 +950,66 @@
 				// 为地图添加标签点击事件委托
 				const handleLabelClick = (e) => {
 					const labelElement = e.target.closest('.mapLabelInfo');
-                    // 如果底部功能区是展开的，则关闭底部功能区
-					if (labelElement && isBottomExpanded.value === true) {
-						e.stopPropagation();
-						const catName = labelElement.dataset.catName;
-						const catData = dataListCat.value.find(cat => cat.text === catName);
-						if (catData) {
-							selectedValueC.value = catData.value;
-							filterResults();
-							isBottomExpanded.value = true;
-						}
+					if (!labelElement) return; // 如果点击的不是标签元素，直接返回
 					
-                    }
-                    // 如果底部功能区是展开的，则关闭底部功能区
-                    else if (labelElement && isBottomExpanded.value === false) {
-                        const catName = labelElement.dataset.catName;
-                        const catData = dataListCat.value.find(cat => cat.text === catName);
-                        console.log(catData)
-                        if (catData) {
-                            uni.navigateTo({
-                                url: `Card?catId=${catData.value}`
-                            })
-                        }
+					e.stopPropagation(); // 阻止事件冒泡
+					const catName = labelElement.dataset.catName;
+					console.log('点击的猫咪名称:', catName);
+					
+					// 在dataListCat中查找对应的猫咪数据
+					const catData = dataListCat.value.find(cat => {
+						const catNameFromText = cat.text.split(' - ')[0]; // 只取名字部分
+						return catNameFromText === catName;
+					});
+					
+					if (!catData) {
+						console.warn('未找到对应的猫咪数据:', catName);
+						return;
+					}
+					
+					// 如果底部功能区是展开的，执行筛选
+					if (isBottomExpanded.value) {
+						selectedValueC.value = catData.value;
+						filterResults();
+					} else {
+						// 如果底部功能区是收起的，跳转到猫咪卡片页面
+						// 使用navigateTo，并确保只触发一次
+						e.preventDefault();
+						const url = `Card?catId=${catData.value}`;
+						// 防止重复跳转
+						if (!window.isNavigating) {
+							window.isNavigating = true;
+							uni.navigateTo({
+								url: url,
+								complete: () => {
+									// 重置标志
+									setTimeout(() => {
+										window.isNavigating = false;
+									}, 500);
+								}
+							});
+						}
 					}
 				};
 
-				// 为两个地图容器添加事件监听
-				document.getElementById('mymap').addEventListener('click', handleLabelClick);
-				document.getElementById('mymap2').addEventListener('click', handleLabelClick);
+				// 移除旧的事件监听器
+				const removeOldListeners = () => {
+					const map1El = document.getElementById('mymap');
+					const map2El = document.getElementById('mymap2');
+					if (map1El) {
+						map1El.removeEventListener('click', handleLabelClick);
+					}
+					if (map2El) {
+						map2El.removeEventListener('click', handleLabelClick);
+					}
+				};
+
+				// 先移除旧的监听器
+				removeOldListeners();
+
+				// 添加新的事件监听器
+				document.getElementById('mymap')?.addEventListener('click', handleLabelClick);
+				document.getElementById('mymap2')?.addEventListener('click', handleLabelClick);
 			} else if (mapDrawMode.value === 'line') {
 				// 清除之前的标记
 				map1.clearMap();
@@ -1245,6 +1303,10 @@
 		loadingText.value = '正在刷新页面...';
 		
 		try {
+			// 重置筛选条件
+			selectedDate.value = '';
+			selectedValueC.value = 'all';
+			
 			// 重新获取猫咪信息
 			await getCatInfoDetail();
 			// 更新猫咪选择器数据
@@ -1253,6 +1315,10 @@
 				value: 'all'
 			}];
 			dataListCat.value.push(...appStore.catList.map(item =>({
+				text: item.catname,
+				value: item.catId
+			})));
+            dataListCatForReport.value.push(...appStore.catList.map(item =>({
 				text: item.catname,
 				value: item.catId
 			})));
@@ -1270,17 +1336,47 @@
 					item.catName || '未知猫咪'
 				]);
 			
+			// #ifdef H5
+			// 重置地图视图和比例
+			if (map1) {
+				map1.clearMap();
+				// 重置地图位置和视角
+				map1.setZoomAndCenter(16, [113.390166, 22.527103], false, 500);
+				map1.setPitch(45);
+				map1.setRotation(0);
+				// 重置地图高度
+				map1Height.value = DEFAULT_MAP1_HEIGHT;
+			}
+			if (map2) {
+				map2.clearMap();
+				// 重置地图位置和视角
+				map2.setZoomAndCenter(16, [113.390166, 22.527103], false, 500);
+				// 重置地图高度
+				map2Height.value = DEFAULT_MAP2_HEIGHT;
+			}
+
+			// 重新调整地图大小
+			nextTick(() => {
+				if (map1 && map2) {
+					map1.resize();
+					map2.resize();
+				}
+			});
+			// #endif
+			
+			// #ifdef APP-PLUS
+			// 重置App端地图数据
+			initAppMapData();
+			// #endif
+			
 			// 重新绘制地图
 			if (path.value.length > 0) {
-				map1?.clearMap();
-				map2?.clearMap();
 				mapDraw();
 			}
 			
-			uni.showToast({
-				title: '刷新成功',
-				icon: 'success'
-			});
+			// 收起底部功能区
+			isBottomExpanded.value = false;
+			
 		} catch (error) {
 			console.error('刷新失败:', error);
 			uni.showToast({
@@ -1500,8 +1596,10 @@
 	};
 
 	// 地图相关
-	const map1Height = ref(window.innerHeight * 0.37);
-	const map2Height = ref(window.innerHeight * 0.30);
+	const DEFAULT_MAP1_HEIGHT = window.innerHeight * 0.37;
+	const DEFAULT_MAP2_HEIGHT = window.innerHeight * 0.29;
+	const map1Height = ref(DEFAULT_MAP1_HEIGHT);
+	const map2Height = ref(DEFAULT_MAP2_HEIGHT);
 	const startHeight1 = ref(0);
 	const startHeight2 = ref(0);
 	const isMapDragging = ref(false);
@@ -2257,9 +2355,9 @@
 	z-index: 6;
 	padding: 5px 0;
 	border-bottom: 1px solid #f5f5f5;
-	margin: 0 -16px;
-	padding-left: 16px;
-	padding-right: 16px;
+	// margin: 0 -16px;
+	// padding-left: 16px;
+	// padding-right: 16px;
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
@@ -2567,6 +2665,10 @@
     -ms-overflow-style: none !important;
 }
 
+::v-deep .uni-scroll-view-content{
+    height: 400rpx;
+}
+
 // 修改选择器的滚动条
 ::v-deep .uni-select__selector-scroll {
     &::-webkit-scrollbar {
@@ -2603,29 +2705,30 @@
 /* 添加地图标签样式 */
 ::v-deep .mapLabelInfo {
 	padding: 2px 6px;
-	background: rgba(255, 255, 255, 0.7); // 修改透明度为50%
-	border-radius: 3px;
-	font-size: 11px;
-	color: #333;
-	font-weight: 400;
-	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-	border: 1px solid rgba(0, 0, 0, 0.1);
-	white-space: nowrap;
+	background-color: rgba(255, 255, 255, 0.7) !important; // 使用 !important 确保样式优先级
+	border-radius: 3px !important;
+	font-size: 11px !important;
+	color: #333 !important;
+	font-weight: 400 !important;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15) !important;
+	border: 1px solid rgba(0, 0, 0, 0.1) !important;
+	white-space: nowrap !important;
+	cursor: pointer !important;
 	
 	/* 添加一个小尾巴 */
-	position: relative;
+	position: relative !important;
 	
 	&::after {
 		content: '';
-		position: absolute;
-		left: -3px;
-		top: 50%;
-		transform: translateY(-50%);
-		width: 0;
-		height: 0;
-		border-top: 3px solid transparent;
-		border-bottom: 3px solid transparent;
-		border-right: 3px solid rgba(255, 255, 255, 0.5); // 修改尾巴透明度为50%
+		position: absolute !important;
+		left: -3px !important;
+		top: 50% !important;
+		transform: translateY(-50%) !important;
+		width: 0 !important;
+		height: 0 !important;
+		border-top: 3px solid transparent !important;
+		border-bottom: 3px solid transparent !important;
+		border-right: 3px solid rgba(255, 255, 255, 0.7) !important;
 	}
 }
 

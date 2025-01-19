@@ -1,0 +1,133 @@
+# Diff Details
+
+Date : 2025-01-19 18:44:14
+
+Directory e:\\01-Codes\\HBuilderProjects\\PawPrint Diaries\\pages
+
+Total : 118 files,  -30749 codes, -925 comments, -1073 blanks, all -32747 lines
+
+[Summary](results.md) / [Details](details.md) / [Diff Summary](diff.md) / Diff Details
+
+## Files
+| filename | language | code | comment | blank | total |
+| :--- | :--- | ---: | ---: | ---: | ---: |
+| [App.vue](/App.vue) | vue | -27 | 0 | -5 | -32 |
+| [README.MD](/README.MD) | Markdown | -67 | 0 | -7 | -74 |
+| [components/BottomNav.vue](/components/BottomNav.vue) | vue | -1 | -55 | -1 | -57 |
+| [components/MyChartComponent.vue](/components/MyChartComponent.vue) | vue | 0 | -85 | -1 | -86 |
+| [index.html](/index.html) | HTML | -19 | -3 | -1 | -23 |
+| [main.js](/main.js) | JavaScript | -11 | -7 | -6 | -24 |
+| [main.ts](/main.ts) | TypeScript | 0 | -8 | -1 | -9 |
+| [manifest.json](/manifest.json) | JSON | -99 | -9 | -1 | -109 |
+| [package-lock.json](/package-lock.json) | JSON | -11,210 | 0 | -1 | -11,211 |
+| [package.json](/package.json) | JSON | -48 | 0 | -1 | -49 |
+| [pages.json](/pages.json) | JSON | -183 | -10 | -2 | -195 |
+| [router/index.js](/router/index.js) | JavaScript | 0 | -17 | -4 | -21 |
+| [src/api/cat.js](/src/api/cat.js) | JavaScript | -141 | -5 | -7 | -153 |
+| [src/api/comment.js](/src/api/comment.js) | JavaScript | -78 | -7 | -3 | -88 |
+| [src/api/fund.js](/src/api/fund.js) | JavaScript | -36 | -3 | -3 | -42 |
+| [src/api/post.js](/src/api/post.js) | JavaScript | -94 | -9 | -6 | -109 |
+| [src/api/search.js](/src/api/search.js) | JavaScript | -36 | -2 | -1 | -39 |
+| [src/api/user.js](/src/api/user.js) | JavaScript | -32 | -3 | -2 | -37 |
+| [src/components/common/NavBar.vue](/src/components/common/NavBar.vue) | vue | -70 | 0 | -8 | -78 |
+| [src/components/common/NavBar1001.vue](/src/components/common/NavBar1001.vue) | vue | -120 | -8 | -15 | -143 |
+| [src/config/index.js](/src/config/index.js) | JavaScript | -27 | -17 | -4 | -48 |
+| [src/constant/constant.js](/src/constant/constant.js) | JavaScript | -8 | -3 | -3 | -14 |
+| [src/utils/request.js](/src/utils/request.js) | JavaScript | -64 | -5 | -7 | -76 |
+| [src/utils/system.js](/src/utils/system.js) | JavaScript | -144 | -24 | -15 | -183 |
+| [src/utils/toast.js](/src/utils/toast.js) | JavaScript | -15 | -10 | -1 | -26 |
+| [static/arrow.svg](/static/arrow.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/cat-copy.svg](/static/cat-copy.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/cat16.svg](/static/cat16.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/cat32.svg](/static/cat32.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/home-active.svg](/static/home-active.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/home.svg](/static/home.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/love.svg](/static/love.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/map.js](/static/map.js) | JavaScript | 0 | -1 | -1 | -2 |
+| [static/messages-active.svg](/static/messages-active.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/messages.svg](/static/messages.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/mine-active.svg](/static/mine-active.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/mine.svg](/static/mine.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/paw-active.svg](/static/paw-active.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/paw.svg](/static/paw.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/pos12.svg](/static/pos12.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/pos16.svg](/static/pos16.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/redpoint12.svg](/static/redpoint12.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/redpoint16.svg](/static/redpoint16.svg) | XML | -1 | 0 | 0 | -1 |
+| [static/redpoint32.svg](/static/redpoint32.svg) | XML | -1 | 0 | 0 | -1 |
+| [store/modules/app.ts](/store/modules/app.ts) | TypeScript | -334 | -59 | -31 | -424 |
+| [tsconfig.json](/tsconfig.json) | JSON with Comments | -22 | 0 | 0 | -22 |
+| [types/pinia.d.ts](/types/pinia.d.ts) | TypeScript | -11 | 0 | 0 | -11 |
+| [types/uni-app.d.ts](/types/uni-app.d.ts) | TypeScript | -5 | -2 | -1 | -8 |
+| [types/vue.d.ts](/types/vue.d.ts) | TypeScript | -4 | 0 | 0 | -4 |
+| [uni.scss](/uni.scss) | SCSS | -37 | -25 | -15 | -77 |
+| [uni\_modules/qiun-data-charts/changelog.md](/uni_modules/qiun-data-charts/changelog.md) | Markdown | -314 | 0 | -7 | -321 |
+| [uni\_modules/qiun-data-charts/components/qiun-data-charts/qiun-data-charts.vue](/uni_modules/qiun-data-charts/components/qiun-data-charts/qiun-data-charts.vue) | vue | -1,574 | -30 | -15 | -1,619 |
+| [uni\_modules/qiun-data-charts/components/qiun-error/qiun-error.vue](/uni_modules/qiun-data-charts/components/qiun-error/qiun-error.vue) | vue | -43 | 0 | -4 | -47 |
+| [uni\_modules/qiun-data-charts/components/qiun-loading/loading1.vue](/uni_modules/qiun-data-charts/components/qiun-loading/loading1.vue) | vue | -147 | 0 | -16 | -163 |
+| [uni\_modules/qiun-data-charts/components/qiun-loading/loading2.vue](/uni_modules/qiun-data-charts/components/qiun-loading/loading2.vue) | vue | -154 | 0 | -17 | -171 |
+| [uni\_modules/qiun-data-charts/components/qiun-loading/loading3.vue](/uni_modules/qiun-data-charts/components/qiun-loading/loading3.vue) | vue | -159 | 0 | -15 | -174 |
+| [uni\_modules/qiun-data-charts/components/qiun-loading/loading4.vue](/uni_modules/qiun-data-charts/components/qiun-loading/loading4.vue) | vue | -207 | 0 | -16 | -223 |
+| [uni\_modules/qiun-data-charts/components/qiun-loading/loading5.vue](/uni_modules/qiun-data-charts/components/qiun-loading/loading5.vue) | vue | -216 | 0 | -14 | -230 |
+| [uni\_modules/qiun-data-charts/components/qiun-loading/qiun-loading.vue](/uni_modules/qiun-data-charts/components/qiun-loading/qiun-loading.vue) | vue | -32 | 0 | -5 | -37 |
+| [uni\_modules/qiun-data-charts/js\_sdk/u-charts/config-echarts.js](/uni_modules/qiun-data-charts/js_sdk/u-charts/config-echarts.js) | JavaScript | -386 | -30 | -6 | -422 |
+| [uni\_modules/qiun-data-charts/js\_sdk/u-charts/config-ucharts.js](/uni_modules/qiun-data-charts/js_sdk/u-charts/config-ucharts.js) | JavaScript | -574 | -28 | -4 | -606 |
+| [uni\_modules/qiun-data-charts/js\_sdk/u-charts/readme.md](/uni_modules/qiun-data-charts/js_sdk/u-charts/readme.md) | Markdown | -5 | 0 | 0 | -5 |
+| [uni\_modules/qiun-data-charts/js\_sdk/u-charts/u-charts.js](/uni_modules/qiun-data-charts/js_sdk/u-charts/u-charts.js) | JavaScript | -7,339 | -165 | -202 | -7,706 |
+| [uni\_modules/qiun-data-charts/js\_sdk/u-charts/u-charts.min.js](/uni_modules/qiun-data-charts/js_sdk/u-charts/u-charts.min.js) | JavaScript | -1 | -17 | 0 | -18 |
+| [uni\_modules/qiun-data-charts/license.md](/uni_modules/qiun-data-charts/license.md) | Markdown | -169 | 0 | -33 | -202 |
+| [uni\_modules/qiun-data-charts/package.json](/uni_modules/qiun-data-charts/package.json) | JSON | -80 | 0 | 0 | -80 |
+| [uni\_modules/qiun-data-charts/readme.md](/uni_modules/qiun-data-charts/readme.md) | Markdown | -52 | 0 | -32 | -84 |
+| [uni\_modules/qiun-data-charts/static/app-plus/echarts.min.js](/uni_modules/qiun-data-charts/static/app-plus/echarts.min.js) | JavaScript | -1 | -19 | -3 | -23 |
+| [uni\_modules/qiun-data-charts/static/h5/echarts.min.js](/uni_modules/qiun-data-charts/static/h5/echarts.min.js) | JavaScript | -1 | -19 | -3 | -23 |
+| [uni\_modules/uni-forms/changelog.md](/uni_modules/uni-forms/changelog.md) | Markdown | -98 | 0 | -1 | -99 |
+| [uni\_modules/uni-forms/components/uni-forms-item/uni-forms-item.vue](/uni_modules/uni-forms/components/uni-forms-item/uni-forms-item.vue) | vue | -578 | -4 | -46 | -628 |
+| [uni\_modules/uni-forms/components/uni-forms/uni-forms.vue](/uni_modules/uni-forms/components/uni-forms/uni-forms.vue) | vue | -377 | 0 | -23 | -400 |
+| [uni\_modules/uni-forms/components/uni-forms/utils.js](/uni_modules/uni-forms/components/uni-forms/utils.js) | JavaScript | -162 | -111 | -21 | -294 |
+| [uni\_modules/uni-forms/components/uni-forms/validate.js](/uni_modules/uni-forms/components/uni-forms/validate.js) | JavaScript | -421 | -1 | -65 | -487 |
+| [uni\_modules/uni-forms/package.json](/uni_modules/uni-forms/package.json) | JSON | -89 | 0 | -1 | -90 |
+| [uni\_modules/uni-forms/readme.md](/uni_modules/uni-forms/readme.md) | Markdown | -12 | 0 | -11 | -23 |
+| [uni\_modules/uni-icons/changelog.md](/uni_modules/uni-icons/changelog.md) | Markdown | -42 | 0 | -1 | -43 |
+| [uni\_modules/uni-icons/components/uni-icons/uni-icons.vue](/uni_modules/uni-icons/components/uni-icons/uni-icons.vue) | vue | -99 | -4 | -8 | -111 |
+| [uni\_modules/uni-icons/components/uni-icons/uniicons.css](/uni_modules/uni-icons/components/uni-icons/uniicons.css) | CSS | -498 | 0 | -167 | -665 |
+| [uni\_modules/uni-icons/components/uni-icons/uniicons\_file.ts](/uni_modules/uni-icons/components/uni-icons/uniicons_file.ts) | TypeScript | -658 | -1 | -6 | -665 |
+| [uni\_modules/uni-icons/components/uni-icons/uniicons\_file\_vue.js](/uni_modules/uni-icons/components/uni-icons/uniicons_file_vue.js) | JavaScript | -646 | -1 | -3 | -650 |
+| [uni\_modules/uni-icons/package.json](/uni_modules/uni-icons/package.json) | JSON | -89 | 0 | -1 | -90 |
+| [uni\_modules/uni-icons/readme.md](/uni_modules/uni-icons/readme.md) | Markdown | -6 | 0 | -3 | -9 |
+| [uni\_modules/uni-popup/changelog.md](/uni_modules/uni-popup/changelog.md) | Markdown | -86 | 0 | -1 | -87 |
+| [uni\_modules/uni-popup/components/uni-popup-dialog/keypress.js](/uni_modules/uni-popup/components/uni-popup-dialog/keypress.js) | JavaScript | -42 | -3 | -1 | -46 |
+| [uni\_modules/uni-popup/components/uni-popup-dialog/uni-popup-dialog.vue](/uni_modules/uni-popup/components/uni-popup-dialog/uni-popup-dialog.vue) | vue | -295 | 0 | -22 | -317 |
+| [uni\_modules/uni-popup/components/uni-popup-message/uni-popup-message.vue](/uni_modules/uni-popup/components/uni-popup-message/uni-popup-message.vue) | vue | -130 | 0 | -14 | -144 |
+| [uni\_modules/uni-popup/components/uni-popup-share/uni-popup-share.vue](/uni_modules/uni-popup/components/uni-popup-share/uni-popup-share.vue) | vue | -176 | 0 | -12 | -188 |
+| [uni\_modules/uni-popup/components/uni-popup/i18n/en.json](/uni_modules/uni-popup/components/uni-popup/i18n/en.json) | JSON | -7 | 0 | -1 | -8 |
+| [uni\_modules/uni-popup/components/uni-popup/i18n/index.js](/uni_modules/uni-popup/components/uni-popup/i18n/index.js) | JavaScript | -8 | 0 | -1 | -9 |
+| [uni\_modules/uni-popup/components/uni-popup/i18n/zh-Hans.json](/uni_modules/uni-popup/components/uni-popup/i18n/zh-Hans.json) | JSON | -7 | 0 | -1 | -8 |
+| [uni\_modules/uni-popup/components/uni-popup/i18n/zh-Hant.json](/uni_modules/uni-popup/components/uni-popup/i18n/zh-Hant.json) | JSON | -7 | 0 | -1 | -8 |
+| [uni\_modules/uni-popup/components/uni-popup/keypress.js](/uni_modules/uni-popup/components/uni-popup/keypress.js) | JavaScript | -39 | -6 | -1 | -46 |
+| [uni\_modules/uni-popup/components/uni-popup/popup.js](/uni_modules/uni-popup/components/uni-popup/popup.js) | JavaScript | -21 | -3 | -3 | -27 |
+| [uni\_modules/uni-popup/components/uni-popup/uni-popup.vue](/uni_modules/uni-popup/components/uni-popup/uni-popup.vue) | vue | -493 | -2 | -12 | -507 |
+| [uni\_modules/uni-popup/package.json](/uni_modules/uni-popup/package.json) | JSON | -88 | 0 | -1 | -89 |
+| [uni\_modules/uni-popup/readme.md](/uni_modules/uni-popup/readme.md) | Markdown | -7 | 0 | -11 | -18 |
+| [uni\_modules/uni-scss/changelog.md](/uni_modules/uni-scss/changelog.md) | Markdown | -8 | 0 | -1 | -9 |
+| [uni\_modules/uni-scss/index.scss](/uni_modules/uni-scss/index.scss) | SCSS | -1 | 0 | -1 | -2 |
+| [uni\_modules/uni-scss/package.json](/uni_modules/uni-scss/package.json) | JSON | -82 | 0 | -1 | -83 |
+| [uni\_modules/uni-scss/readme.md](/uni_modules/uni-scss/readme.md) | Markdown | -3 | 0 | -1 | -4 |
+| [uni\_modules/uni-scss/styles/index.scss](/uni_modules/uni-scss/styles/index.scss) | SCSS | -7 | 0 | -1 | -8 |
+| [uni\_modules/uni-scss/styles/setting/\_border.scss](/uni_modules/uni-scss/styles/setting/_border.scss) | SCSS | -3 | 0 | 0 | -3 |
+| [uni\_modules/uni-scss/styles/setting/\_color.scss](/uni_modules/uni-scss/styles/setting/_color.scss) | SCSS | -49 | -16 | -2 | -67 |
+| [uni\_modules/uni-scss/styles/setting/\_radius.scss](/uni_modules/uni-scss/styles/setting/_radius.scss) | SCSS | -52 | -1 | -3 | -56 |
+| [uni\_modules/uni-scss/styles/setting/\_space.scss](/uni_modules/uni-scss/styles/setting/_space.scss) | SCSS | -54 | 0 | -2 | -56 |
+| [uni\_modules/uni-scss/styles/setting/\_styles.scss](/uni_modules/uni-scss/styles/setting/_styles.scss) | SCSS | -149 | -3 | -16 | -168 |
+| [uni\_modules/uni-scss/styles/setting/\_text.scss](/uni_modules/uni-scss/styles/setting/_text.scss) | SCSS | -19 | -4 | -2 | -25 |
+| [uni\_modules/uni-scss/styles/setting/\_variables.scss](/uni_modules/uni-scss/styles/setting/_variables.scss) | SCSS | -103 | -29 | -15 | -147 |
+| [uni\_modules/uni-scss/styles/tools/functions.scss](/uni_modules/uni-scss/styles/tools/functions.scss) | SCSS | -17 | -1 | -2 | -20 |
+| [uni\_modules/uni-scss/theme.scss](/uni_modules/uni-scss/theme.scss) | SCSS | -19 | -11 | -2 | -32 |
+| [uni\_modules/uni-scss/variables.scss](/uni_modules/uni-scss/variables.scss) | SCSS | -37 | -13 | -13 | -63 |
+| [uni\_modules/uni-transition/changelog.md](/uni_modules/uni-transition/changelog.md) | Markdown | -24 | 0 | -1 | -25 |
+| [uni\_modules/uni-transition/components/uni-transition/createAnimation.js](/uni_modules/uni-transition/components/uni-transition/createAnimation.js) | JavaScript | -102 | -21 | -9 | -132 |
+| [uni\_modules/uni-transition/components/uni-transition/uni-transition.vue](/uni_modules/uni-transition/components/uni-transition/uni-transition.vue) | vue | -278 | -4 | -5 | -287 |
+| [uni\_modules/uni-transition/package.json](/uni_modules/uni-transition/package.json) | JSON | -85 | 0 | 0 | -85 |
+| [uni\_modules/uni-transition/readme.md](/uni_modules/uni-transition/readme.md) | Markdown | -6 | 0 | -5 | -11 |
+| [vite.config.js](/vite.config.js) | JavaScript | -55 | -1 | -6 | -62 |
+
+[Summary](results.md) / [Details](details.md) / [Diff Summary](diff.md) / Diff Details

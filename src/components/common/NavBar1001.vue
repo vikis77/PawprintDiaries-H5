@@ -115,7 +115,7 @@ const handleRightClick = () => {
         top: 9px; /* 距离顶部 20px */
         right: 20px; /* 距离右侧 20px */
         padding: 0px 0px 0px 0px; /* 内边距 */
-        font-size: 19px; /* 字体大小 */
+        font-size: 17px; /* 字体大小 */
         color: #fff; /* 文字颜色 */
         background-color: #007bff; /* 背景颜色 */
         border: none; /* 去掉边框 */

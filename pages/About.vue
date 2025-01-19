@@ -16,13 +16,22 @@
     >
       <!-- 软件信息部分 -->
       <view class="card">
-        <view class="card-title">关于 PawPrint Diaries</view>
+        <view class="card-title">
+            关于 PawPrint Diaries
+            <view class="app-code">
+                <image class="app-code-pic" 
+                    src="https://cdn.luckyiur.com/catcat/static_image/校猫日记二维码.jpg" 
+                    mode="aspectFit"
+                    @click="previewImage"></image>
+            </view>
+        </view>
         <view class="card-content">
           <view class="version-info">当前测试版本：v2.0.0 PawPrint Diaries</view>
           <view class="app-desc">
             一个结合校园流浪猫救助管理和社交分享的社区平台，通过记录和分享学校流浪猫的信息，
             连接爱猫人士，共同为猫猫创造更好的生活环境，为救助工作提供信息支持，为学校管理提供数据参考。
           </view>
+          
         </view>
       </view>
 
@@ -33,6 +42,7 @@
           <view class="update-item">
             <view class="update-version">v2.1.0 (2024-1)</view>
             <view class="update-list">
+                <view class="update-point">• 新增帖子/猫猫分享</view>
                 <view class="update-point">• 全新设计地图页面</view>
                 <view class="update-point">• 修复若干已知问题</view>
                 <view class="update-point"></view>
@@ -124,6 +134,15 @@ const handleTouchMove = (e) => {
   e.preventDefault();
 };
 
+const previewImage = () => {
+  uni.previewImage({
+    urls: ['https://cdn.luckyiur.com/catcat/static_image/校猫日记二维码.jpg'],
+    current: 0,
+    indicator: 'number',
+    loop: false
+  });
+};
+
 const toggleDeclaration = () => {
   isDeclarationExpanded.value = !isDeclarationExpanded.value;
 };
@@ -181,6 +200,18 @@ const openUrl = (url) => {
   margin-bottom: 16px;
   padding-bottom: 8px;
   border-bottom: 1px solid #eee;
+  display: flex;
+  .app-code {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    // margin-top: 12px;
+    margin-left: 22rpx;
+    .app-code-pic {
+        width: 60rpx;
+        height: 60rpx;
+    }
+    }
 }
 
 .card-content {
@@ -348,4 +379,6 @@ const openUrl = (url) => {
     }
   }
 }
+
+
 </style> 

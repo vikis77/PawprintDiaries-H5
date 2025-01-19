@@ -50,30 +50,22 @@
 <script setup>
 import { API_general_request_url, pic_general_request_url, Suffix_1000, Suffix_1001, Suffix_1002 } from '@/src/config/index.js'
 import { useAppStore } from '@/store/modules/app'
+import { onMounted, onUnmounted } from 'vue'
+
 const appStore = useAppStore()
 
-const gridList = ref([
-	{
-		url: '../static/cat.png',
-		data: '',
-		text: '在校小猫',
-		text2: '只',
-		cat: null
-	}
-])
-
-onShow(async () => {
+// 添加更新数据的方法
+const updateCatData = async () => {
 	uni.showLoading({ title: '加载中...' });
-	// const catList = uni.getStorageSync('catList') != null ? uni.getStorageSync('catList') : [];
-    // 调用全局方法：获取猫猫列表
-    await getCatInfoDetail()
-    const catList = appStore.catList
+	await getCatInfoDetail()
+	const catList = appStore.catList
 	console.log(catList);
 
 	if (catList.length > 0) {
 		// 更新 gridList 中的 badge 显示猫的数量
 		gridList.value[0].data = catList.length.toString();
-
+		// 清空原本的格子数据
+		gridList.value.splice(1)
 		// 遍历 catList，将每只猫的信息加入 gridList
 		catList.forEach((cat) => {
 			gridList.value.push({
@@ -88,6 +80,30 @@ onShow(async () => {
 		console.log('catList is empty or null.');
 	}
 	uni.hideLoading();
+}
+
+// 注册事件监听
+onMounted(() => {
+	uni.$on('updateCatList', updateCatData)
+})
+
+// 移除事件监听
+onUnmounted(() => {
+	uni.$off('updateCatList', updateCatData)
+})
+
+const gridList = ref([
+	{
+		url: '../static/cat.png',
+		data: '',
+		text: '在校小猫',
+		text2: '只',
+		cat: null
+	}
+])
+
+onShow(async () => {
+	await updateCatData()
 });
 
 // 点击返回

@@ -111,3 +111,42 @@ export const getCatLocationLatest = async () => {
 }
 
 
+// 获取小猫时间轴数据
+export const getCatTimeline = async (catId) => {
+    // 获取小猫时间轴数据
+    await checkLogin()
+    const appStore = useAppStore()
+    return new Promise((resolve, reject) => {
+        uni.request({
+            url: `${API_general_request_url.value}/api/cat/timeline/${catId}`,
+            method: 'GET',
+            header: {
+                'Authorization': `Bearer ${uni.getStorageSync('token')}`
+            },
+            success: (res) => {
+                if(res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS){
+                    console.log('获取小猫时间轴数据成功')
+                    console.log(res.data.data)
+                    resolve(res.data.data);
+                } else {
+                    console.log(res.data)
+                    uni.showToast({
+                        title: res.data.msg || '获取小猫时间轴数据失败',
+                        icon: 'none'
+                    });
+                    reject(new Error(res.data.msg || '获取小猫时间轴数据失败'));
+                }
+            },
+            fail: (err) => {
+                console.log('获取小猫时间轴数据失败')
+                console.log(err)
+                uni.showToast({
+                    title: '获取小猫时间轴数据失败',
+                    icon: 'none'
+                });
+                reject(err);
+            }
+        });
+    });
+}
+

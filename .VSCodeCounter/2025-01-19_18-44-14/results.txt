@@ -1,0 +1,44 @@
+Date : 2025-01-19 18:44:14
+Directory : e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages
+Total : 20 files,  17098 codes, 230 comments, 2002 blanks, all 19330 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| vue      |         20 |     17,098 |        230 |      2,002 |     19,330 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++--------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                     | files      | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                        |         20 |     17,098 |        230 |      2,002 |     19,330 |
++--------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++--------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                 | language | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\About.vue            | vue      |        300 |          4 |         48 |        352 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\Card.vue             | vue      |      2,896 |         27 |        306 |      3,229 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\CatClaw.vue          | vue      |      2,541 |         28 |        280 |      2,849 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\CatManage.vue        | vue      |        275 |          4 |         40 |        319 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\CommentReview.vue    | vue      |        352 |          3 |         50 |        405 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\Home.vue             | vue      |        797 |          7 |         94 |        898 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\Map.vue              | vue      |      2,431 |         29 |        279 |      2,739 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\ModifyCatInfo.vue    | vue      |         21 |          3 |          4 |         28 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\My.vue               | vue      |        533 |         30 |         68 |        631 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\Post.vue             | vue      |      1,424 |         18 |        173 |      1,615 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\PostReview.vue       | vue      |        385 |          8 |         47 |        440 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\Search.vue           | vue      |        389 |          6 |         52 |        447 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\SearchResultPage.vue | vue      |        393 |          5 |         52 |        450 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\SendPost.vue         | vue      |        440 |          5 |         57 |        502 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\UserEdit.vue         | vue      |        730 |         10 |         92 |        832 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\UserManage.vue       | vue      |        314 |          4 |         38 |        356 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\catEdit.vue          | vue      |        761 |          7 |         69 |        837 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\login.vue            | vue      |        363 |          2 |         54 |        419 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\register.vue         | vue      |        265 |          0 |         35 |        300 |
+| e:\01-Codes\HBuilderProjects\PawPrint Diaries\pages\test.vue             | vue      |      1,488 |         30 |        164 |      1,682 |
+| Total                                                                    |          |     17,098 |        230 |      2,002 |     19,330 |
++--------------------------------------------------------------------------+----------+------------+------------+------------+------------+

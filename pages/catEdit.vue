@@ -129,6 +129,14 @@
 								class="custom-checkbox"
 							/>
 						</uni-forms-item>
+						
+						<uni-forms-item label="领养状态" required>
+							<uni-data-checkbox 
+								v-model="catBaseFormData.isAdopted" 
+								:localdata="adoptStatusList"
+								class="custom-checkbox"
+							/>
+						</uni-forms-item>
 					</view>
 					
 					<!-- 性格与习性 -->
@@ -223,7 +231,8 @@
 		catGuide: '',
 		avatar: [],
 		breed: '',
-		area: ''
+		area: '',
+		isAdopted: 0
 	});
 	const selectedTempFilePaths = ref([]); // 存储已选择的图片的路径
 	const selectedTempFiles = ref([]); // 存储已选择的图片信息
@@ -273,6 +282,16 @@
 			value: '疾病'
 		}]
 	)
+	const adoptStatusList = ref([
+		{
+			text: '已领养',
+			value: 1
+		},
+		{
+			text: '未领养',
+			value: 0
+		}
+	])
 	const filePicker = ref(null);
 	
 	// 添加表单校验规则
@@ -478,7 +497,8 @@
 			'catGuide': catBaseFormData.value.catGuide,
 			'breed': catBaseFormData.value.breed,
 			'area': catBaseFormData.value.area,
-            'birthday': catBaseFormData.value.birthday
+            'birthday': catBaseFormData.value.birthday,
+			'isAdopted': catBaseFormData.value.isAdopted
 		};
 		if (catId.value) {
 			postData.catId = catId.value;
@@ -488,8 +508,8 @@
 		if (selectedTempFiles.value && selectedTempFiles.value.length > 0) {
 			postData.avatar = selectedTempFiles.value[0].name;
 		}
-		
-        console.log(catId.value)
+		// console.log(catBaseFormData.value.isAdopted)
+        console.log(postData.isAdopted)
 		// 1、服务器持久化数据
 		try {
 			const postResponse = await uni.request({  
@@ -575,15 +595,17 @@
 				}
 			}
 			
-			// 全部操作成功后显示成功提示并返回
+            // 全部操作成功后显示成功提示并返回
 			uni.showToast({  
 				title: catId.value ? '更新成功' : '添加成功',  
 				icon: 'success',
-				duration: 1500
+				duration: 1000
 			});  
 			
 			// 延迟返回，确保用户能看到成功提示
 			setTimeout(() => {
+                // 发送更新信号
+			    uni.$emit('updateCatList');
 				uni.navigateBack();
 			}, 1500);
 			
