@@ -144,7 +144,7 @@
 								<view class="timeline-dot" :class="{'start': index === 0, 'end': index === path.length - 1}"></view>
 								<view class="timeline-content">
 									<text class="location-name">{{point[2]}}</text>
-									<text class="location-time">{{formatTime(point[3])}}</text>
+									<text class="location-time">更新时间：{{formatTime(point[3])}}</text>
 								</view>
 							</view>
 						</view>
@@ -325,16 +325,21 @@
 	    catId: {
 			required: true,
 			message: '小猫名字不能为空',
+			trigger: ['blur', 'change']
 		},
 		longitude: {
 			required: true,
-			message: '经度不能为',
-			trigger: 'blur',
+			message: '经度不能为空',
+			trigger: ['blur', 'change'],
+			pattern: /^(\-|\+)?((\d|[1-9]\d|1[0-7]\d|0{1,3})(\.\d{1,6})?|180(\.0{1,6})?)$/,
+			message: '请输入有效的经度值（-180到180之间，最多6位小数）'
 		},
 		latitude: {
 			required: true,
 			message: '纬度不能为空',
-			trigger: 'blur',
+			trigger: ['blur', 'change'],
+			pattern: /^(\-|\+)?((\d|[1-8]\d|0{1,3})(\.\d{1,6})?|90(\.0{1,6})?)$/,
+			message: '请输入有效的纬度值（-90到90之间，最多6位小数）'
 		},
 		name: {
 			required: true,
@@ -408,6 +413,12 @@
 	
 	// 联动筛选方法
 	const filterResults = () => {
+		// 先清除地图上已有的标记
+		if (map1 && map2) {
+			map1.clearMap();
+			map2.clearMap();
+		}
+
 		// 如果没有选择日期且猫咪选择的是all,显示所有猫咪最位置
 		if (!selectedDate.value && (selectedValueC.value === 'all' || selectedValueC.value === '')) {
 			uni.request({
@@ -417,14 +428,23 @@
 					if (response.statusCode === 200 && response.data.code === STATUS_CODE.SUCCESS) {
 						responseData.value = response.data.data;
 						mapDrawMode.value = 'point';
-						path.value = responseData.value.map(item => [
-							parseFloat((item.longitude || 0).toFixed(6)),
-							parseFloat((item.latitude || 0).toFixed(6)),
-							item.catName || '未知猫咪'
-						]);
-						map1.clearMap();
-						map2.clearMap();
-						mapDraw();
+						
+						// 检查数据是否为空
+						if (Array.isArray(responseData.value) && responseData.value.length > 0) {
+							path.value = responseData.value.map(item => [
+								parseFloat((item.longitude || 0).toFixed(6)),
+								parseFloat((item.latitude || 0).toFixed(6)),
+								item.catName || '未知猫咪',
+								item.updateTime // 添加时间戳
+							]);
+							mapDraw();
+						} else {
+							path.value = [];
+							uni.showToast({
+								title: '暂无有效的坐标数据',
+								icon: 'none'
+							});
+						}
 					}
 				}
 			});
@@ -454,55 +474,64 @@
 			success: (response) => {
 				if (response.statusCode === 200 && response.data.code === STATUS_CODE.SUCCESS) {
 					responseData.value = response.data.data;
+					path.value = []; // 默认设置为空数组
+					
 					// 如果是查询具体猫咪的轨迹(无论是否选择日期)
 					if (selectedValueC.value !== 'all' && selectedValueC.value !== '') {
 						mapDrawMode.value = 'line';
 						if(selectedDate.value) {
-							path.value = Array.isArray(responseData.value) ?
-								responseData.value
+							if (Array.isArray(responseData.value) && responseData.value.length > 0) {
+								path.value = responseData.value
 									.filter(item => item.longitude != null && item.latitude != null)
 									.map(item => [
 										parseFloat((item.longitude || 0).toFixed(6)),
 										parseFloat((item.latitude || 0).toFixed(6)),
-										item.catName || '未知猫咪'
-									]) :
-								(responseData.value && responseData.value.longitude != null && responseData.value.latitude != null) ? 
-									[[
-										parseFloat((responseData.value.longitude || 0).toFixed(6)),
-										parseFloat((responseData.value.latitude || 0).toFixed(6)),
-										responseData.value.catName || '未知猫咪'
-									]] : [];
-						} else {
-							path.value = response.data.data.records
-								.filter(item => item.longitude != null && item.latitude != null)
-								.map(item => [
-									parseFloat((item.longitude || 0).toFixed(6)),
-									parseFloat((item.latitude || 0).toFixed(6)),
-									item.catName || '未知猫咪'
-								]);
+										item.catName || '未知猫咪',
+										item.updateTime // 添加时间戳
+									]);
+							} else if (responseData.value && responseData.value.longitude != null && responseData.value.latitude != null) {
+								path.value = [[
+									parseFloat((responseData.value.longitude || 0).toFixed(6)),
+									parseFloat((responseData.value.latitude || 0).toFixed(6)),
+									responseData.value.catName || '未知猫咪',
+									responseData.value.updateTime // 添加时间戳
+								]];
+							}
+						} else if (response.data.data && response.data.data.records) {
+							if (Array.isArray(response.data.data.records) && response.data.data.records.length > 0) {
+								path.value = response.data.data.records
+									.filter(item => item.longitude != null && item.latitude != null)
+									.map(item => [
+										parseFloat((item.longitude || 0).toFixed(6)),
+										parseFloat((item.latitude || 0).toFixed(6)),
+										item.catName || '未知猫咪',
+										item.updateTime // 添加时间戳
+									]);
+							}
 						}
 					} else {
 						mapDrawMode.value = 'point';
-						path.value = Array.isArray(responseData.value) ?
-							responseData.value
+						if (Array.isArray(responseData.value) && responseData.value.length > 0) {
+							path.value = responseData.value
 								.filter(item => item.longitude != null && item.latitude != null)
 								.map(item => [
 									parseFloat((item.longitude || 0).toFixed(6)),
 									parseFloat((item.latitude || 0).toFixed(6)),
-									item.catName || '未知猫咪'
-								]) :
-							(responseData.value && responseData.value.longitude != null && responseData.value.latitude != null) ?
-								[[
-									parseFloat((responseData.value.longitude || 0).toFixed(6)),
-									parseFloat((responseData.value.latitude || 0).toFixed(6)),
-									responseData.value.catName || '未知猫咪'
-								]] : [];
+									item.catName || '未知猫咪',
+									item.updateTime // 添加时间戳
+								]);
+						} else if (responseData.value && responseData.value.longitude != null && responseData.value.latitude != null) {
+							path.value = [[
+								parseFloat((responseData.value.longitude || 0).toFixed(6)),
+								parseFloat((responseData.value.latitude || 0).toFixed(6)),
+								responseData.value.catName || '未知猫咪',
+								responseData.value.updateTime // 添加时间戳
+							]];
+						}
 					}
 					
-					// 只有在有有效数据时才清除和重绘地图
+					// 检查最终的path是否有数据
 					if (path.value.length > 0) {
-						map1.clearMap();
-						map2.clearMap();
 						mapDraw();
 					} else {
 						uni.showToast({
@@ -586,7 +615,8 @@
 				.map(item => [
 					parseFloat((item.longitude || 0).toFixed(6)), // 添加默认值
 					parseFloat((item.latitude || 0).toFixed(6)),  
-					item.catName || '未知猫咪'  // 添加默认名称
+					item.catName || '未知猫咪',  // 添加默认名称
+					item.updateTime // 添加时间戳
 				]);
 			
 			loadingText.value = '正在初始化地图...';
@@ -844,52 +874,131 @@
 	
 	// 点击提交表单1按钮
 	const submitForm = () => {
-		console.log(baseFormData1.value)
+		// 先检查必填字段
+		if (!baseFormData1.value.catId) {
+			uni.showToast({
+				title: '请选择小猫',
+				icon: 'none',
+				duration: 2000
+			});
+			return;
+		}
+
+		if (!baseFormData1.value.name) {
+			uni.showToast({
+				title: '请输入上报者名称',
+				icon: 'none',
+				duration: 2000
+			});
+			return;
+		}
+
+		// 验证坐标格式
+		if (!baseFormData1.value.longitude || !baseFormData1.value.latitude) {
+			uni.showToast({
+				title: '请输入坐标信息',
+				icon: 'none',
+				duration: 2000
+			});
+			return;
+		}
+
+		const longitude = parseFloat(baseFormData1.value.longitude);
+		const latitude = parseFloat(baseFormData1.value.latitude);
 		
+		// 检查小数位数
+		const checkDecimalPlaces = (value) => {
+			const parts = value.toString().split('.');
+			return parts.length === 2 && parts[1].length > 7;
+		};
+
+		if (checkDecimalPlaces(baseFormData1.value.longitude)) {
+			uni.showToast({
+				title: '经度最多支持7位小数',
+				icon: 'none',
+				duration: 2000
+			});
+			return;
+		}
+
+		if (checkDecimalPlaces(baseFormData1.value.latitude)) {
+			uni.showToast({
+				title: '纬度最多支持7位小数',
+				icon: 'none',
+				duration: 2000
+			});
+			return;
+		}
+
+		if (isNaN(longitude) || isNaN(latitude)) {
+			uni.showToast({
+				title: '请输入有效的坐标值',
+				icon: 'none',
+				duration: 2000
+			});
+			return;
+		}
+
+		if (longitude < -180 || longitude > 180) {
+			uni.showToast({
+				title: '经度必须在-180到180之间',
+				icon: 'none',
+				duration: 2000
+			});
+			return;
+		}
+
+		if (latitude < -90 || latitude > 90) {
+			uni.showToast({
+				title: '纬度必须在-90到90之间',
+				icon: 'none',
+				duration: 2000
+			});
+			return;
+		}
+
+		// 提交数据
 		uni.request({
 			url: `${API_general_request_url.value}/api/cat/location/upload`,
 			method: 'POST',
 			header: {
-				'Authorization': `Bearer ${token.value}`
+				'Authorization': `Bearer ${token.value}`,
+				'Content-Type': 'application/json'
 			},
 			data: {
-				'catId': baseFormData1.value.catId,
-				'latitude': baseFormData1.value.latitude,
-				'longitude': baseFormData1.value.longitude,
-				// 'latitude': 22.527103,
-				// 'longitude': 113.390166,
-				'uploader': baseFormData1.value.name
+				'catId': Number(baseFormData1.value.catId), // 确保catId是数字类型
+				'latitude': latitude,
+				'longitude': longitude,
+				'uploader': baseFormData1.value.name,
+				'updateTime': new Date().getTime() // 添加时间戳
 			},
 			success: (resp) => {
 				if (resp.statusCode === 200 && resp.data.code === STATUS_CODE.SUCCESS) {
 					uni.showToast({
 						title: '提交成功',
 						icon: 'none',
+						duration: 2000
 					});
-					// 关闭上传表单
-					popupFromUpload.value.close();
+					// 延迟2秒后关闭上传表单
+					setTimeout(() => {
+						popupFromUpload.value.close();
+					}, 2000);
 				} else {
 					uni.showToast({
 						title: resp.data.msg || '提交失败',
 						icon: 'none',
 					});
-				};
-			fail: () => {
+				}
+			},
+			
+			fail: (err) => {
+				console.error('提交失败:', err);
 				uni.showToast({
-					title: '订单提交失败，请重试！',
+					title: '提交失败，请重试！',
 					icon: 'none'
 				});
 			}
-			}	
-		})
-	    // reportForm.value.validate((valid, errors) => {
-	    //     if (valid) {
-	    //         console.log('表单验证通过', baseFormData1.value);
-	    //         // 提交数据逻辑
-	    //     } else {
-	    //         console.log('表单验证失败', errors);
-	    //     }
-	    // });
+		});
 	};
 	
 	// 地图画图函数
@@ -1333,7 +1442,8 @@
 				.map(item => [
 					parseFloat((item.longitude || 0).toFixed(6)),
 					parseFloat((item.latitude || 0).toFixed(6)),
-					item.catName || '未知猫咪'
+					item.catName || '未知猫咪',
+					item.updateTime // 添加时间戳
 				]);
 			
 			// #ifdef H5
@@ -1398,7 +1508,18 @@
 	const formatTime = (timestamp) => {
 		if (!timestamp) return '时间未知';
 		const date = new Date(timestamp);
-		return `${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${date.getMinutes()}`;
+		
+		// 格式化年月日
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		
+		// 格式化时分秒
+		const hours = String(date.getHours()).padStart(2, '0');
+		const minutes = String(date.getMinutes()).padStart(2, '0');
+		const seconds = String(date.getSeconds()).padStart(2, '0');
+		
+		return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 	}
 
 	// 底部面板相关
@@ -2760,6 +2881,14 @@
 	color: #666;
 	z-index: 100;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 修改地图标签的容器样式 */
+::v-deep .amap-marker-label {
+    border: none !important;
+    background-color: transparent !important;
+    padding: 0 !important;
+    // box-shadow: none !important;
 }
 
 // 在样式部分添加鼠标样式

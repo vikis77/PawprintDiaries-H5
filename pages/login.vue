@@ -74,24 +74,24 @@
         </view>
         
         <view class="test-accounts">
-            <view class="test-account-item" @click="handleLoginTest('iur', 'iur')">
+            <view class="test-account-item" @click="handleLoginTest('user0010', 'user0010')">
                 <view class="account-info">
                 <text class="account-type">用户</text>
-                <text class="account-credentials">iur / iur</text>
+                <text class="account-credentials">user0010 / user0010</text>
                 </view>
                 <uni-icons type="forward" size="16" color="#999"></uni-icons>
             </view>
-            <view class="test-account-item" @click="handleLoginTest('admin4', '4444')">
+            <view class="test-account-item" @click="handleLoginTest('admin001', 'admin001')">
                 <view class="account-info">
                 <text class="account-type">管理员1</text>
-                <text class="account-credentials">iuradmin / iuradmin</text>
+                <text class="account-credentials">admin001 / admin001</text>
                 </view>
                 <uni-icons type="forward" size="16" color="#999"></uni-icons>
             </view>
-            <view class="test-account-item" @click="handleLoginTest('tttt', '1234')">
+            <view class="test-account-item" @click="handleLoginTest('admin002', 'admin002')">
                 <view class="account-info">
                 <text class="account-type">管理员2</text>
-                <text class="account-credentials">tttt / 1234</text>
+                <text class="account-credentials">admin002 / admin002</text>
                 </view>
                 <uni-icons type="forward" size="16" color="#999"></uni-icons>
             </view>

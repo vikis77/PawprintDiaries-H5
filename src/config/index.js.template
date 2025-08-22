@@ -1,0 +1,61 @@
+import { ref } from 'vue'
+
+// API请求基础URL
+export const API_general_request_url = ref('')
+// 图片资源基础URL
+export const pic_general_request_url = ref('')
+// 图片资源后缀
+export const Suffix_1000 = ref('')
+export const Suffix_1001 = ref('')
+export const Suffix_1002 = ref('')
+
+// #ifdef H5
+if (process.env.NODE_ENV === 'development') {
+    // H5开发环境
+    // 请根据你的后端服务地址修改以下配置
+    API_general_request_url.value = "http://localhost:8080"  // 后端API地址
+    pic_general_request_url.value = "https://your-cdn-domain.com/images"  // 图片CDN地址
+    
+    // 图片压缩后缀配置
+    Suffix_1000.value = ""  // 原图
+    Suffix_1001.value = "-small35"  // 压缩为35%
+    Suffix_1002.value = "-small15"  // 压缩为15%
+} else {
+    // H5生产环境
+    // 请根据你的生产环境地址修改以下配置
+    API_general_request_url.value = "https://your-api-domain.com"  // 生产环境API地址
+    pic_general_request_url.value = "https://your-cdn-domain.com/images"  // 图片CDN地址
+    
+    // 图片后缀
+    Suffix_1000.value = ""  // 原图
+    Suffix_1001.value = "-small35"  // 压缩为35%
+    Suffix_1002.value = "-small15"  // 压缩为15%
+}
+// #endif
+
+// #ifdef APP-PLUS
+// APP环境
+// 请根据你的服务地址修改以下配置
+API_general_request_url.value = "https://your-api-domain.com"
+pic_general_request_url.value = "https://your-cdn-domain.com/images"
+Suffix_1001.value = "-small35"
+Suffix_1002.value = "-small15"
+// #endif
+
+// 导出其他可能的配置
+export const config = {
+    // 每页数据条数
+    pageSize: 10,
+    // 默认头像
+    defaultAvatar: `${pic_general_request_url.value}/default-avatar.png`,
+    // 其他全局配置...
+    
+    // 高德地图配置（如果使用）
+    // amapKey: 'your-amap-key-here',
+    
+    // AI聊天配置（如果使用）
+    // aiChatConfig: {
+    //     apiUrl: 'your-ai-api-url',
+    //     apiKey: 'your-ai-api-key'
+    // }
+} 

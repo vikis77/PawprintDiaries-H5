@@ -440,7 +440,7 @@
 					<text class="qrcode-tip">扫描二维码查看详情</text>
 				</view>
 				<view class="qrcode-footer">
-					<button class="download-btn" @click="downloadQrCode">保存二维码，微信请使用截图</button>
+					<button class="download-btn" @click="downloadQrCode">保存二维码，微信请长按或截图</button>
 				</view>
 			</view>
 		</uni-popup>
@@ -773,7 +773,9 @@
 						icon: 'success',
 						duration: 2000 // 显示2秒后自动关闭
 					});
-					closeAdoptPopup();
+                    setTimeout(() => {
+                        closeAdoptPopup();
+					}, 2000);
 				} else {
 					uni.showToast({
 						title: res.data.msg,

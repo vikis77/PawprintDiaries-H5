@@ -28,6 +28,7 @@
                             <view class="username">{{ appStore.userInfo.nickName || '未设置昵称' }}</view>
                             <view class="user-id">ID: {{ appStore.userInfo.userId || '未登录' }}</view>
                             <view class="edit-profile" @click="goToEditProfile">编辑资料</view>
+                            <view class="edit-profile" @click="goToMyCat">我的小猫</view>
                         </view>
                     </view>
                     <view class="signature">{{ appStore.userInfo.signature || '这个人很懒，还没有签名' }}</view>

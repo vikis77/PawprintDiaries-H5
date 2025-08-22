@@ -28,6 +28,9 @@ build/
 local.properties
 *.local
 
+# 敏感配置文件（包含API密钥等）
+src/config/index.js
+
 # 缓存文件
 .temp/
 .cache/
@@ -58,3 +61,40 @@ typings/auto-imports.d.ts
 
 # 测试文件
 env.test.js
+
+# 包管理器锁文件（可选，根据团队需要决定是否忽略）
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# 备份文件
+*.bak
+*.backup
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# 运行时数据
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 覆盖率报告
+coverage/
+*.lcov
+.nyc_output
+
+# 编辑器临时文件
+*.swp
+*.swo
+*~
+
+# 项目特定的临时文件
+*.tmp
+*.temp
+tmp/
+temp/

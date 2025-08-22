@@ -1,107 +1,238 @@
-# 校猫日记 PawprintDiaries-H5 前端
-校猫日记是一个基于 Vue3 和 uni-app 开发的校园猫咪管理平台。一个结合校园流浪猫救助管理和社交分享的社区平台，通过记录和分享学校流浪猫的信息，连接爱猫人士，共同为猫猫创造更好的生活环境，帮助校园内的猫咪志愿者更好地管理和关爱流浪猫，为救助工作提供信息支持，为学校管理提供数据参考。
+# 🐾 校猫日记 PawprintDiaries-H5
 
-目前校园流浪猫信息展示与交流平台原定功能任务实现（完成度约90%）基本完成。并且在服务器上完成测试部署，正处于已有功能测试和附加功能实现阶段。
+<div align="center">
 
-后端代码也已开源，地址：https://github.com/vikis77/PawprintDiaries-SpringBoot
+**一个基于 Vue3 和 uni-app 开发的校园猫咪管理与社交平台**
 
-同时，欢迎大家来我的个人博客学习交流：https://luckyiur.com
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Vue](https://img.shields.io/badge/Vue-3.4.21-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org/)
+[![uni-app](https://img.shields.io/badge/uni--app-2.0.2-2B2B2B?logo=dcloud&logoColor=white)](https://uniapp.dcloud.io/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3.3-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-### 体验入口地址：https://pawprintdiaries.luckyiur.com/ 
-实际页面效果如下（图片更新于2024/12，最新版已对部分页面重新优化）
-![pic1_20250207234240](pic1_20250207234240.jpg)
+[在线体验](https://pawprintdiaries.luckyiur.com) | [前端代码](https://github.com/vikis77/PawprintDiaries-H5) | [后端代码](https://github.com/vikis77/PawprintDiaries-SpringBoot) | [开发者博客](https://luckyiur.com) | [项目演示视频](https://www.bilibili.com/video/BV1iJA2e4EZ3/?spm_id_from=333.1387.homepage.video_card.click&vd_source=93ed68d6c3cef9d567969b4d3c9d0437)
 
-![pic2_20250207234256](pic2_20250207234256.jpg)
+</div>
 
-![pic3_20250207234307](pic3_20250207234307.jpg)
+## 📖 项目简介
 
-![pic5_20250211221456](pic5_20250211221456.jpg)
+校猫日记是一个结合校园流浪猫救助管理和社交分享的社区平台，通过记录和分享学校流浪猫的信息，连接爱猫人士，共同为猫猫创造更好的生活环境。帮助校园内的猫咪志愿者更好地管理和关爱流浪猫，为救助工作提供信息支持，为学校管理提供数据参考。
 
-![pic4_20250207234318](pic4_20250207234318.jpg)
+## ✨ 功能特性
 
-### 主要功能
-- 记录和管理流浪猫的基本信息，如照片、健康状况和活动范围。
-- “小猫时间轴”功能，记录管理每个小猫发生的关键事件。
-- 提供便捷的界面，方便用户查看以上信息信息，方便管理方记录管理。
-- AI智能问答助手，可以快速回答校猫相关问题。
-- 用户可以发布自己的帖子，可以分享和查看猫咪的照片和日常故事。
-- 类似于社交平台的分享模式，增强用户之间的互动。
-- 支持用户之间的评论点赞功能。
-- 支持给小猫、帖子进行点赞，促进用户之间的社交互动。
-- 支持用户发起领养申请，提供爱心捐赠入口。
-- 通过地图功能跟踪和记录流浪猫的活动路径，支持用户上传跟踪记录。
-- 提供流浪猫数量和分布等数据的可视化分析。
-- 提供爱心救助组织资金管理功能，包括资金数据的记录和可视化数据分析。
-- 目前已实现猫猫品种的拍照识别功能（由于缺少校园猫猫图像数据集，校猫识别功能将会被搁置或取消）。
-- 内容审核：因为平台支持用户发布内容，为了平台内容安全考虑，新增对用户发布的帖子和评论（包括小猫评论和帖子评论）审核功能，只有审核通过的内容才会公开展示。
-- 角色管理：平台拥有多个功能和接口，有些功能是只有登录用户或管理员（工作人员）才能使用的，为了做区分限制，加入可以对用户赋予角色的功能，不同角色拥有不同权限。 
-- 内容搜索：支持了对平台的公开帖子和校猫进行搜索，方便用户快速定位感兴趣的小猫及其相关联的用户帖子。
+### 🐱 猫咪管理
+- **信息记录**: 记录和管理流浪猫的基本信息，如照片、健康状况和活动范围
+- **时间轴功能**: "小猫时间轴"记录管理每个小猫发生的关键事件
+- **便捷查看**: 提供便捷的界面，方便用户查看信息，方便管理方记录管理
+- **品种识别**: 目前已实现猫猫品种的拍照识别功能
 
+### 🤖 AI 智能助手
+- **智能问答**: AI智能问答助手，可以快速回答校猫相关问题
+- **多模型支持**: 基于 Dify 搭建，集成 ChatGPT 4o mini、DeepSeek-V3、DeepSeek-R1 等多种模型
+- **RAG 检索**: 支持 RAG 检索，结合知识库优化问答效果
 
-### 部分技术栈及说明
-- AI 智能问答助手：基于 Dify（生成式 AI 应用创新引擎）搭建 AI Workflow 编排，支持 RAG 检索，并集成 ChatGPT 4o mini、DeepSeek-V3、DeepSeek-R1 等多种模型 API，结合知识库优化问答效果。
-- Vue.js
-- uni-app 跨端开发框架
-- uView UI 组件库
-- 高德地图 JS SDK API
-- Pinia状态管理
+### 📱 社交分享
+- **帖子发布**: 用户可以发布自己的帖子，分享和查看猫咪的照片和日常故事
+- **互动功能**: 类似于社交平台的分享模式，增强用户之间的互动
+- **评论点赞**: 支持用户之间的评论点赞功能，支持给小猫、帖子进行点赞
 
-### 运行环境
-- Node.js
-- npm/yarn 包管理器
+### 🏠 领养救助
+- **领养申请**: 支持用户发起领养申请
+- **爱心捐赠**: 提供爱心捐赠入口
+- **资金管理**: 提供爱心救助组织资金管理功能，包括资金数据的记录和可视化数据分析
 
-### 开发命令
+### 🗺️ 地图追踪
+- **位置记录**: 通过地图功能跟踪和记录流浪猫的活动路径
+- **用户上传**: 支持用户上传跟踪记录
+- **高德地图**: 基于高德地图 JS SDK API 实现
+
+### 📊 数据分析
+- **可视化分析**: 提供流浪猫数量和分布等数据的可视化分析
+- **图表展示**: 使用 uCharts 图表库展示数据
+
+### 🛡️ 内容管理
+- **内容审核**: 对用户发布的帖子和评论进行审核，只有审核通过的内容才会公开展示
+- **角色管理**: 多角色权限管理，不同角色拥有不同权限
+- **内容搜索**: 支持对平台的公开帖子和校猫进行搜索
+
+## 📸 项目截图
+
+<div align="center">
+
+| 首页 | 猫咪详情 | 发布帖子 |
+|:---:|:---:|:---:|
+| ![首页](pic1_20250207234240.jpg) | ![猫咪详情](pic2_20250207234256.jpg) | ![发布帖子](pic3_20250207234307.jpg) |
+
+| AI 问答 | 地图功能 |
+|:---:|:---:|
+| ![AI问答](pic5_20250211221456.jpg) | ![地图功能](pic4_20250207234318.jpg) |
+
+</div>
+
+## 🛠️ 技术栈
+
+### 前端技术
+- **框架**: Vue 3.4.21 + TypeScript 5.3.3
+- **跨端开发**: uni-app 2.0.2 (支持 H5、小程序、APP)
+- **UI 组件库**: uView UI 2.0.37 + uni-ui
+- **状态管理**: Pinia 2.1.7 + pinia-plugin-persistedstate
+- **路由管理**: Vue Router 4.4.3
+- **图表库**: uCharts (@qiun/vue-ucharts)
+- **地图服务**: 高德地图 JS SDK API (@amap/amap-jsapi-loader)
+- **HTTP 请求**: Axios 1.7.7
+- **工具库**: JWT-decode、QRCode 生成
+
+### AI 智能助手
+- **平台**: 基于 Dify（生成式 AI 应用创新引擎）搭建 AI Workflow 编排
+- **检索增强**: 支持 RAG 检索，结合知识库优化问答效果
+- **多模型支持**: 集成 ChatGPT 4o mini、DeepSeek-V3、DeepSeek-R1 等多种模型 API
+
+### 开发工具
+- **构建工具**: Vite + Vue CLI Service
+- **代码规范**: TypeScript + ESLint
+- **自动导入**: unplugin-auto-import + unplugin-vue-components
+
+## 🚀 快速开始
+
+### 环境要求
+- Node.js 16.0+
+- npm 或 yarn 包管理器
+- HBuilderX (推荐)
+
+### 安装步骤
+
+1. **克隆项目**
 ```bash
-npm run dev
+git clone https://github.com/vikis77/PawprintDiaries-H5.git
+cd PawprintDiaries-H5
 ```
-或者
-将项目使用 HbuilderX 打开，运行H5至浏览器（推荐）。
 
-## 项目结构（旧版结构，未更新）
-PawPrint Diaries/
+2. **安装依赖**
+```bash
+npm install
+# 或
+yarn install
+```
+
+3. **配置环境**
+```bash
+# 复制配置模板文件
+cp src/config/index.js.template src/config/index.js
+# 编辑配置文件，填入你的 API 地址等配置信息
+```
+
+4. **启动开发服务器**
+
+**方式一：命令行启动**
+```bash
+npm run dev:h5
+```
+
+**方式二：HBuilderX 启动（推荐）**
+- 使用 HBuilderX 打开项目
+- 点击"运行" -> "运行到浏览器" -> "Chrome"
+
+5. **访问应用**
+```
+http://localhost:8080
+```
+
+### 构建部署
+
+```bash
+# 构建 H5 版本
+npm run build:h5
+
+# 构建产物在 unpackage/dist/build/h5 目录下
+```
+
+## 📁 项目结构
+
+```
+PawprintDiaries-H5/
 ├── src/                      # 源代码目录
 │   ├── api/                  # API 接口定义
-│   │   ├── user.js          # 用户相关接口
-│   │   ├── post.js          # 帖子相关接口
-│   │   └── ...
-│   ├── components/          # 全局通用组件
-│   │   ├── common/         # 基础组件
-│   │   │   ├── NavBar.vue  # 导航栏组件
-│   │   │   └── ...
-│   │   └── business/       # 业务组件
-│   ├── composables/        # 组合式函数
-│   │   ├── useUser.js      # 用户相关逻辑
-│   │   └── ...
-│   ├── config/             # 配置文件
-│   │   ├── env.js          # 环境配置
-│   │   └── constants.js    # 常量配置
-│   ├── pages/              # 页面文件
-│   │   ├── index/         # 首页
-│   │   ├── user/          # 用户相关页面
-│   │   └── ...
-│   ├── router/             # 路由配置
-│   ├── store/              # 状态管理
-│   │   ├── modules/       # 模块化的状态
-│   │   └── index.js
-│   ├── styles/             # 全局样式
-│   │   ├── variables.scss  # 变量
-│   │   ├── mixins.scss    # 混入
-│   │   └── global.scss    # 全局样式
-│   ├── utils/              # 工具函数
-│   │   ├── request.js     # 请求封装
-│   │   ├── storage.js     # 存储工具
-│   │   └── ...
-│   ├── App.vue            # 根组件
-│   └── main.js            # 入口文件
-├── static/                 # 静态资源
-│   ├── images/            # 图片资源
-│   ├── icons/             # 图标资源
-│   └── fonts/             # 字体资源
-├── uni_modules/           # uni-app 插件
-├── .env.development       # 开发环境变量
-├── .env.production        # 生产环境变量
-├── manifest.json          # uni-app 配置
-├── pages.json            # 页面配置
-├── vite.config.js        # Vite 配置
-└── package.json          # 项目配置
-    
+│   ├── components/           # 全局通用组件
+│   ├── config/              # 配置文件
+│   ├── constant/            # 常量定义
+│   └── utils/               # 工具函数
+├── pages/                   # 页面文件
+│   ├── Home.vue            # 首页
+│   ├── CatManage.vue       # 猫咪管理
+│   ├── Post.vue            # 帖子页面
+│   ├── ChatBot.vue         # AI 聊天
+│   ├── Map.vue             # 地图功能
+│   └── ...                 # 其他页面
+├── components/              # 页面组件
+│   ├── BottomNav.vue       # 底部导航
+│   └── MyChartComponent.vue # 图表组件
+├── static/                  # 静态资源
+├── uni_modules/            # uni-app 插件
+├── store/                  # 状态管理
+├── router/                 # 路由配置
+├── types/                  # TypeScript 类型定义
+├── manifest.json           # uni-app 配置
+├── pages.json             # 页面配置
+├── vite.config.js         # Vite 配置
+└── package.json           # 项目配置
+```
+
+## 🔧 配置说明
+
+### 环境配置
+
+项目使用 `src/config/index.js` 进行环境配置，支持开发环境和生产环境的不同配置：
+
+```javascript
+// 开发环境配置
+if (process.env.NODE_ENV === 'development') {
+    API_general_request_url.value = "http://localhost:8080"
+    pic_general_request_url.value = "你的图片服务器地址"
+}
+```
+
+### 主要配置项
+- `API_general_request_url`: 后端 API 地址
+- `pic_general_request_url`: 图片资源 CDN 地址
+- `Suffix_1000/1001/1002`: 图片压缩后缀配置（可以根据自己需求更改）
+
+## 📝 更新日志
+
+### v1.0.0 (2025-01-XX)
+- ✨ 基础功能完成
+- 🐱 猫咪信息管理系统
+- 📝 帖子发布与评论系统
+- 🤖 AI 智能问答助手
+- 📍 地图位置追踪功能
+- 💰 捐赠管理系统
+- 🛡️ 内容审核与权限管理
+
+## 📄 许可证
+
+本项目采用 [MIT License](LICENSE) 许可证。
+
+## 🙏 致谢
+
+- [Vue.js](https://vuejs.org/) - 渐进式 JavaScript 框架
+- [uni-app](https://uniapp.dcloud.io/) - 跨端开发框架
+- [uView UI](https://www.uviewui.com/) - 全面兼容 nvue 的 uni-app 生态框架
+- [高德地图](https://lbs.amap.com/) - 地图服务提供商
+- [Dify](https://dify.ai/) - 生成式 AI 应用创新引擎
+
+## 📞 联系方式
+
+- **项目地址**: [GitHub](https://github.com/vikis77/PawprintDiaries-H5)
+- **后端项目**: [PawprintDiaries-SpringBoot](https://github.com/vikis77/PawprintDiaries-SpringBoot)
+- **在线体验**: [https://pawprintdiaries.luckyiur.com](https://pawprintdiaries.luckyiur.com)
+- **开发者博客**: [https://luckyiur.com](https://luckyiur.com)
+- **项目演示视频**: [Bilibili](https://www.bilibili.com/video/BV1iJA2e4EZ3/?spm_id_from=333.1387.homepage.video_card.click&vd_source=93ed68d6c3cef9d567969b4d3c9d0437)
+
+---
+
+<div align="center">
+
+**如果这个项目对你有帮助，请给个 ⭐ Star 支持一下！**
+
+Made with ❤️ for stray cats
+
+</div>
+

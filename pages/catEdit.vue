@@ -484,6 +484,7 @@
 		}
 
 		let postData = {
+            'id': catBaseFormData.value.id,
 			'catname': catBaseFormData.value.catname,
 			'gender': catBaseFormData.value.gender,
 			'age': catBaseFormData.value.age,

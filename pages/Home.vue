@@ -4,6 +4,7 @@
 <template>
 	<view class="container">
 		<view class="layout-top">
+            <!-- 声明弹窗 -->
 			<uni-popup ref="popup" type="dialog" border-radius="10px 10px 0 0" confirmText="确定">
 				<uni-popup-dialog 
 					style="width: 80vw; overflow: auto; font-size: 27rpx; color: #6c6c6c; background-color: #ffffff;" 
@@ -15,6 +16,21 @@
 					@close="dialogClose"
 				>
 					<div v-html="dialogContent"></div>
+				</uni-popup-dialog>
+			</uni-popup>
+
+            <!-- 温馨提示弹窗（PC端首次访问） -->
+            <uni-popup ref="popupForPc" type="dialog" border-radius="10px 10px 0 0" :maskClick="false">
+				<uni-popup-dialog 
+					style="width: 80vw; overflow: auto; font-size: 27rpx; color: #6c6c6c; background-color: #ffffff;" 
+					:type="msgType" 
+					cancelText="关闭" 
+					confirmText="已了解"
+					title="温馨提示" 
+					@confirm="dialogConfirm"
+					@close="dialogClose"
+				>
+					<div v-html="currentDialogContent"></div>
 				</uni-popup-dialog>
 			</uni-popup>
 			
@@ -49,6 +65,10 @@
 									<button plain="true" class="drawer-item" @click="handleCatManage">
 										<img src="../static/cat007.png" class="drawer-icon" />
 										<text>猫猫管理</text>
+									</button>
+									<button plain="true" class="drawer-item" @click="handleAiChatTest">
+										<img src="../static/ai-chat.png" class="drawer-icon" />
+										<text>AI 聊天测试</text>
 									</button>
 									<button plain="true" class="drawer-item" @click="handleClickLogin">
 										<img src="../static/login.png" class="drawer-icon" />
@@ -162,9 +182,12 @@
 	const pageSize = pagination.size
 
 	const popup = ref(null)
+    const popupForPc = ref(null)
 	const showLeft = ref(null);
 	const scrollTop = ref(0); // 保持为 ref
 	const clientHeight = ref(0); // 用于存储器的可视高度
+	const msgType = ref('info');
+	const currentDialogContent = ref('');
 	
 	const status = ref('more'); // 加载更多的状态
 
@@ -309,6 +332,11 @@
         // 添加事件监听器
         document.addEventListener('goToAbout', goToAbout);
         document.addEventListener('openUrl', (event) => openUrl(event.detail));
+
+		// 检查是否需要显示PC端首次访问提示
+		if (isPcBrowser() && isFirstVisit()) {
+			showPcFirstVisitTip();
+		}
 	});
 	
 
@@ -414,6 +442,30 @@
 		uni.navigateTo({
 			url: 'CatManage'
 		})
+	}
+
+	// 检查用户是否登录
+	const checkLogin = () => {
+		const token = uni.getStorageSync('token')
+		if (!token) {
+			showToast('请先登录')
+			setTimeout(() => {
+				uni.navigateTo({
+					url: 'login'
+				})
+			}, 1500)
+			return false
+		}
+		return true
+	}
+
+	// 点击 AI 聊天测试
+	const handleAiChatTest = () => {
+		if (checkLogin()) {
+			uni.navigateTo({
+				url: '/pages/AiChatTest'
+			})
+		}
 	}
 	
 	// 点击关于按钮
@@ -547,6 +599,76 @@
 
 	// 添加loading状态
 	const loading = ref(true)
+
+	// PC端首次访问提示内容
+	const pcFirstVisitContent = `
+		<div style="padding: 20rpx;">
+			<p style="font-size: 32rpx; font-weight: bold; color: #333; text-align: center; margin-bottom: 30rpx;">
+				欢迎访问校猫日记！
+			</p>
+			<p style="color: #e74c3c; font-weight: bold; margin-bottom: 20rpx;">
+				检测到您正在使用PC端访问本应用
+			</p>
+			<div style="display: flex; justify-content: space-between; align-items: flex-start; margin: 20rpx 0;">
+				<div style="flex: 1; margin-right: 20rpx;">
+					<p style="margin: 15rpx 0;">
+						方式一：手机扫码访问（推荐 👍）
+					</p>
+					<p style="background: #f8f9fa; padding: 15rpx; border-radius: 8rpx; margin-bottom: 20rpx;">
+						使用微信扫描右侧二维码，即可在手机上访问<br>
+						✨ 更好的浏览体验<br>
+						✨ 更流畅的操作效果<br>
+						✨ 更完整的功能支持
+					</p>
+					<p style="margin-bottom: 15rpx; color: #666;">
+						方式二：使用开发者工具访问
+					</p>
+					<p style="background: #f8f9fa; padding: 15rpx; border-radius: 8rpx;">
+						1. 按F12打开开发者工具<br>
+						2. 点击切换设备工具栏按钮（Toggle device toolbar）<br>
+						3. 选择移动设备进行浏览（推荐 iPhone 12 Pro）
+					</p>
+				</div>
+				<div style="width: 160px; text-align: center;">
+					<image src="https://cdn.luckyiur.com/catcat/static_image/校猫日记二维码.jpg" 
+						style="width: 120px; height: 120px; border-radius: 4px; margin-bottom: 8px;" 
+						alt="微信扫码访问"
+					/>
+					<p style="font-size: 12px; color: #666;">扫码访问</p>
+				</div>
+			</div>
+			<p style="color: #666; font-size: 24rpx; text-align: center; margin-top: 20rpx;">
+				点击"已了解"后将不再显示此提示
+			</p>
+		</div>
+	`;
+
+	// 检查是否为PC端访问
+	const isPcBrowser = () => {
+		// #ifdef H5
+		const userAgent = navigator.userAgent.toLowerCase();
+		const isMobile = /mobile|android|iphone|ipad|phone/i.test(userAgent);
+		return !isMobile;
+		// #endif
+		// #ifndef H5
+		return false;
+		// #endif
+	};
+
+	// 检查是否首次访问
+	const isFirstVisit = () => {
+		const hasVisited = uni.getStorageSync('hasVisitedBefore');
+		return !hasVisited;
+	};
+
+	// 显示PC端首次访问提示
+	const showPcFirstVisitTip = () => {
+		currentDialogContent.value = pcFirstVisitContent;
+		msgType.value = 'warning';
+		nextTick(() => {
+			popupForPc.value?.open();
+		});
+	};
 </script>
 
 <style lang="scss" scoped>

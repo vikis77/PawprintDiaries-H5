@@ -19,7 +19,23 @@
                         <view class="th890h0">
                             <uni-segmented-control :current="currentArea" :values="AreaItems" activeColor="#8d5da3"
                                 style-type="text" @clickItem="onClickItemArea" />
+                            <view class="recommend-tab" @click.stop="handleRecommendClick" v-if="currentArea === 0"></view>
                         </view>
+
+                        <!-- 添加智能助手入口 -->
+                        <view class="chat-assistant-entry" @click="openChat">
+                            <view class="assistant-content">
+                                <view class="assistant-icon">
+                                    <uni-icons type="chat" size="28" color="#fff"></uni-icons>
+                                </view>
+                                <view class="assistant-text">
+                                    <text class="primary-text">小猫咨询官</text>
+                                    <text class="secondary-text">有校猫相关问题随时问我哦~</text>
+                                </view>
+                            </view>
+                            <uni-icons type="right" size="20" color="#999"></uni-icons>
+                        </view>
+
                         <!-- 分段器内容 -->
                         <view class="tzz876">
                             <!-- 推荐内容（始终显示） -->
@@ -333,6 +349,22 @@
                 </view>
             </uni-popup>
         </view>
+        
+        <!-- 添加Dify聊天机器人 -->
+        <uni-popup ref="chatPopup" type="right" @change="handlePopupChange">
+            <view class="chat-popup">
+                <view class="chat-header">
+                    <text class="chat-title">智能助手</text>
+                    <view class="close-btn" @click="closeChat">
+                        <uni-icons type="closeempty" size="24" color="#666"></uni-icons>
+                    </view>
+                </view>
+                <view class="chat-content">
+                    <web-view v-if="showChat" src="https://udify.app/chat/nRPlNbHwVpx82ZPU"></web-view>
+                </view>
+            </view>
+        </uni-popup>
+
     </view>
 </template>
 
@@ -435,16 +467,38 @@ const AreaItems = ref(['推荐', '全部', '捐赠/领养'])
 
 // 猫猫卡片的分段器处理点击事件
 const onClickItemArea = (indexObj) => {
+    console.log('onClickItemArea triggered, currentIndex:', indexObj.currentIndex);
     if (indexObj.currentIndex === 2) { // 点击"捐赠/领养"
+        console.log('点击了捐赠/领养');
         showDonateMenu.value = true;
     } else if (indexObj.currentIndex === 1) { // 点击"全部"
+        console.log('点击了全部');
         // 获取第一只猫的ID作为默认值
         const defaultCatId = catList.value.length > 0 ? catList.value[0].catId : '';
         uni.navigateTo({
             url: `CatManage?catId=${defaultCatId}&from=catclaw`
         });
+    } else if (indexObj.currentIndex === 0) { // 点击"推荐"
+        console.log('点击了推荐, currentArea:', currentArea.value);
+        // 即使当前已经在推荐页，也触发刷新
+        if (currentArea.value === 0) {
+            console.log('当前在推荐页，触发刷新');
+            // 触发刷新动画和效果
+            refreshCatList();
+            // 添加触感反馈
+            uni.vibrateShort();
+        }
     }
     currentArea.value = indexObj.currentIndex;
+}
+
+// 添加一个专门处理推荐点击的函数
+const handleRecommendClick = () => {
+    console.log('handleRecommendClick triggered');
+    // 触发刷新动画和效果
+    refreshCatList();
+    // 添加触感反馈
+    uni.vibrateShort();
 }
 
 // 数据分析的分段器
@@ -585,12 +639,12 @@ function getNowTimeDate() {
 
 let timer = null
 
+// 在组件挂载时初始化Dify
+
 // 首次页面加载时开始更新时间（只有首次加载时会调用）
 onMounted(() => {
     console.log("onMounted")
     timer = getNowTimeDate()
-    // fetchCatData(); // 获取猫猫数据（里面会调用全局方法）
-    // fetchDataAnalysis(); // 获取数据分析数据（里面会调用全局方法）
 })
 
 // 每次页面加载时（包括首次加载）
@@ -646,15 +700,22 @@ const isFirstLoad = ref(true);
 
 // 修改刷新方法
 const refreshCatList = () => {
-    if (isRefreshing.value) return;
+    console.log('refreshCatList triggered, isRefreshing:', isRefreshing.value);
+    if (isRefreshing.value) {
+        console.log('正在刷新中，返回');
+        return;
+    }
 
-    fetchCatData(); // 获取新的猫猫数据
+    console.log('开始获取新的猫猫数据');
+    // fetchCatData(); // 获取新的猫猫数据
 
     isRefreshing.value = true;
     uni.vibrateShort(); // 添加触感反馈
+    console.log('设置刷新状态和触感反馈');
 
     // 设置刷新时的固定位置
     translateX.value = 60;
+    console.log('设置translateX:', translateX.value);
 
     // 使用Fisher-Yates洗牌算法随机打乱数组
     const shuffleArray = (array) => {
@@ -667,9 +728,11 @@ const refreshCatList = () => {
 
     // 创建数组副本并打乱顺序
     const shuffledList = shuffleArray([...appStore.catList]);
+    console.log('打乱后的列表长度:', shuffledList.length);
 
     // 延迟更新列表，让动画有时间播放
     setTimeout(() => {
+        console.log('延迟执行更新列表');
         // 重置位置
         translateX.value = 0;
 
@@ -678,6 +741,7 @@ const refreshCatList = () => {
 
         // 重置刷新状态
         setTimeout(() => {
+            console.log('重置刷新状态');
             isRefreshing.value = false;
         }, 500);
     }, 800);
@@ -1873,6 +1937,31 @@ const fundTypeOptions = ref([
     { value: 'income', text: '收入' }
 ]);
 
+// 添加聊天显示状态
+const showChat = ref(false)
+
+// 打开聊天
+const openChat = () => {
+    // 直接跳转到聊天页面
+    uni.navigateTo({
+        url: '/pages/ChatBot?token=nRPlNbHwVpx82ZPU'
+    })
+}
+
+// 关闭聊天
+const closeChat = () => {
+    chatPopup.value.close()
+}
+
+// 处理弹窗状态变化
+const handlePopupChange = (e) => {
+    if (!e.show) {
+        showChat.value = false
+    }
+}
+
+const chatPopup = ref(null)
+
 </script>
 
 <style lang="scss" scoped>
@@ -1895,7 +1984,7 @@ scroll-view ::-webkit-scrollbar {
 
         .showCardBox {
             width: 675rpx;
-            height: 650rpx;
+            height: 750rpx;
             margin-left: 20rpx;
             margin-top: 20rpx;
             padding: 20rpx;
@@ -1936,6 +2025,7 @@ scroll-view ::-webkit-scrollbar {
                     .th890h0 {
                         width: 100%;
                         height: 100rpx;
+                        position: relative; // 添加相对定位
                     }
 
                     .tzz876 {
@@ -2845,5 +2935,142 @@ scroll-view ::-webkit-scrollbar {
 .manage-fund-btn text {
     color: #ffffff;
     font-size: 28rpx;
+}
+
+// 添加推荐标签的样式
+.recommend-tab {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 33.33%;
+    height: 100%;
+    z-index: 10; // 提高z-index确保在最上层
+    // background-color: rgba(255, 0, 0, 0.1); // 调试用，可以看到点击区域
+}
+
+/* 添加Dify聊天容器样式 */
+.dify-chat-container {
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background: #fff;
+}
+
+.chat-assistant-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24rpx 30rpx;
+    background: linear-gradient(to right, #f8f9ff, #f0f2ff);
+    border-radius: 16rpx;
+    margin: 0rpx 20rpx 0rpx 20rpx;
+    box-shadow: 0 4rpx 12rpx rgba(141, 93, 163, 0.1);
+    transition: all 0.3s ease;
+    border: 1rpx solid rgba(141, 93, 163, 0.1);
+    
+    &:active {
+        transform: scale(0.98);
+        background: linear-gradient(to right, #f0f2ff, #e8ebff);
+    }
+
+    .assistant-content {
+        display: flex;
+        align-items: center;
+        gap: 20rpx;
+
+        .assistant-icon {
+            width: 80rpx;
+            height: 80rpx;
+            background: linear-gradient(135deg, #8d5da3, #b876d9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4rpx 12rpx rgba(141, 93, 163, 0.2);
+        }
+
+        .assistant-text {
+            display: flex;
+            flex-direction: column;
+            gap: 6rpx;
+
+            .primary-text {
+                font-size: 32rpx;
+                font-weight: 600;
+                color: #333;
+                line-height: 1.4;
+            }
+
+            .secondary-text {
+                font-size: 24rpx;
+                color: #999;
+                line-height: 1.4;
+            }
+        }
+    }
+}
+
+.primary-text {
+    font-weight: bold;
+}
+
+.secondary-text {
+    font-size: 24rpx;
+    color: #999;
+}
+
+/* 聊天弹窗样式 */
+.chat-popup {
+    width: 100vw;
+    height: 100vh;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    
+    .chat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20rpx 30rpx;
+        background: #fff;
+        border-bottom: 1rpx solid #f0f0f0;
+        
+        .chat-title {
+            font-size: 32rpx;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .close-btn {
+            padding: 10rpx;
+            cursor: pointer;
+            
+            &:active {
+                opacity: 0.7;
+            }
+        }
+    }
+    
+    .chat-content {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+        
+        :deep(web-view) {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    }
+}
+
+// 修改uni-popup的默认样式
+:deep(.uni-popup-right) {
+    padding: 0;
 }
 </style>

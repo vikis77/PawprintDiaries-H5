@@ -19,7 +19,9 @@
             <view v-else v-for="post in posts" :key="post.postId" class="post-item">
                 <view class="post-header">
                     <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}${Suffix_1002}`"
-                        mode="aspectFill" />
+                            mode="aspectFill"/>
+                    <!-- <img class="avatar" :src="`${pic_general_request_url}/user_avatar/${post.authorAvatar}${Suffix_1002}`" -->
+                        <!-- mode="aspectFill" ></img> -->
                     <text class="nickname">{{ post.authorNickname }}</text>
                     <text class="time">{{ formatTime(post.send_time) }}</text>
                 </view>

@@ -139,6 +139,7 @@
 
                 <!-- 互动区域 -->
                 <view class="operate">
+                    <!-- 点赞 -->
                     <view class="heart" @click="handleLike">
                         <uni-icons :type="currentPost.liked ? 'heart-filled' : 'heart'"
                             :class="{ 'heart-animate': isLikeAnimating }" size="26"
@@ -146,16 +147,19 @@
                         </uni-icons>
                         <text class="count" :class="{ 'active': currentPost.liked }">{{ currentPost.likeCount }}</text>
                     </view>
+                    <!-- 收藏 -->
                     <view class="star" @click="handleCollect">
                         <uni-icons :type="currentPost.collected ? 'star-filled' : 'star'"
                             :class="{ 'star-animate': isCollectAnimating }" size="26"
                             :color="currentPost.collected ? '#faad14' : '#666'">
                         </uni-icons>
                     </view>
+                    <!-- 评论 -->
                     <view class="chatbubble" @click="handleComment">
                         <uni-icons type="chatbubble" size="26"></uni-icons>
                         <text class="count">{{ comments.length || 0 }}</text>
                     </view>
+                    <!-- 分享 -->
                     <view class="paperplane" @click="handleShare">
                         <uni-icons type="paperplane" size="26"></uni-icons>
                     </view>
@@ -451,6 +455,14 @@ const handleLike = () => {
             },
             success: (res) => {
                 if (res.statusCode === 200 && res.data.code === STATUS_CODE.SUCCESS) {
+                    // 把首页对应帖子点赞数-1
+                    let postList = appStore.postList;
+                        for (let i = 0; i < postList.length; i++) {
+                            if (postList[i].postId === currentPost.value.postId) {
+                                postList[i].likeCount -= 1;
+                                break;
+                            }
+                        }
                     isLikeAnimating.value = true;
                     currentPost.value.liked = !currentPost.value.liked;
                     currentPost.value.likeCount += currentPost.value.liked ? 1 : -1;
@@ -647,17 +659,16 @@ const qrCode = async () => {
         canvas.width = size;
         canvas.height = size;
 
-        // 生成基础二维码
+        // 生成基础二维码，增加version参数并调整配置
         const baseQR = await QRCode.toCanvas(canvas, url, {
             width: size,
-            margin: 4,
+            margin: 2, // 减小边距以容纳更多数据
             color: {
                 dark: '#000000',
                 light: '#ffffff'
             },
-            errorCorrectionLevel: 'H',
-            maskPattern: 0,
-            version: 5
+            errorCorrectionLevel: 'M', // 降低纠错级别以容纳更多数据
+            version: 8, // 增加版本号以支持更多数据
         });
 
         // 获取二维码数据
@@ -716,7 +727,7 @@ const qrCode = async () => {
                 try {
                     // 在右下角绘制Logo
                     const logoSize = size * 0.25; // Logo大小为二维码的25%
-                    const padding = size * 0.05; // 边距为二维码的5%
+                    const padding = size * 0.04; // 边距为二维码的5%
                     const x = size - logoSize - padding;
                     const y = size - logoSize - padding;
                     
